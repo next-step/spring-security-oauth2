@@ -45,7 +45,7 @@ public class AuthConfig implements WebMvcConfigurer {
 
     @Bean
     public FilterChainProxy filterChainProxy() {
-        return new FilterChainProxy(List.of(securityFilterChainNew()));
+        return new FilterChainProxy(List.of(oauthFilterChain(), securityFilterChainNew()));
     }
 
     @Bean
@@ -57,6 +57,13 @@ public class AuthConfig implements WebMvcConfigurer {
         filters.add(new ExceptionTranslateFilter(requestCache()));
         filters.add(new AuthorizationFilter(authorizationManager()));
         return new DefaultSecurityFilterChain(AnyRequestMatcher.INSTANCE, filters);
+    }
+
+    @Bean
+    public SecurityFilterChain oauthFilterChain() {
+        List<Filter> filters = new ArrayList<>();
+        filters.add(new Oauth2AuthorizationFilter());
+        return new DefaultSecurityFilterChain(new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), filters);
     }
 
     @Bean
