@@ -19,9 +19,4 @@ public class LoginController {
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return ResponseEntity.ok("success");
     }
-
-    @GetMapping("/oauth2/authorization/github")
-    public ResponseEntity<Boolean> authorization_github() {
-        return ResponseEntity.ok(true);
-    }
 }

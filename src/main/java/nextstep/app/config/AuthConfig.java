@@ -16,6 +16,8 @@ import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContextRepository;
 import nextstep.security.exception.ExceptionTranslateFilter;
+import nextstep.security.oauth2.OAuth2AccessTokenLoginFilter;
+import nextstep.security.oauth2.Oauth2AuthorizationFilter;
 import nextstep.security.savedRequest.HttpSessionRequestCache;
 import nextstep.security.savedRequest.RequestCache;
 import nextstep.security.userdetails.UserDetailsService;
@@ -28,7 +30,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.servlet.Filter;
 import java.util.ArrayList;
 import java.util.List;
-
 @Configuration
 public class AuthConfig implements WebMvcConfigurer {
 
@@ -45,25 +46,20 @@ public class AuthConfig implements WebMvcConfigurer {
 
     @Bean
     public FilterChainProxy filterChainProxy() {
-        return new FilterChainProxy(List.of(oauthFilterChain(), securityFilterChainNew()));
+        return new FilterChainProxy(List.of(securityFilterChainNew()));
     }
 
     @Bean
     public SecurityFilterChain securityFilterChainNew() {
         List<Filter> filters = new ArrayList<>();
         filters.add(new SecurityContextHolderFilter(securityContextRepository()));
+        filters.add(new Oauth2AuthorizationFilter());
+        filters.add(new OAuth2AccessTokenLoginFilter(securityContextRepository(), requestCache()));
         filters.add(new UsernamePasswordAuthenticationFilter(authenticationManager(), securityContextRepository()));
         filters.add(new BasicAuthenticationFilter(authenticationManager()));
         filters.add(new ExceptionTranslateFilter(requestCache()));
         filters.add(new AuthorizationFilter(authorizationManager()));
         return new DefaultSecurityFilterChain(AnyRequestMatcher.INSTANCE, filters);
-    }
-
-    @Bean
-    public SecurityFilterChain oauthFilterChain() {
-        List<Filter> filters = new ArrayList<>();
-        filters.add(new Oauth2AuthorizationFilter());
-        return new DefaultSecurityFilterChain(new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), filters);
     }
 
     @Bean

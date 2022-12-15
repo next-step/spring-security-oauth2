@@ -13,18 +13,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class OAuthLoginTest {
+public class GithubLoginTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void oauth_authorization() throws Exception {
+    void github_authorization() throws Exception {
         ResultActions response = requestOauthAuthorizationWithGithub();
         response.andExpect(
-                status().is3xxRedirection()
+            status().is3xxRedirection()
         );
         response.andExpect(
-                redirectedUrl("https://github.com/login/oauth/authorize?client_id=04f8811a8c4aafe9baab&response_type=code&scope=read:user&redirect_uri=http://localhost:8080/login/oauth2/code/github")
+            redirectedUrl("https://github.com/login/oauth/authorize?client_id=04f8811a8c4aafe9baab&response_type=code&scope=read:user&redirect_uri=http://localhost:8080/login/oauth2/code/github")
         );
     }
 
