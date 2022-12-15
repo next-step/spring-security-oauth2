@@ -77,9 +77,9 @@ public class OAuth2AccessTokenLoginFilter extends OncePerRequestFilter {
     }
 
     private static GithubUser getGithubUser(AccessToken tokenResponse) {
-        WebClient webClient2 = WebClient.create("https://api.github.com");
+        WebClient webClient = WebClient.create("https://api.github.com");
 
-        return webClient2.get()
+        return webClient.get()
                 .uri("/user")
                 .header(HttpHeaders.AUTHORIZATION, tokenResponse.getTokenType() + " " + tokenResponse.getAccessToken())
                 .accept(MediaType.APPLICATION_JSON)
