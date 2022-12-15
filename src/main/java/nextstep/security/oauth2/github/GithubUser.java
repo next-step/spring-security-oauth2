@@ -13,18 +13,18 @@ public class GithubUser {
     private String name;
 
     @JsonProperty("avatar_url")
-    private String image_url;
+    private String imageUrl;
 
     @JsonProperty("email")
     private String email;
 
     public GithubUser() { }
 
-    public GithubUser(Long id, String loginId, String name, String image_url, String email) {
+    public GithubUser(Long id, String loginId, String name, String imageUrl, String email) {
         this.id = id;
         this.loginId = loginId;
         this.name = name;
-        this.image_url = image_url;
+        this.imageUrl = imageUrl;
         this.email = email;
     }
 
@@ -40,8 +40,8 @@ public class GithubUser {
         return name;
     }
 
-    public String getImage_url() {
-        return image_url;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public String getEmail() {
@@ -60,8 +60,8 @@ public class GithubUser {
         this.name = name;
     }
 
-    public void setImage_url(String image_url) {
-        this.image_url = image_url;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public void setEmail(String email) {
