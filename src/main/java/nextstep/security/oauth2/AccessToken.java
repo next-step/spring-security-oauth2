@@ -11,8 +11,8 @@ public class AccessToken {
 
     public AccessToken() { }
 
-    public AccessToken(String access_token, String tokenType) {
-        this.accessToken = access_token;
+    public AccessToken(String accessToken, String tokenType) {
+        this.accessToken = accessToken;
         this.tokenType = tokenType;
     }
 
