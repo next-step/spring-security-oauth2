@@ -11,8 +11,8 @@ public class OAuth2Authentication implements Authentication {
     private final Set<String> authorities;
     private boolean authenticated = false;
 
-    private OAuth2Authentication(String username, String password, Set<String> authorities) {
-        this.loginId = username;
+    private OAuth2Authentication(String loginId, String password, Set<String> authorities) {
+        this.loginId = loginId;
         this.password = password;
         this.authorities = authorities;
     }
