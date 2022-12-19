@@ -1,13 +1,17 @@
 package nextstep.app.config;
 
+import nextstep.app.infrastructure.GithubClient;
 import nextstep.security.access.AuthorizeRequestMatcherRegistry;
 import nextstep.security.access.matcher.AnyRequestMatcher;
 import nextstep.security.access.matcher.MvcRequestMatcher;
 import nextstep.security.authentication.AuthenticationManager;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.Oauth2AuthenticationProvider;
+import nextstep.security.authentication.Oauth2LoginAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationProvider;
 import nextstep.security.authorization.AuthorizationFilter;
+import nextstep.security.authorization.Oauth2AuthorizationRequestRedirectFilter;
 import nextstep.security.authorization.SecurityContextHolderFilter;
 import nextstep.security.authorization.manager.RequestAuthorizationManager;
 import nextstep.security.config.DefaultSecurityFilterChain;
@@ -26,16 +30,19 @@ import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.Filter;
-import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
 public class AuthConfig implements WebMvcConfigurer {
 
-    private final UserDetailsService userDetailsService;
+    private static final String OAUTH2_REDIRECT_URL = "https://github.com/login/oauth/authorize?response_type=code&client_id=7fc956935c0618c560da&scope=read:user&redirect_uri=http://localhost:8080/oauth2/access";
 
-    public AuthConfig(UserDetailsService userDetailsService) {
+    private final UserDetailsService userDetailsService;
+    private final GithubClient githubClient;
+
+    public AuthConfig(UserDetailsService userDetailsService, GithubClient githubClient) {
         this.userDetailsService = userDetailsService;
+        this.githubClient = githubClient;
     }
 
     @Bean
@@ -44,18 +51,26 @@ public class AuthConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public FilterChainProxy filterChainProxy() {
-        return new FilterChainProxy(List.of(securityFilterChainNew()));
+    public FilterChainProxy filterChainProxy(SecurityFilterChain securityFilterChain) {
+        return new FilterChainProxy(List.of(securityFilterChain));
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChainNew() {
-        List<Filter> filters = new ArrayList<>();
-        filters.add(new SecurityContextHolderFilter(securityContextRepository()));
-        filters.add(new UsernamePasswordAuthenticationFilter(authenticationManager(), securityContextRepository()));
-        filters.add(new BasicAuthenticationFilter(authenticationManager()));
-        filters.add(new ExceptionTranslateFilter(requestCache()));
-        filters.add(new AuthorizationFilter(authorizationManager()));
+    public SecurityFilterChain securityFilterChain() {
+        List<Filter> filters = List.of(
+            new SecurityContextHolderFilter(securityContextRepository()),
+            new UsernamePasswordAuthenticationFilter(authenticationManager(), securityContextRepository()),
+            new BasicAuthenticationFilter(authenticationManager()),
+            new ExceptionTranslateFilter(requestCache()),
+            new Oauth2AuthorizationRequestRedirectFilter(new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"),OAUTH2_REDIRECT_URL),
+            new Oauth2LoginAuthenticationFilter(
+                new MvcRequestMatcher(HttpMethod.GET, "/oauth2/access"),
+                authenticationManager(),
+                securityContextRepository(),
+                "/members/authentication"
+            ),
+            new AuthorizationFilter(authorizationManager())
+        );
         return new DefaultSecurityFilterChain(AnyRequestMatcher.INSTANCE, filters);
     }
 
@@ -80,8 +95,19 @@ public class AuthConfig implements WebMvcConfigurer {
     }
 
     @Bean
+    public RequestAuthorizationManager oauth2authorizationManager() {
+        AuthorizeRequestMatcherRegistry requestMatcherRegistry = new AuthorizeRequestMatcherRegistry();
+        requestMatcherRegistry
+            .matcher(new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"));
+        return new RequestAuthorizationManager(requestMatcherRegistry);
+    }
+
+    @Bean
     public AuthenticationManager authenticationManager() {
-        return new AuthenticationManager(new UsernamePasswordAuthenticationProvider(userDetailsService));
+        return new AuthenticationManager(
+            new UsernamePasswordAuthenticationProvider(userDetailsService),
+            new Oauth2AuthenticationProvider(githubClient)
+        );
     }
 
 }
