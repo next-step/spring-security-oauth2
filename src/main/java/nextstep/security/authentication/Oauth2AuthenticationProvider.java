@@ -1,5 +1,8 @@
 package nextstep.security.authentication;
 
+import nextstep.security.oauth2user.OAuth2User;
+import nextstep.security.oauth2user.Oauth2UserService;
+
 public class Oauth2AuthenticationProvider implements AuthenticationProvider {
 
     private final Oauth2UserService oauth2UserService;

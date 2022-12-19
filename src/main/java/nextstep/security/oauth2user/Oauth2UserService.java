@@ -1,4 +1,4 @@
-package nextstep.security.authentication;
+package nextstep.security.oauth2user;
 
 import nextstep.security.exception.AuthenticationException;
 
