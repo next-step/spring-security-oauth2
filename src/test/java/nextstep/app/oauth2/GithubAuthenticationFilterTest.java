@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -47,10 +48,16 @@ class GithubAuthenticationFilterTest {
 
     @ParameterizedTest
     @MethodSource("userProvider")
-    void authenticationFilter(UserStub user) throws Exception {
-        String requestUri = "/login/oauth2/code/github?code=" + user.code;
+    void authenticationFilterWithState(UserStub user) throws Exception {
+        MockHttpSession session = new MockHttpSession();
 
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        String state = mockMvc.perform(MockMvcRequestBuilders.get("/oauth2/authorization/github").session(session))
+                .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
+                .andReturn().getResponse().getHeader(HttpHeaders.LOCATION).split("&state=")[1];
+
+        String requestUri = "/login/oauth2/code/github?code=" + user.code + "&state=" + state;
+
+        mockMvc.perform(MockMvcRequestBuilders.get(requestUri).session(session))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/"));
