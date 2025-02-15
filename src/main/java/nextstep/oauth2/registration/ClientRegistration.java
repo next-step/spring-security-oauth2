@@ -1,5 +1,7 @@
 package nextstep.oauth2.registration;
 
+import org.springframework.util.StringUtils;
+
 import java.util.Set;
 
 public record ClientRegistration(
@@ -19,5 +21,9 @@ public record ClientRegistration(
     public record UserInfoEndpoint(
             String uri,
             String userNameAttributeName
-    ) {}
+    ) {
+        public boolean hasText() {
+            return StringUtils.hasText(uri) && StringUtils.hasText(userNameAttributeName);
+        }
+    }
 }
