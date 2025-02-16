@@ -10,6 +10,12 @@ import nextstep.oauth2.web.OAuth2ParameterNames;
 public class OAuth2AuthorizationRequestDao implements OAuth2AuthorizationRequestRepository {
     private final String ATTRIBUTE_NAME = "AUTHORIZATION_REQUEST";
 
+    private OAuth2AuthorizationRequestDao() {}
+
+    public static OAuth2AuthorizationRequestDao getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
     @Override
     public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
         validateState(request);
@@ -54,5 +60,9 @@ public class OAuth2AuthorizationRequestDao implements OAuth2AuthorizationRequest
         final HttpSession session = request.getSession(false);
         return session == null ? null
                 : (OAuth2AuthorizationRequest) session.getAttribute(this.ATTRIBUTE_NAME);
+    }
+
+    private static class SingletonHolder {
+        private static final OAuth2AuthorizationRequestDao INSTANCE = new OAuth2AuthorizationRequestDao();
     }
 }

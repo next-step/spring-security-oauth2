@@ -18,12 +18,15 @@ import static nextstep.oauth2.web.OAuth2ParameterNames.STATE;
 public class OAuth2AuthorizationRequestResolver {
     private static final StateGenerator STATE_GENERATOR = DefaultStateGenerator.getInstance();
 
-    private final String authorizationRequestBaseUri;
     private final ClientRegistrationRepository clientRegistrationRepository;
+    private final String authorizationRequestBaseUri;
 
-    public OAuth2AuthorizationRequestResolver(String authorizationRequestBaseUri, ClientRegistrationRepository clientRegistrationRepository) {
-        this.authorizationRequestBaseUri = authorizationRequestBaseUri;
+    public OAuth2AuthorizationRequestResolver(
+            ClientRegistrationRepository clientRegistrationRepository,
+            String authorizationRequestBaseUri
+    ) {
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.authorizationRequestBaseUri = authorizationRequestBaseUri;
     }
 
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
