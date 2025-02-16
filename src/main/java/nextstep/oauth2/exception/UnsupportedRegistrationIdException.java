@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class UnsupportedRegistrationIdException extends RuntimeException {
-    public UnsupportedRegistrationIdException() {
-        super("Unsupported registration ID");
+    public UnsupportedRegistrationIdException(String registrationId) {
+        super("지원하지 않는 registration ID 입니다; " + registrationId);
     }
 }

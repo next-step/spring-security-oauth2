@@ -1,10 +1,11 @@
-package nextstep.oauth2.web;
+package nextstep.oauth2.web.authorizationrequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import nextstep.oauth2.endpoint.dto.OAuth2AuthorizationRequest;
 import nextstep.oauth2.exception.UnmatchedStateException;
+import nextstep.oauth2.web.OAuth2ParameterNames;
 
 public class OAuth2AuthorizationRequestDao implements OAuth2AuthorizationRequestRepository {
     private final String ATTRIBUTE_NAME = "AUTHORIZATION_REQUEST";

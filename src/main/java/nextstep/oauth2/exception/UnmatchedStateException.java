@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class UnmatchedStateException extends RuntimeException {
     public UnmatchedStateException() {
-        super("OAuth2 state of httpRequest and session are mismatched");
+        super("HttpRequest 와 세션의 OAuth2 state 가 불일치 합니다.");
     }
 }

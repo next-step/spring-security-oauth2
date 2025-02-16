@@ -1,5 +1,6 @@
 package nextstep.oauth2.registration;
 
+import nextstep.oauth2.exception.UnsupportedRegistrationIdException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -13,6 +14,10 @@ public final class ClientRegistrationDao implements ClientRegistrationRepository
     }
 
     public ClientRegistration findByRegistrationId(String registrationId) {
-        return this.registrations.get(registrationId);
+        final ClientRegistration registration = registrations.get(registrationId);
+        if (registration == null) {
+            throw new UnsupportedRegistrationIdException(registrationId);
+        }
+        return registration;
     }
 }

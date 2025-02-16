@@ -12,7 +12,7 @@ public interface OAuth2ProfileUser {
         if ("github".equals(registrationId)) {
             return GithubProfileUser.of(attributes);
         }
-        throw new UnsupportedRegistrationIdException();
+        throw new UnsupportedRegistrationIdException(registrationId);
     }
 
     String name();

@@ -1,4 +1,4 @@
-package nextstep.oauth2.web;
+package nextstep.oauth2.web.authorizedclient;
 
 import nextstep.oauth2.authentication.OAuth2AccessToken;
 import nextstep.oauth2.registration.ClientRegistration;
