@@ -42,6 +42,14 @@ public abstract class OAuth2LoginAuthenticationFilter extends GenericFilterBean 
                 throw new AuthenticationException();
             }
 
+            String username = oAuth2EmailResolver.resolve(oAuth2Type, tokenResponse);
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticated);
+            request.getSession()
+                    .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
             response.sendRedirect("/");
             return;
         }
