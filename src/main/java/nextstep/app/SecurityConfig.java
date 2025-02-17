@@ -1,13 +1,10 @@
 package nextstep.app;
 
-import nextstep.app.domain.Member;
-import nextstep.app.domain.MemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
-import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.*;
@@ -16,7 +13,9 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.userdetails.UserDetails;
+import nextstep.security.oauth2.GithubAuthenticationFilter;
+import nextstep.security.oauth2.GithubLoginRedirectFilter;
+import nextstep.security.oauth2.GithubOauth2LoginRequest;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,16 +24,15 @@ import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @EnableAspectJAutoProxy
 @Configuration
 public class SecurityConfig {
 
-    private final MemberRepository memberRepository;
+    private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
+    public SecurityConfig(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -42,7 +40,7 @@ public class SecurityConfig {
         return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain())));
     }
 
-    @Bean
+
     public FilterChainProxy filterChainProxy(List<SecurityFilterChain> securityFilterChains) {
         return new FilterChainProxy(securityFilterChains);
     }
@@ -57,12 +55,20 @@ public class SecurityConfig {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new UsernamePasswordAuthenticationFilter(userDetailsService()),
-                        new BasicAuthenticationFilter(userDetailsService()),
+                        new UsernamePasswordAuthenticationFilter(userDetailsService),
+                        new BasicAuthenticationFilter(userDetailsService),
+                        new GithubLoginRedirectFilter(new GithubOauth2LoginRequest(
+                                "Ov23liTBhugSIcf8VX1v",
+                                "code",
+                                "read:user",
+                                "http://localhost:8080/login/oauth2/code/github"
+                        )),
+                        new GithubAuthenticationFilter(userDetailsService),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
     }
+
 
     @Bean
     public RoleHierarchy roleHierarchy() {
@@ -79,30 +85,5 @@ public class SecurityConfig {
         mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager()));
         mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager()));
         return new RequestAuthorizationManager(mappings);
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            Member member = memberRepository.findByEmail(username)
-                    .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자입니다."));
-
-            return new UserDetails() {
-                @Override
-                public String getUsername() {
-                    return member.getEmail();
-                }
-
-                @Override
-                public String getPassword() {
-                    return member.getPassword();
-                }
-
-                @Override
-                public Set<String> getAuthorities() {
-                    return member.getRoles();
-                }
-            };
-        };
     }
 }
