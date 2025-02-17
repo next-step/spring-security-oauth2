@@ -8,17 +8,21 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.authentication.OAuth2AuthenticationRequestResolver;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-public abstract class OAuth2RedirectAuthenticationFilter extends GenericFilterBean {
+public class OAuth2RedirectAuthenticationFilter extends GenericFilterBean {
 
-    private final MvcRequestMatcher requestMatcher;
+    private final MvcRequestMatcher[] requestMatchers;
     private final OAuth2AuthenticationRequestResolver oAuth2AuthenticationRequestResolver;
 
-    protected OAuth2RedirectAuthenticationFilter(MvcRequestMatcher requestMatcher,OAuth2AuthenticationRequestResolver oAuth2AuthenticationRequestResolver) {
-        this.requestMatcher = requestMatcher;
+    public OAuth2RedirectAuthenticationFilter(OAuth2AuthenticationRequestResolver oAuth2AuthenticationRequestResolver) {
+        this.requestMatchers = new MvcRequestMatcher[]{
+                new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/google"),
+                new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github")
+        };
         this.oAuth2AuthenticationRequestResolver = oAuth2AuthenticationRequestResolver;
     }
 
@@ -43,6 +47,15 @@ public abstract class OAuth2RedirectAuthenticationFilter extends GenericFilterBe
     }
 
     private boolean noRequiresAuthentication(HttpServletRequest request) {
-        return !requestMatcher.matches(request);
+        for (MvcRequestMatcher requestMatcher : requestMatchers) {
+            if (requestMatcher.matches(request)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String getOAuth2Type(String requestUri) {
+        return requestUri.substring(requestUri.lastIndexOf("/") + 1);
     }
 }

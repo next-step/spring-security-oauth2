@@ -1,8 +1,7 @@
 package nextstep.app.config;
 
-import nextstep.app.application.OAuth2TokenRequester;
-import nextstep.app.application.github.GithubOAuth2AuthenticationRequestResolver;
-import nextstep.app.application.google.GoogleOAuth2AuthenticationRequestResolver;
+import nextstep.app.application.OAuth2EmailStrategyResolver;
+import nextstep.app.application.OAuth2TokenStrategyRequester;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
@@ -11,11 +10,11 @@ import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.filter.*;
-import nextstep.security.authentication.filter.oauth.github.GithubOAuth2LoginAuthenticationFilter;
-import nextstep.security.authentication.filter.oauth.github.GithubOAuth2RedirectAuthenticationFilter;
-import nextstep.security.authentication.filter.oauth.google.GoogleOAuth2LoginAuthenticationFilter;
-import nextstep.security.authentication.filter.oauth.google.GoogleOAuth2RedirectAuthenticationFilter;
+import nextstep.security.authentication.OAuth2AuthenticationRequestResolver;
+import nextstep.security.authentication.filter.BasicAuthenticationFilter;
+import nextstep.security.authentication.filter.UsernamePasswordAuthenticationFilter;
+import nextstep.security.authentication.filter.oauth.OAuth2LoginAuthenticationFilter;
+import nextstep.security.authentication.filter.oauth.OAuth2RedirectAuthenticationFilter;
 import nextstep.security.authorization.*;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
@@ -62,17 +61,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            GithubOAuth2AuthenticationRequestResolver githubOAuth2AuthenticationRequestResolver,
-            GoogleOAuth2AuthenticationRequestResolver googleOAuth2AuthenticationRequestResolver,
-            OAuth2TokenRequester oAuth2TokenRequester
+            OAuth2AuthenticationRequestResolver requestResolver,
+            OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester,
+            OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver
     ) {
+        var oAuth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(
+                oAuth2TokenStrategyRequester,
+                oAuth2EmailStrategyResolver,
+                userDetailsService()
+        );
+
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new GithubOAuth2RedirectAuthenticationFilter(githubOAuth2AuthenticationRequestResolver),
-                        new GoogleOAuth2RedirectAuthenticationFilter(googleOAuth2AuthenticationRequestResolver),
-                        new GoogleOAuth2LoginAuthenticationFilter(oAuth2TokenRequester),
-                        new GithubOAuth2LoginAuthenticationFilter(oAuth2TokenRequester),
+                        new OAuth2RedirectAuthenticationFilter(requestResolver),
+                        oAuth2LoginAuthenticationFilter,
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())

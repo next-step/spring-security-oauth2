@@ -6,23 +6,33 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.app.application.OAuth2TokenRequester;
 import nextstep.security.access.MvcRequestMatcher;
-import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.TokenResponse;
+import nextstep.security.authentication.*;
+import nextstep.security.context.HttpSessionSecurityContextRepository;
+import nextstep.security.context.SecurityContextHolder;
+import nextstep.security.userdetails.UserDetails;
+import nextstep.security.userdetails.UserDetailsService;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-public abstract class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
+public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
 
-    private final MvcRequestMatcher requestMatcher;
+    private final MvcRequestMatcher[] requestMatchers;
     private final OAuth2TokenRequester auth2TokenRequester;
+    private final OAuth2EmailResolver oAuth2EmailResolver;
+    private final UserDetailsService userDetailsService;
 
-    protected OAuth2LoginAuthenticationFilter(MvcRequestMatcher requestMatcher, OAuth2TokenRequester auth2TokenRequester) {
-        this.requestMatcher = requestMatcher;
+    public OAuth2LoginAuthenticationFilter(OAuth2TokenRequester auth2TokenRequester, OAuth2EmailResolver oAuth2EmailResolver, UserDetailsService userDetailsService) {
+        this.requestMatchers = new MvcRequestMatcher[]{
+                new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"),
+                new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google")
+        };
         this.auth2TokenRequester = auth2TokenRequester;
+        this.oAuth2EmailResolver = oAuth2EmailResolver;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -58,7 +68,12 @@ public abstract class OAuth2LoginAuthenticationFilter extends GenericFilterBean 
     }
 
     private boolean noRequiresAuthentication(HttpServletRequest request) {
-        return !requestMatcher.matches(request);
+        for (MvcRequestMatcher requestMatcher : requestMatchers) {
+            if (requestMatcher.matches(request)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String getOAuth2Type(String requestUri) {
