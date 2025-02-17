@@ -32,7 +32,9 @@ public abstract class OAuth2RedirectAuthenticationFilter extends GenericFilterBe
                 return;
             }
 
-            String authorizationUri = oAuth2AuthenticationRequestResolver.resolve();
+            String oAuth2Type = getOAuth2Type(request.getRequestURI());
+
+            String authorizationUri = oAuth2AuthenticationRequestResolver.resolve(oAuth2Type);
             response.sendRedirect(authorizationUri);
             return;
         }
