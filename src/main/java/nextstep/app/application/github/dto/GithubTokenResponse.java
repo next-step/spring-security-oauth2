@@ -14,9 +14,4 @@ public record GithubTokenResponse(
     public String getAccessToken() {
         return accessToken;
     }
-
-    @Override
-    public String getTokenType() {
-        return tokenType;
-    }
 }

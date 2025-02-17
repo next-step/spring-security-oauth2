@@ -8,6 +8,8 @@ oauth2:
     token:
       request-uri: https://oauth2.googleapis.com/token
       redirect-uri: http://localhost:8080/login/oauth2/code/google
+    user:
+      request-uri: https://www.googleapis.com/oauth2/v2/userinfo
   github:
     client-id: Ov23lia9fJuRN9SpjM8v
     client-secret: NEED SECRET KEY!
@@ -17,4 +19,6 @@ oauth2:
     token:
       request-uri: https://github.com/login/oauth/access_token
       redirect-uri: http://localhost:8080/login/oauth2/code/github
+    user:
+      request-uri: https://api.github.com/user
 
