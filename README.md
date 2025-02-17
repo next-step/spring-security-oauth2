@@ -6,7 +6,7 @@
 - [x] Github Application 등록
 - [x] 인증 URL 리다이렉트 필터 구현
 
-- [x] GET /oauth2/authorization/github 요청 시 Github의 인증 URL로 리다이렉트시키는 필터를 구현한다.
+- [x] GET /oauth2/authorization/github 요청 시 Github의 인증 URL 로 리다이렉트시키는 필터를 구현한다.
   - [x] LoginRedirectFilterTest의 github 테스트를 통과할 수 있어야 합니다.
 - [x] Github Access Token 획득
   - [x] 리다이렉트된 URL로 이동하여 사용자가 Github 로그인을 마치면 승인 코드가 전달된다. 
