@@ -39,7 +39,6 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (servletRequest instanceof HttpServletRequest request
                 && servletResponse instanceof HttpServletResponse response) {
-
             if (noRequiresAuthentication(request)) {
                 filterChain.doFilter(request, response);
                 return;
@@ -47,6 +46,7 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
 
             String oAuth2Type = getOAuth2Type(request.getRequestURI());
             String code = getCodeFromParam(request);
+
             TokenResponse tokenResponse = auth2TokenRequester.request(oAuth2Type, code);
             if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
                 throw new AuthenticationException();
@@ -54,12 +54,10 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
 
             String username = oAuth2EmailResolver.resolve(oAuth2Type, tokenResponse);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = getUserOrCreateIfNotExists(username);
 
-            OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authenticated);
-            request.getSession()
-                    .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+            registerAuthenticationContext(request, userDetails);
+
             response.sendRedirect("/");
             return;
         }
@@ -87,5 +85,22 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
         }
 
         throw new AuthenticationException("Invalid code");
+    }
+
+    private UserDetails getUserOrCreateIfNotExists(String username) {
+        UserDetails userDetails;
+        try {
+            userDetails = userDetailsService.loadUserByUsername(username);
+        } catch (AuthenticationException ex) {
+            userDetails = userDetailsService.addNewMemberByOAuth2(username, username);
+        }
+        return userDetails;
+    }
+
+    private void registerAuthenticationContext(HttpServletRequest request, UserDetails userDetails) {
+        OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authenticated);
+        request.getSession()
+                .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
     }
 }

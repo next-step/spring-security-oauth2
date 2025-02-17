@@ -2,14 +2,11 @@ package nextstep.app.config;
 
 import nextstep.app.application.OAuth2EmailStrategyResolver;
 import nextstep.app.application.OAuth2TokenStrategyRequester;
-import nextstep.app.domain.Member;
-import nextstep.app.domain.MemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
-import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.OAuth2AuthenticationRequestResolver;
 import nextstep.security.authentication.filter.BasicAuthenticationFilter;
 import nextstep.security.authentication.filter.UsernamePasswordAuthenticationFilter;
@@ -21,7 +18,6 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,16 +26,21 @@ import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @EnableAspectJAutoProxy
 @Configuration
 public class SecurityConfig {
 
-    private final MemberRepository memberRepository;
+    private final OAuth2AuthenticationRequestResolver requestResolver;
+    private final OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester;
+    private final OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver;
+    private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
+    public SecurityConfig(OAuth2AuthenticationRequestResolver requestResolver, OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester, OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver, UserDetailsService userDetailsService) {
+        this.requestResolver = requestResolver;
+        this.oAuth2TokenStrategyRequester = oAuth2TokenStrategyRequester;
+        this.oAuth2EmailStrategyResolver = oAuth2EmailStrategyResolver;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -60,24 +61,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            OAuth2AuthenticationRequestResolver requestResolver,
-            OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester,
-            OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver
-    ) {
-        var oAuth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(
-                oAuth2TokenStrategyRequester,
-                oAuth2EmailStrategyResolver,
-                userDetailsService()
-        );
+    public SecurityFilterChain securityFilterChain() {
 
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
                         new OAuth2RedirectAuthenticationFilter(requestResolver),
-                        oAuth2LoginAuthenticationFilter,
-                        new UsernamePasswordAuthenticationFilter(userDetailsService()),
-                        new BasicAuthenticationFilter(userDetailsService()),
+                        new OAuth2LoginAuthenticationFilter(oAuth2TokenStrategyRequester, oAuth2EmailStrategyResolver, userDetailsService),
+                        new UsernamePasswordAuthenticationFilter(userDetailsService),
+                        new BasicAuthenticationFilter(userDetailsService),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -98,30 +90,5 @@ public class SecurityConfig {
         mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager<>()));
         mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager<>()));
         return new RequestAuthorizationManager(mappings);
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return username -> {
-            Member member = memberRepository.findByEmail(username)
-                    .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자입니다."));
-
-            return new UserDetails() {
-                @Override
-                public String getUsername() {
-                    return member.getEmail();
-                }
-
-                @Override
-                public String getPassword() {
-                    return member.getPassword();
-                }
-
-                @Override
-                public Set<String> getAuthorities() {
-                    return member.getRoles();
-                }
-            };
-        };
     }
 }
