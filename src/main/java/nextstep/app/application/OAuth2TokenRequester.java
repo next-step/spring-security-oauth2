@@ -1,45 +1,50 @@
 package nextstep.app.application;
 
-import nextstep.app.application.dto.TokenRequest;
-import nextstep.app.application.dto.TokenResponse;
 import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.OAuth2TokenRequestStrategy;
+import nextstep.security.authentication.TokenRequest;
+import nextstep.security.authentication.TokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 public class OAuth2TokenRequester {
 
-    @Value("${oauth2.google.client-id}")
-    private String clientId;
-
-    @Value("${oauth2.google.client-secret}")
-    private String clientSecret;
-
-    @Value("${oauth2.google.redirect-uri}")
-    private String redirectUri;
-
-    private final RestTemplate restTemplate;
-
-    private static final String TOKEN_URI = "https://oauth2.googleapis.com/token";
     private static final Logger log = LoggerFactory.getLogger(OAuth2TokenRequester.class);
 
-    public OAuth2TokenRequester(RestTemplate restTemplate) {
+    private final RestTemplate restTemplate;
+    private final Map<String, OAuth2TokenRequestStrategy> strategies;
+
+    public OAuth2TokenRequester(RestTemplate restTemplate, List<OAuth2TokenRequestStrategy> strategies) {
         this.restTemplate = restTemplate;
+        this.strategies = strategies.stream()
+                .collect(Collectors.toMap(
+                        OAuth2TokenRequestStrategy::getOAuth2Type,
+                        strategy -> strategy
+                ));
     }
 
-    public TokenResponse request(String code) {
-        final var request = TokenRequest.of(code, clientId, clientSecret, redirectUri);
+    public TokenResponse request(String oAuth2Type, String code) {
+        OAuth2TokenRequestStrategy strategy = strategies.get(oAuth2Type);
+        if (strategy == null) {
+            throw new IllegalArgumentException("Unsupported OAuth2 auth2Type: " + oAuth2Type);
+        }
+
         try {
-            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
-                    TOKEN_URI,
+            TokenRequest request = strategy.requestToken(code);
+            String requestUri = strategy.getRequestUri();
+            var response = restTemplate.postForEntity(
+                    requestUri,
                     request,
-                    TokenResponse.class
+                    strategy.getResponseClass()
             );
 
             if (response.getStatusCode() != HttpStatus.OK) {
@@ -47,7 +52,6 @@ public class OAuth2TokenRequester {
             }
 
             return response.getBody();
-
         } catch (RestClientException ex) {
             log.error(ex.getMessage());
             throw new AuthenticationException();
