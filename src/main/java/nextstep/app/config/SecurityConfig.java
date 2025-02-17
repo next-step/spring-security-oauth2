@@ -1,5 +1,8 @@
 package nextstep.app.config;
 
+import nextstep.app.application.OAuth2TokenRequester;
+import nextstep.app.application.github.GithubOAuth2AuthenticationRequestResolver;
+import nextstep.app.application.google.GoogleOAuth2AuthenticationRequestResolver;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
@@ -8,8 +11,11 @@ import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.BasicAuthenticationFilter;
-import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
+import nextstep.security.authentication.filter.*;
+import nextstep.security.authentication.filter.oauth.github.GithubOAuth2LoginAuthenticationFilter;
+import nextstep.security.authentication.filter.oauth.github.GithubOAuth2RedirectAuthenticationFilter;
+import nextstep.security.authentication.filter.oauth.google.GoogleOAuth2LoginAuthenticationFilter;
+import nextstep.security.authentication.filter.oauth.google.GoogleOAuth2RedirectAuthenticationFilter;
 import nextstep.security.authorization.*;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
@@ -38,8 +44,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DelegatingFilterProxy delegatingFilterProxy() {
-        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain())));
+    public DelegatingFilterProxy delegatingFilterProxy(
+            SecurityFilterChain securityFilterChain
+    ) {
+        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain)));
     }
 
     @Bean
@@ -53,10 +61,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain() {
+    public SecurityFilterChain securityFilterChain(
+            GithubOAuth2AuthenticationRequestResolver githubOAuth2AuthenticationRequestResolver,
+            GoogleOAuth2AuthenticationRequestResolver googleOAuth2AuthenticationRequestResolver,
+            OAuth2TokenRequester oAuth2TokenRequester
+    ) {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
+                        new GithubOAuth2RedirectAuthenticationFilter(githubOAuth2AuthenticationRequestResolver),
+                        new GoogleOAuth2RedirectAuthenticationFilter(googleOAuth2AuthenticationRequestResolver),
+                        new GoogleOAuth2LoginAuthenticationFilter(oAuth2TokenRequester),
+                        new GithubOAuth2LoginAuthenticationFilter(oAuth2TokenRequester),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
@@ -74,10 +90,10 @@ public class SecurityConfig {
     @Bean
     public RequestAuthorizationManager requestAuthorizationManager() {
         List<RequestMatcherEntry<AuthorizationManager>> mappings = new ArrayList<>();
-        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members"), new AuthorityAuthorizationManager(roleHierarchy(), "ADMIN")));
-        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members/me"), new AuthorityAuthorizationManager(roleHierarchy(), "USER")));
-        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager()));
-        mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager()));
+        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members"), new AuthorityAuthorizationManager<>(roleHierarchy(), "ADMIN")));
+        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members/me"), new AuthorityAuthorizationManager<>(roleHierarchy(), "USER")));
+        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager<>()));
+        mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager<>()));
         return new RequestAuthorizationManager(mappings);
     }
 
