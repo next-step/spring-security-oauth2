@@ -3,6 +3,8 @@ package nextstep.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
+import nextstep.app.domain.Member;
+import nextstep.app.domain.MemberRepository;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,13 +30,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureWireMock(port = 8089)
 class GithubAuthenticationFilterTest {
 
+    private static final Member TEST_ADMIN_MEMBER = new Member("a@a.com", "password", "a", "", Set.of("ADMIN"));
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @BeforeEach
     void setupMockServer() throws Exception {
         stubForAccessToken();
         stubForUser();
+        memberRepository.save(TEST_ADMIN_MEMBER);
     }
 
     @Test
