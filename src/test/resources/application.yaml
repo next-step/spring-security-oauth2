@@ -1,6 +1,12 @@
 oauth2:
   client:
     registration:
+      mock:
+        client-id: "Ov23liTBhugSIcf8VX1v"
+        response-type: "code"
+        scope: "read:user"
+        redirect-uri: "http://localhost:8080/login/oauth2/code/github"
+        client-secret: "client-secret"
       github:
         client-id: "{client-id}"
         client-secret: "{client-secret}"
@@ -14,6 +20,10 @@ oauth2:
         scope: "email"
         redirect-uri: "http://localhost:8080/login/oauth2/code/google"
     provider:
+      mock:
+        token-uri: "http://localhost:8089/login/oauth/access_token"
+        user-info-uri: "http://localhost:8089/user"
+        authorization-uri: "http://localhost:8089/login/oauth/authorize"
       github:
         token-uri: "https://github.com/login/oauth/access_token"
         user-info-uri: "https://api.github.com/user"
@@ -22,6 +32,3 @@ oauth2:
         token-uri: "https://oauth2.googleapis.com/token"
         user-info-uri: "https://www.googleapis.com/oauth2/v3/userinfo"
         authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth"
-
-
-

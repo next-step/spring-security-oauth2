@@ -58,7 +58,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
                         new OAuth2LoginRedirectFilter(oAuth2ClientProperties),
-                        new GithubAuthenticationFilter(userDetailsService),
+                        new GithubAuthenticationFilter(userDetailsService, oAuth2ClientProperties),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

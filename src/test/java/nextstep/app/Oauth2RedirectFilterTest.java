@@ -33,14 +33,14 @@ class Oauth2RedirectFilterTest {
     private static Stream<Arguments> REQUEST_URI_AND_REDIRECT_URI() throws Exception {
         return Stream.of(
                 Arguments.of("/oauth2/authorization/github", "https://github.com/login/oauth/authorize" +
-                        "?client_id=Ov23liTBhugSIcf8VX1v" +
+                        "?client_id={client-id}" +
                         "&response_type=code" +
-                        "&scope=read:user" +
+                        "&scope=user:email" +
                         "&redirect_uri=http://localhost:8080/login/oauth2/code/github"),
                 Arguments.of("/oauth2/authorization/google", "https://accounts.google.com/o/oauth2/v2/auth" +
-                        "?client_id=Ov23liTBhugSIcf8VX1v" +
+                        "?client_id={client-id}" +
                         "&response_type=code" +
-                        "&scope=https%3A//www.googleapis.com/auth/drive.metadata.readonly%20https%3A//www.googleapis.com/auth/calendar.readonly" +
+                        "&scope=email" +
                         "&redirect_uri=http://localhost:8080/login/oauth2/code/google")
         );
     }
