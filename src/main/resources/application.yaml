@@ -6,10 +6,24 @@ oauth2:
         response-type: "code"
         scope: "read:user"
         redirect-uri: "http://localhost:8080/login/oauth2/code/github"
-        login-url: "https://github.com/login/oauth/authorize"
+        client-secret: "client-secret"
       google:
         client-id: "Ov23liTBhugSIcf8VX1v"
         response-type: "code"
         scope: "https%3A//www.googleapis.com/auth/drive.metadata.readonly%20https%3A//www.googleapis.com/auth/calendar.readonly"
         redirect-uri: "http://localhost:8080/login/oauth2/code/google"
-        login-url: "https://accounts.google.com/o/oauth2/v2/auth"
+        client-secret: "client-secret"
+    provider:
+      github:
+        token-uri: "https://github.com/login/oauth/access_token"
+        user-info-uri: "https://api.github.com/user"
+        authorization-uri: "https://github.com/login/oauth/authorize"
+      google:
+        token-uri: "https://oauth2.googleapis.com/token"
+        user-info-uri: "https://www.googleapis.com/oauth2/v3/userinfo"
+        authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth"
+
+
+
+
+

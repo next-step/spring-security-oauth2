@@ -5,14 +5,14 @@ public class Oauth2ClientRegistrationProperties {
     private final String responseType;
     private final String redirectUri;
     private final String scope;
-    private final String loginUrl;
+    private final String clientSecret;
 
-    public Oauth2ClientRegistrationProperties(String clientId, String responseType, String redirectUri, String scope, String loginUrl) {
+    public Oauth2ClientRegistrationProperties(String clientId, String responseType, String redirectUri, String scope, String clientSecret) {
         this.clientId = clientId;
         this.responseType = responseType;
         this.redirectUri = redirectUri;
         this.scope = scope;
-        this.loginUrl = loginUrl;
+        this.clientSecret = clientSecret;
     }
 
     public String getClientId() {
@@ -31,7 +31,7 @@ public class Oauth2ClientRegistrationProperties {
         return scope;
     }
 
-    public String getLoginUrl() {
-        return loginUrl;
+    public String getClientSecret() {
+        return clientSecret;
     }
 }

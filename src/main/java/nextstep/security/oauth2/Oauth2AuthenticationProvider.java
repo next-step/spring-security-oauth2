@@ -6,6 +6,8 @@ import nextstep.security.authentication.AuthenticationProvider;
 import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
 
+import java.util.Optional;
+
 public class Oauth2AuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
 
@@ -15,9 +17,13 @@ public class Oauth2AuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getPrincipal().toString());
+        Optional<UserDetails> userDetails = userDetailsService.loadUser(authentication.getPrincipal().toString());
 
-        return Oauth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+        if (userDetails.isEmpty()) {
+            userDetailsService.saveUser(authentication.getPrincipal().toString());
+        }
+
+        return Oauth2AuthenticationToken.authenticated(authentication.getPrincipal().toString(), authentication.getCredentials().toString(), authentication.getAuthorities());
     }
 
     @Override
