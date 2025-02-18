@@ -1,6 +1,7 @@
 package nextstep.app.domain;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class Member {
     private final String email;
@@ -15,6 +16,11 @@ public class Member {
         this.name = name;
         this.imageUrl = imageUrl;
         this.roles = roles;
+    }
+
+    public static Member oAuthMember(String email, String name) {
+        String randomPassword = UUID.randomUUID().toString();
+        return new Member(email, randomPassword, name, "", Set.of("MEMBER"));
     }
 
     public String getEmail() {

@@ -1,0 +1,24 @@
+oauth2:
+  google:
+    client-id: 976592378-6id8vdld0ogcdf3stj8ik85v8ka036ui.apps.googleusercontent.com
+    client-secret: NEED SECRET KEY!
+    authorization:
+      request-uri: https://accounts.google.com/o/oauth2/v2/auth
+      redirect-uri: http://localhost:8080/login/oauth2/code/google
+    token:
+      request-uri: https://oauth2.googleapis.com/token
+      redirect-uri: http://localhost:8080/login/oauth2/code/google
+    user:
+      request-uri: https://www.googleapis.com/oauth2/v2/userinfo
+  github:
+    client-id: Ov23lia9fJuRN9SpjM8v
+    client-secret: NEED SECRET KEY!
+    authorization:
+      request-uri: https://github.com/login/oauth/authorize
+      redirect-uri: http://localhost:8080/login/oauth2/code/github
+    token:
+      request-uri: https://github.com/login/oauth/access_token
+      redirect-uri: http://localhost:8080/login/oauth2/code/github
+    user:
+      request-uri: https://api.github.com/user
+
