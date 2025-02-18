@@ -10,12 +10,21 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
-import nextstep.security.authorization.*;
+import nextstep.security.authorization.AuthorityAuthorizationManager;
+import nextstep.security.authorization.AuthorizationFilter;
+import nextstep.security.authorization.AuthorizationManager;
+import nextstep.security.authorization.PermitAllAuthorizationManager;
+import nextstep.security.authorization.RequestAuthorizationManager;
+import nextstep.security.authorization.SecuredMethodInterceptor;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
+import nextstep.security.oauth2.google.GithubAuthenticationFilter;
+import nextstep.security.oauth2.google.GithubLoginRedirectFilter;
+import nextstep.security.oauth2.github.GoogleAuthenticationFilter;
+import nextstep.security.oauth2.github.GoogleLoginRedirectFilter;
 import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +68,10 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
+                        new GithubLoginRedirectFilter(),
+                        new GoogleLoginRedirectFilter(),
+                        new GithubAuthenticationFilter(),
+                        new GoogleAuthenticationFilter(),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
