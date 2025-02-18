@@ -27,7 +27,7 @@ POST https://github.com/login/oauth/access_token
 - 인증된 사용자를 Member로 관리하는 기능을 구현한다.
 - 로그인한 사용자가 Member 리소스에 접근할 수 있도록 설정한다.
 
-- [ ] Google 계정을 사용한 인증 리다이렉트 추가 
-- [ ] Google, Github 계정을 사용한 인증 통합
+- [X] Google 계정을 사용한 인증 리다이렉트 추가 
+- [X] Google, Github 계정을 사용한 인증 통합
 - [ ] Google 계정을 사용한 인가 추가 
 - [ ] Google, Github 계정을 사용한 인가 통합

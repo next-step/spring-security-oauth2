@@ -1,0 +1,15 @@
+oauth2:
+  client:
+    registration:
+      github:
+        client-id: "Ov23liTBhugSIcf8VX1v"
+        response-type: "code"
+        scope: "read:user"
+        redirect-uri: "http://localhost:8080/login/oauth2/code/github"
+        login-url: "https://github.com/login/oauth/authorize"
+      google:
+        client-id: "Ov23liTBhugSIcf8VX1v"
+        response-type: "code"
+        scope: "https%3A//www.googleapis.com/auth/drive.metadata.readonly%20https%3A//www.googleapis.com/auth/calendar.readonly"
+        redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+        login-url: "https://accounts.google.com/o/oauth2/v2/auth"

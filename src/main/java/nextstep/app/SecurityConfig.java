@@ -14,8 +14,7 @@ import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
 import nextstep.security.oauth2.GithubAuthenticationFilter;
-import nextstep.security.oauth2.GithubLoginRedirectFilter;
-import nextstep.security.oauth2.GithubOauth2LoginRequest;
+import nextstep.security.oauth2.OAuth2LoginRedirectFilter;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,8 +35,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DelegatingFilterProxy delegatingFilterProxy() {
-        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain())));
+    public DelegatingFilterProxy delegatingFilterProxy(OAuth2ClientProperties oAuth2ClientProperties) {
+        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(oAuth2ClientProperties))));
     }
 
 
@@ -50,19 +49,15 @@ public class SecurityConfig {
         return new SecuredMethodInterceptor();
     }
 
+
     @Bean
-    public SecurityFilterChain securityFilterChain() {
+    public SecurityFilterChain securityFilterChain(OAuth2ClientProperties oAuth2ClientProperties) {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
-                        new GithubLoginRedirectFilter(new GithubOauth2LoginRequest(
-                                "Ov23liTBhugSIcf8VX1v",
-                                "code",
-                                "read:user",
-                                "http://localhost:8080/login/oauth2/code/github"
-                        )),
+                        new OAuth2LoginRedirectFilter(oAuth2ClientProperties),
                         new GithubAuthenticationFilter(userDetailsService),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
