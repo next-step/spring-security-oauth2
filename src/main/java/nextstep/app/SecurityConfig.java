@@ -2,6 +2,7 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.app.infrastructure.InmemoryMemberRepository;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
@@ -62,7 +63,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new GithubLoginRedirectFilter(),
-                        new GithubAuthenticationFilter(),
+                        new GithubAuthenticationFilter(new InmemoryMemberRepository()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
