@@ -1,0 +1,27 @@
+oauth2:
+  client:
+    registration:
+      - registrationId: google
+        clientId: ...
+        clientSecret: ...
+        redirectUri: http://localhost:8089/login/oauth2/code/google
+        authorizationRequestUri: https://accounts.google.com/o/oauth2/auth?
+        scopes:
+          - https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+
+      - registrationId: github
+        clientId: ...
+        clientSecret: ...
+        redirectUri: http://localhost:8089/login/oauth2/code/github
+        authorizationRequestUri: https://github.com/login/oauth/authorize
+        scopes:
+          - read:user
+  url:
+    authentication:
+      github: https://github.com
+      google: https://accounts.google.com/o/oauth2
+    api:
+      github: https://api.github.com
+      google: https://www.googleapis.com
+server:
+  port: 8089

@@ -44,4 +44,9 @@ public class UsernamePasswordAuthenticationToken implements Authentication {
     public boolean isAuthenticated() {
         return authenticated;
     }
+
+    @Override
+    public String getName() {
+        return "";
+    }
 }
