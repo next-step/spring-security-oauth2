@@ -5,8 +5,6 @@ import nextstep.app.domain.MemberRepository;
 import nextstep.oauth2.OAuth2AuthenticationFilter;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
-import nextstep.oauth2.google.GoogleAuthenticationFilter;
-import nextstep.oauth2.github.GithubAuthenticationFilter;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
