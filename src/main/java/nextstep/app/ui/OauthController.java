@@ -31,7 +31,7 @@ public class OauthController {
 
     @GetMapping("/oauth2/authorization/github")
     public String gitHubAuthenticationRequest() {
-        String clientId = "Ov23liTBhugSIcf8VX1v";
+        String clientId = "mock_client_id";
         String responseType = "code";
         String scope = "read:user";
         String redirectUrl = "http://localhost:8080/login/oauth2/code/github";
@@ -47,9 +47,9 @@ public class OauthController {
 
     @GetMapping("/oauth2/authorization/google")
     public String googleAuthenticationRequest() {
-        String clientId = "Ov23liTBhugSIcf8VX1v";
+        String clientId = "mock_client_id";
         String responseType = "code";
-        String scope = "email%20profile";
+        String scope = "https://www.googleapis.com/auth/userinfo.profile";
         String redirectUrl = "http://localhost:8080/login/oauth2/code/google";
 
         String url = "https://accounts.google.com/o/oauth2/v2/auth" +
@@ -93,7 +93,7 @@ public class OauthController {
         resourceRequestBody.put("access_token", accessToken);
 
         HttpHeaders resourceHeaders = new HttpHeaders();
-        resourceHeaders.setContentType(MediaType.APPLICATION_JSON);
+        resourceHeaders.setBearerAuth(accessToken);
 
         HttpEntity<Map<String, String>> resourceRequestEntity = new HttpEntity<>(resourceRequestBody, resourceHeaders);
 
@@ -131,11 +131,15 @@ public class OauthController {
 
         Map<String, String> accessTokenRequestBody = new HashMap<>();
         accessTokenRequestBody.put("code", code);
+        accessTokenRequestBody.put("redirect_uri", "http://localhost:8080/login/oauth2/code/google");
+        accessTokenRequestBody.put("client_id", "mock_client_id");
+        accessTokenRequestBody.put("client_secret", "mock_client_secret");
+        accessTokenRequestBody.put("grant_type", "authorization_code");
 
-        HttpHeaders accessTokenHeaders = new HttpHeaders();
-        accessTokenHeaders.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders accessTokenRequestHeaders = new HttpHeaders();
+        accessTokenRequestHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, String>> accessTokenRequestEntity = new HttpEntity<>(accessTokenRequestBody, accessTokenHeaders);
+        HttpEntity<Map<String, String>> accessTokenRequestEntity = new HttpEntity<>(accessTokenRequestBody, accessTokenRequestHeaders);
 
         ResponseEntity<Map> accessTokenResponseEntity = restTemplate.exchange(
                 accessTokenRequestUrl, HttpMethod.POST, accessTokenRequestEntity, Map.class);
@@ -151,13 +155,13 @@ public class OauthController {
         String idToken = accessTokenBody.get("id_token").toString();
 
         //리소스 조회 요청
-        String resourceRequestUrl = "http://localhost:8089/v1/userinfo";
+        String resourceRequestUrl = "http://localhost:8089/oauth2/v2/userinfo";
 
         Map<String, String> resourceRequestBody = new HashMap<>();
         resourceRequestBody.put("access_token", accessToken);
 
         HttpHeaders resourceHeaders = new HttpHeaders();
-        resourceHeaders.setContentType(MediaType.APPLICATION_JSON);
+        resourceHeaders.setBearerAuth(accessToken);
 
         HttpEntity<Map<String, String>> resourceRequestEntity = new HttpEntity<>(resourceRequestBody, resourceHeaders);
 

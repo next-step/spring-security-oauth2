@@ -78,7 +78,7 @@ class GoogleAuthenticationFilterTest {
         userProfile.put("picture", "");
         String profileJsonResponse = new ObjectMapper().writeValueAsString(userProfile);
 
-        stubFor(get(urlEqualTo("/v1/userinfo"))
+        stubFor(get(urlEqualTo("/oauth2/v2/userinfo"))
                 .willReturn(aResponse()
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
                         .withBody(profileJsonResponse)));
