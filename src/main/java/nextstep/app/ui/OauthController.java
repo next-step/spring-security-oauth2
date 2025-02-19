@@ -13,7 +13,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,17 +24,12 @@ public class OauthController {
     private static final String GITHUB_TOKEN_REQUEST_URI = "http://localhost:8089/login/oauth/access_token";
     private static final String GITHUB_RESOURCE_REQUEST_URI = "http://localhost:8089/user";
 
-    private static final String RESPONSE_TYPE = "code";
-
-    private static final String GOOGLE_AUTHORIZATION_URI = "https://accounts.google.com/o/oauth2/v2/auth";
     private static final String GOOGLE_CLIENT_ID = "mock_google_client_id";
     private static final String GOOGLE_CLIENT_SECRET = "mock_google_client_secret";
-    private static final String GOOGLE_SCOPE = "https://www.googleapis.com/auth/userinfo.profile";
     private static final String GOOGLE_APPROVED_REDIRECT_URI = "http://localhost:8080/login/oauth2/code/google";
     private static final String GOOGLE_TOKEN_REQUEST_URI = "http://localhost:8089/token";
     private static final String GOOGLE_RESOURCE_REQUEST_URI = "http://localhost:8089/oauth2/v2/userinfo";
     private static final String GOOGLE_GRANT_TYPE = "authorization_code";
-
 
     private final MemberRepository memberRepository;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -43,18 +37,6 @@ public class OauthController {
 
     public OauthController(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
-    }
-
-    @GetMapping("/oauth2/authorization/google")
-    public String googleAuthenticationRequest() {
-        String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_AUTHORIZATION_URI)
-                .queryParam("client_id", GOOGLE_CLIENT_ID)
-                .queryParam("response_type", RESPONSE_TYPE)
-                .queryParam("scope", GOOGLE_SCOPE)
-                .queryParam("redirect_uri", GOOGLE_APPROVED_REDIRECT_URI)
-                .toUriString();
-
-        return "redirect:" + url;
     }
 
     @GetMapping("/login/oauth2/code/github")
