@@ -10,8 +10,7 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
-import nextstep.security.authentication.GithubAuthenticationFilter;
-import nextstep.security.authentication.GoogleAuthenticationFilter;
+import nextstep.security.authentication.OAuth2AuthenticationFilter;
 import nextstep.security.authentication.OAuth2ClientProperties;
 import nextstep.security.authentication.OAuth2LoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
@@ -69,8 +68,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new OAuth2LoginRedirectFilter(oAuth2ClientProperties),
-                        new GithubAuthenticationFilter(new InmemoryMemberRepository()),
-                        new GoogleAuthenticationFilter(new InmemoryMemberRepository()),
+                        new OAuth2AuthenticationFilter(oAuth2ClientProperties, new InmemoryMemberRepository()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
