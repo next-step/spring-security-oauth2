@@ -39,14 +39,17 @@ public class OAuth2AuthorizedClientDao implements OAuth2AuthorizedClientReposito
 
     private Map<String, OAuth2AuthorizedClient> getAuthorizedClients(HttpServletRequest request) {
         final HttpSession session = request.getSession(false);
-        return session == null ?
-                new HashMap<>()
+        return session == null
+                ? new HashMap<>()
                 : getAuthorizedClients(session);
     }
 
     @SuppressWarnings("unchecked")
     private Map<String, OAuth2AuthorizedClient> getAuthorizedClients(HttpSession session) {
-        return (Map<String, OAuth2AuthorizedClient>) session.getAttribute(ATTRIBUTE_NAME);
+        var authorizedClients = session.getAttribute(ATTRIBUTE_NAME);
+        return authorizedClients == null
+                ? new HashMap<>()
+                : (Map<String, OAuth2AuthorizedClient>) authorizedClients;
     }
 
     private static class SingletonHolder {

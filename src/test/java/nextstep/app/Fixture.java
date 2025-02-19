@@ -12,6 +12,7 @@ public final class Fixture {
     private Fixture() {}
 
     public static void setUpMembers(MemberRepository memberRepository) {
+        memberRepository.clear();
         memberRepository.save(TEST_ADMIN_MEMBER);
         memberRepository.save(TEST_USER_MEMBER);
     }
