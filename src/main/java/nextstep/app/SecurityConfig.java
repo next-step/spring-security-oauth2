@@ -13,7 +13,7 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.oauth2.GithubAuthenticationFilter;
+import nextstep.security.oauth2.OAuth2AuthenticationFilter;
 import nextstep.security.oauth2.OAuth2LoginRedirectFilter;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +57,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
                         new OAuth2LoginRedirectFilter(oAuth2ClientProperties),
-                        new GithubAuthenticationFilter(userDetailsService, oAuth2ClientProperties),
+                        new OAuth2AuthenticationFilter(userDetailsService, oAuth2ClientProperties),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

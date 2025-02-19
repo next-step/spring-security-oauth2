@@ -29,5 +29,5 @@ POST https://github.com/login/oauth/access_token
 
 - [X] Google 계정을 사용한 인증 리다이렉트 추가 
 - [X] Google, Github 계정을 사용한 인증 통합
-- [ ] Google 계정을 사용한 인가 추가 
-- [ ] Google, Github 계정을 사용한 인가 통합
+- [X] Google 계정을 사용한 인가 추가 
+- [X] Google, Github 계정을 사용한 인가 통합
