@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.TokenResponse;
 import nextstep.security.authentication.oauth.OAuth2AuthenticationToken;
 import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
 import nextstep.security.authentication.oauth.OAuth2EmailResolver;
@@ -58,13 +57,18 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         final String state = getParameterValueByName(request, STATE);
 
         final OAuth2AuthorizationRequest authorizationRequest = auth2UserService.consumeOAuth2AuthorizationRequest(state);
+        if (authorizationRequest == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        final String registrationId = authorizationRequest.registrationId();
 
-        TokenResponse tokenResponse = auth2TokenRequester.request(authorizationRequest, code);
+        final var tokenResponse = auth2TokenRequester.request(registrationId, code);
         if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
             throw new AuthenticationException();
         }
 
-        String username = oAuth2EmailResolver.resolve(authorizationRequest.registrationId(), tokenResponse);
+        String username = oAuth2EmailResolver.resolve(registrationId, tokenResponse);
         UserDetails userDetails = getUserOrCreateIfNotExists(username);
 
         registerAuthenticationContext(request, userDetails);

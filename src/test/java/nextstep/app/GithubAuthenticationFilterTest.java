@@ -42,12 +42,7 @@ class GithubAuthenticationFilterTest {
         stubForUser();
         OAuth2AuthorizationRecord oAuth2AuthorizationRecord = OAuth2AuthorizationRecord.of(
                 "github",
-                "code",
-                "mock",
                 "/login/oauth2/code/github?code=mock_code&state=mock_state",
-                "비밀비밀",
-                "mcok",
-                "scope",
                 "mock_state"
         );
         oAuth2AuthorizationRecordRepository.save(oAuth2AuthorizationRecord);

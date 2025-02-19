@@ -1,5 +1,6 @@
 package nextstep.app.application;
 
+import nextstep.app.domain.OAuth2AuthorizationRecord;
 import nextstep.security.authentication.oauth.OAuth2AuthenticationRequestResolver;
 import nextstep.security.authentication.oauth.OAuth2AuthenticationRequestStrategy;
 import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
@@ -37,13 +38,7 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
                 .queryParam("redirect_uri", strategy.getRedirectUri())
                 .toUriString();
 
-        OAuth2AuthorizationRequest.Builder builder = OAuth2AuthorizationRequest.from(clientRegistration);
-
-
-        return builder.authorizationUri(authorizationUri)
-                .responseType(OAuth2AuthenticationRequestStrategy.RESPONSE_TYPE)
-                .state(randomState)
-                .build();
+        return new OAuth2AuthorizationRecord(clientRegistration.getRegistrationId(), authorizationUri, randomState);
     }
 
     private OAuth2AuthenticationRequestStrategy findStrategyByType(String oAuth2Type) {

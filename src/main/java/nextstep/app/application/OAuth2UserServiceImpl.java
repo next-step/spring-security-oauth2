@@ -33,11 +33,6 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
         var oAuth2AuthorizationRecord = OAuth2AuthorizationRecord.of(
                 request.registrationId(),
                 request.authorizationUri(),
-                request.responseType(),
-                request.clientId(),
-                request.clientSecret(),
-                request.redirectUri(),
-                request.scope(),
                 request.state()
         );
         authorizationRecordRepository.save(oAuth2AuthorizationRecord);
@@ -50,6 +45,6 @@ public class OAuth2UserServiceImpl implements OAuth2UserService {
 
         authorizationRecordRepository.deleteOne(oAuth2AuthorizationRecord);
 
-        return oAuth2AuthorizationRecord.toRequest();
+        return oAuth2AuthorizationRecord;
     }
 }
