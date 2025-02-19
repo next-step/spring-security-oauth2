@@ -1,6 +1,8 @@
 package nextstep.app.application;
 
 import nextstep.security.authentication.*;
+import nextstep.security.authentication.oauth.OAuth2EmailResolveStrategy;
+import nextstep.security.authentication.oauth.OAuth2EmailResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -33,10 +35,10 @@ public class OAuth2EmailStrategyResolver implements OAuth2EmailResolver {
     }
 
     @Override
-    public String resolve(String oAuth2Type, TokenResponse token) {
-        OAuth2EmailResolveStrategy strategy = strategies.get(oAuth2Type);
+    public String resolve(String registrationId, TokenResponse token) {
+        OAuth2EmailResolveStrategy strategy = strategies.get(registrationId);
         if (strategy == null) {
-            throw new IllegalArgumentException("Unsupported OAuth2 type: " + oAuth2Type);
+            throw new IllegalArgumentException("Unsupported registrationId: " + registrationId);
         }
 
         try {
@@ -53,7 +55,7 @@ public class OAuth2EmailStrategyResolver implements OAuth2EmailResolver {
 
             UserResponse userResponse = response.getBody();
             if (userResponse == null || !StringUtils.hasText(userResponse.getEmail())) {
-                throw new AuthenticationException(oAuth2Type + " 에서 유저 email을 가져오는데 실패했습니다. userResponse: " + userResponse);
+                throw new AuthenticationException(registrationId + " 에서 유저 email을 가져오는데 실패했습니다. userResponse: " + userResponse);
             }
 
             return userResponse.getEmail();
