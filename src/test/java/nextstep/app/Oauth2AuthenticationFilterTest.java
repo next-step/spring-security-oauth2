@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 8089)
-class GithubAuthenticationFilterTest {
+class Oauth2AuthenticationFilterTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,7 +38,7 @@ class GithubAuthenticationFilterTest {
 
     @Test
     void redirectAndRequestGithubAccessToken() throws Exception {
-        String requestUri = "/login/oauth2/code/github?code=mock_code";
+        String requestUri = "/login/oauth2/code/mock?code=mock_code";
 
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
