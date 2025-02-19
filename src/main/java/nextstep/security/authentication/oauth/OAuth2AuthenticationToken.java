@@ -1,4 +1,6 @@
-package nextstep.security.authentication;
+package nextstep.security.authentication.oauth;
+
+import nextstep.security.authentication.Authentication;
 
 import java.util.Set;
 

@@ -11,7 +11,7 @@ import nextstep.security.authentication.*;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
-import nextstep.security.userdetails.UserDetailsService;
+import nextstep.security.userservice.UserDetailsService;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.GenericFilterBean;
