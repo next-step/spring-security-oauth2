@@ -12,6 +12,8 @@ import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.GithubAuthenticationFilter;
 import nextstep.security.authentication.GithubLoginRedirectFilter;
+import nextstep.security.authentication.GoogleAuthenticationFilter;
+import nextstep.security.authentication.GoogleLoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.*;
 import nextstep.security.config.DefaultSecurityFilterChain;
@@ -64,6 +66,8 @@ public class SecurityConfig {
                         new BasicAuthenticationFilter(userDetailsService()),
                         new GithubLoginRedirectFilter(),
                         new GithubAuthenticationFilter(new InmemoryMemberRepository()),
+                        new GoogleLoginRedirectFilter(),
+                        new GoogleAuthenticationFilter(new InmemoryMemberRepository()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
