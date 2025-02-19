@@ -2,15 +2,25 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.oauth2.registration.ClientRegistrationRepository;
+import nextstep.oauth2.web.OAuth2AuthorizationRequestRedirectFilter;
+import nextstep.oauth2.web.OAuth2LoginAuthenticationFilter;
+import nextstep.oauth2.web.authorizedclient.OAuth2AuthorizedClientRepository;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.AuthenticationManager;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
-import nextstep.security.authorization.*;
+import nextstep.security.authorization.AuthorityAuthorizationManager;
+import nextstep.security.authorization.AuthorizationFilter;
+import nextstep.security.authorization.AuthorizationManager;
+import nextstep.security.authorization.PermitAllAuthorizationManager;
+import nextstep.security.authorization.RequestAuthorizationManager;
+import nextstep.security.authorization.SecuredMethodInterceptor;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
@@ -31,15 +41,11 @@ import java.util.Set;
 @Configuration
 public class SecurityConfig {
 
-    private final MemberRepository memberRepository;
-
-    public SecurityConfig(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-    }
-
     @Bean
-    public DelegatingFilterProxy delegatingFilterProxy() {
-        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain())));
+    public DelegatingFilterProxy delegatingFilterProxy(
+            SecurityFilterChain securityFilterChain
+    ) {
+        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain)));
     }
 
     @Bean
@@ -53,13 +59,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain() {
+    public SecurityFilterChain securityFilterChain(
+            AuthenticationManager authenticationManager,
+            ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientRepository authorizedClientRepository,
+            RequestAuthorizationManager requestAuthorizationManager
+    ) {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new UsernamePasswordAuthenticationFilter(userDetailsService()),
-                        new BasicAuthenticationFilter(userDetailsService()),
-                        new AuthorizationFilter(requestAuthorizationManager())
+                        new UsernamePasswordAuthenticationFilter(authenticationManager),
+                        new BasicAuthenticationFilter(authenticationManager),
+                        new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository),
+                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientRepository, authenticationManager),
+                        new AuthorizationFilter(requestAuthorizationManager)
                 )
         );
     }
@@ -72,17 +85,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public RequestAuthorizationManager requestAuthorizationManager() {
+    public RequestAuthorizationManager requestAuthorizationManager(
+            RoleHierarchy roleHierarchy
+    ) {
         List<RequestMatcherEntry<AuthorizationManager>> mappings = new ArrayList<>();
-        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members"), new AuthorityAuthorizationManager(roleHierarchy(), "ADMIN")));
-        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members/me"), new AuthorityAuthorizationManager(roleHierarchy(), "USER")));
+        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members"), new AuthorityAuthorizationManager(roleHierarchy, "ADMIN")));
+        mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/members/me"), new AuthorityAuthorizationManager(roleHierarchy, "USER")));
         mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager()));
         mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager()));
         return new RequestAuthorizationManager(mappings);
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
+    public UserDetailsService userDetailsService(
+            MemberRepository memberRepository
+    ) {
         return username -> {
             Member member = memberRepository.findByEmail(username)
                     .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자입니다."));

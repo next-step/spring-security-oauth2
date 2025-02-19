@@ -5,6 +5,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.authentication.Authentication;
 
 public interface OAuth2AuthorizedClientRepository {
+    static OAuth2AuthorizedClientRepository getInstance() {
+        return OAuth2AuthorizedClientDao.getInstance();
+    }
+
     OAuth2AuthorizedClient loadAuthorizedClient(
             String clientRegistrationId,
             Authentication principal,

@@ -11,6 +11,12 @@ import java.util.Map;
 public class OAuth2AuthorizedClientDao implements OAuth2AuthorizedClientRepository {
     private static final String ATTRIBUTE_NAME = "AUTHORIZED_CLIENTS";
 
+    private OAuth2AuthorizedClientDao() {}
+
+    public static OAuth2AuthorizedClientDao getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
     @Override
     public OAuth2AuthorizedClient loadAuthorizedClient(String clientRegistrationId, Authentication principal, HttpServletRequest request) {
         return getAuthorizedClients(request).get(clientRegistrationId);
@@ -41,5 +47,9 @@ public class OAuth2AuthorizedClientDao implements OAuth2AuthorizedClientReposito
     @SuppressWarnings("unchecked")
     private Map<String, OAuth2AuthorizedClient> getAuthorizedClients(HttpSession session) {
         return (Map<String, OAuth2AuthorizedClient>) session.getAttribute(ATTRIBUTE_NAME);
+    }
+
+    private static class SingletonHolder {
+        private static final OAuth2AuthorizedClientDao INSTANCE = new OAuth2AuthorizedClientDao();
     }
 }

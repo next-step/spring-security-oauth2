@@ -27,10 +27,10 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         this.OAuth2AuthorizationRequestRepository = oAuth2AuthorizationRequestRepository;
     }
 
-    public static OAuth2AuthorizationRequestRedirectFilter of(
+    public OAuth2AuthorizationRequestRedirectFilter(
             ClientRegistrationRepository clientRegistrationRepository
     ) {
-        return new OAuth2AuthorizationRequestRedirectFilter(
+        this(
                 new OAuth2AuthorizationRequestResolver(clientRegistrationRepository, BASE_URI),
                 OAuth2AuthorizationRequestDao.getInstance()
         );
