@@ -22,10 +22,6 @@ import java.util.Set;
 
 @Controller
 public class OauthController {
-    private static final String GITHUB_AUTHORIZATION_URI = "https://github.com/login/oauth/authorize";
-    private static final String GITHUB_CLIENT_ID = "mock_github_client_id";
-    private static final String GITHUB_SCOPE = "read:user";
-    private static final String GITHUB_APPROVED_REDIRECT_URI = "http://localhost:8080/login/oauth2/code/github";
     private static final String GITHUB_TOKEN_REQUEST_URI = "http://localhost:8089/login/oauth/access_token";
     private static final String GITHUB_RESOURCE_REQUEST_URI = "http://localhost:8089/user";
 
@@ -47,18 +43,6 @@ public class OauthController {
 
     public OauthController(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
-    }
-
-    @GetMapping("/oauth2/authorization/github")
-    public String gitHubAuthenticationRequest() {
-        String url = UriComponentsBuilder.fromHttpUrl(GITHUB_AUTHORIZATION_URI)
-                .queryParam("client_id", GITHUB_CLIENT_ID)
-                .queryParam("response_type", RESPONSE_TYPE)
-                .queryParam("scope", GITHUB_SCOPE)
-                .queryParam("redirect_uri", GITHUB_APPROVED_REDIRECT_URI)
-                .toUriString();
-
-        return "redirect:" + url;
     }
 
     @GetMapping("/oauth2/authorization/google")
