@@ -14,8 +14,8 @@ import org.springframework.web.filter.GenericFilterBean;
 
 public class GithubAuthenticationFilter extends GenericFilterBean {
     private static final String REQUEST_URI = "/login/oauth2/code/github";
-    private final RestTemplate restTemplate = new RestTemplate();
     private final GithubGetAccessTokenClient githubGetAccessTokenClient = new GithubGetAccessTokenClient();
+    private final GithubGetUserInfoClient githubGetUserInfoClient = new GithubGetUserInfoClient();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -29,6 +29,9 @@ public class GithubAuthenticationFilter extends GenericFilterBean {
         if (requestURI.startsWith(REQUEST_URI) && method.equals(AUTHORIZATION_REQUEST_METHOD.name())) {
             String code = httpServletRequest.getParameter("code");
             String accessToken = githubGetAccessTokenClient.getAccessToken(code);
+            Map<String, String> userInfo = githubGetUserInfoClient.getUserInfo(accessToken);
+
+
 
             return;
         }
