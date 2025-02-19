@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
+import nextstep.security.authentication.Authentication;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.oauth.OAuth2AuthenticationToken;
 import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
@@ -15,16 +16,20 @@ import nextstep.security.context.SecurityContextHolder;
 import nextstep.security.userservice.OAuth2UserService;
 import nextstep.security.userservice.UserDetails;
 import nextstep.security.userservice.UserDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String CODE = "code";
     private static final String STATE = "state";
+    private static final Logger log = LoggerFactory.getLogger(OAuth2LoginAuthenticationFilter.class);
 
     private final MvcRequestMatcher requestMatcher;
     private final OAuth2TokenRequester auth2TokenRequester;
@@ -53,14 +58,28 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String code = getParameterValueByName(request, CODE);
-        final String state = getParameterValueByName(request, STATE);
+        try {
+            Authentication authentication = attemptAuthentication(request);
 
+            successfulAuthentication(request, response, authentication);
+
+        } catch (AuthenticationException | NoSuchElementException e) {
+            unsuccessfulAuthentication(response, e);
+        }
+    }
+
+    private boolean noRequiresAuthentication(HttpServletRequest request) {
+        return !requestMatcher.matches(request);
+    }
+
+    private Authentication attemptAuthentication(HttpServletRequest request) {
+        final String state = getParameterValueByName(request, STATE);
         final OAuth2AuthorizationRequest authorizationRequest = auth2UserService.consumeOAuth2AuthorizationRequest(state);
         if (authorizationRequest == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
+            throw new AuthenticationException();
         }
+
+        final String code = getParameterValueByName(request, CODE);
         final String registrationId = authorizationRequest.registrationId();
 
         final var tokenResponse = auth2TokenRequester.request(registrationId, code);
@@ -68,15 +87,15 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
             throw new AuthenticationException();
         }
 
+        UserDetails userDetails;
         String username = oAuth2EmailResolver.resolve(registrationId, tokenResponse);
-        UserDetails userDetails = getUserOrCreateIfNotExists(username);
+        try {
+            userDetails = userDetailsService.loadUserByUsername(username);
+        } catch (AuthenticationException ex) {
+            userDetails = userDetailsService.addNewMemberByOAuth2(username);
+        }
 
-        registerAuthenticationContext(request, userDetails);
-        response.sendRedirect("/");
-    }
-
-    private boolean noRequiresAuthentication(HttpServletRequest request) {
-        return !requestMatcher.matches(request);
+        return OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
     }
 
     private String getParameterValueByName(HttpServletRequest request, String name) {
@@ -88,19 +107,23 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         throw new AuthenticationException("Invalid parameter value : '" + name + "'");
     }
 
-    private UserDetails getUserOrCreateIfNotExists(String username) {
-        UserDetails userDetails;
-        try {
-            userDetails = userDetailsService.loadUserByUsername(username);
-        } catch (AuthenticationException ex) {
-            userDetails = userDetailsService.addNewMemberByOAuth2(username, username);
-        }
-        return userDetails;
+    private void successfulAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        securityContextRepository.saveContext(SecurityContextHolder.getContext(), request);
+        response.sendRedirect("/");
     }
 
-    private void registerAuthenticationContext(HttpServletRequest request, UserDetails userDetails) {
-        OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authenticated);
-        securityContextRepository.saveContext(SecurityContextHolder.getContext(), request);
+    private void unsuccessfulAuthentication(
+            HttpServletResponse response,
+            RuntimeException e
+    ) throws IOException {
+        SecurityContextHolder.clearContext();
+        log.error(e.getMessage());
+        log.error("[stack trace] : ", e);
+        response.sendRedirect("/");
     }
 }
