@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 8089)
+@ActiveProfiles("test")
 class GithubAuthenticationFilterTest {
 
     @Autowired
@@ -58,7 +60,7 @@ class GithubAuthenticationFilterTest {
     private static void stubForAccessToken() throws JsonProcessingException {
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("access_token", "mock_access_token");
-        responseBody.put("token_type", "bearer");
+        responseBody.put("token_type", "Bearer");
         String jsonResponse = new ObjectMapper().writeValueAsString(responseBody);
 
         stubFor(post(urlEqualTo("/login/oauth/access_token"))
