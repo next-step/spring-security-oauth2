@@ -9,6 +9,7 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.GithubAuthenticationFilter;
 import nextstep.security.authentication.GithubLoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.*;
@@ -61,6 +62,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new GithubLoginRedirectFilter(),
+                        new GithubAuthenticationFilter(),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
