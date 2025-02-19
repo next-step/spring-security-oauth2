@@ -1,0 +1,29 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registrations:
+          github:
+            client-id: "Ov23lijfjg9lkGyYVDXN"
+            client-secret: "YOUR_GITHUB_CLIENT_SECRET"
+            scope:
+              - read:user
+            redirect-uri: "http://localhost:8080/login/oauth2/code/github"
+            authorization-grant-type: authorization_code
+          google:
+            client-id: "349246449409-h7hgk8kms3k8d7tgal8nesbh24h34t0d.apps.googleusercontent.com"
+            client-secret: "YOUR_GOOGLE_CLIENT_SECRET"
+            scope:
+              - email
+              - profile
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+        providers:
+          github:
+            authorization-uri: "https://github.com/login/oauth/authorize?"
+            token-uri: "https://github.com/login/oauth/access_token"
+            user-info-uri: "https://api.github.com/user"
+          google:
+            authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth?"
+            token-uri: "https://oauth2.googleapis.com/token"
+            user-info-uri: "https://www.googleapis.com/oauth2/v3/userinfo"
