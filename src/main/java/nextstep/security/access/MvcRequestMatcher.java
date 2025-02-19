@@ -2,6 +2,7 @@ package nextstep.security.access;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.AntPathMatcher;
 
 public class MvcRequestMatcher implements RequestMatcher {
 
@@ -27,6 +28,7 @@ public class MvcRequestMatcher implements RequestMatcher {
             return false;
         }
 
-        return request.getRequestURI().equals(pattern);
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+        return pathMatcher.match(pattern, request.getRequestURI());
     }
 }

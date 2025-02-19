@@ -1,5 +1,6 @@
 package nextstep.app.config;
 
+import nextstep.app.application.OAuth2AnnotationProviderSupportChecker;
 import nextstep.app.application.OAuth2EmailStrategyResolver;
 import nextstep.app.application.OAuth2TokenStrategyRequester;
 import nextstep.security.access.AnyRequestMatcher;
@@ -8,6 +9,7 @@ import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.OAuth2AuthenticationRequestResolver;
+import nextstep.security.authentication.OAuth2ProviderSupportChecker;
 import nextstep.security.authentication.filter.BasicAuthenticationFilter;
 import nextstep.security.authentication.filter.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authentication.filter.oauth.OAuth2LoginAuthenticationFilter;
@@ -35,12 +37,14 @@ public class SecurityConfig {
     private final OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester;
     private final OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver;
     private final UserDetailsService userDetailsService;
+    private final OAuth2ProviderSupportChecker oAuth2ProviderSupportChecker;
 
-    public SecurityConfig(OAuth2AuthenticationRequestResolver requestResolver, OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester, OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver, UserDetailsService userDetailsService) {
+    public SecurityConfig(OAuth2AuthenticationRequestResolver requestResolver, OAuth2TokenStrategyRequester oAuth2TokenStrategyRequester, OAuth2EmailStrategyResolver oAuth2EmailStrategyResolver, UserDetailsService userDetailsService, OAuth2ProviderSupportChecker oAuth2ProviderSupportChecker) {
         this.requestResolver = requestResolver;
         this.oAuth2TokenStrategyRequester = oAuth2TokenStrategyRequester;
         this.oAuth2EmailStrategyResolver = oAuth2EmailStrategyResolver;
         this.userDetailsService = userDetailsService;
+        this.oAuth2ProviderSupportChecker = oAuth2ProviderSupportChecker;
     }
 
     @Bean
@@ -62,12 +66,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain() {
+        final var oAuth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(
+                oAuth2TokenStrategyRequester,
+                oAuth2EmailStrategyResolver,
+                userDetailsService,
+                oAuth2ProviderSupportChecker
+        );
 
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new OAuth2RedirectAuthenticationFilter(requestResolver),
-                        new OAuth2LoginAuthenticationFilter(oAuth2TokenStrategyRequester, oAuth2EmailStrategyResolver, userDetailsService),
+                        new OAuth2RedirectAuthenticationFilter(requestResolver, oAuth2ProviderSupportChecker),
+                        oAuth2LoginAuthenticationFilter,
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
                         new AuthorizationFilter(requestAuthorizationManager())
