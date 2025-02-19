@@ -50,7 +50,6 @@ public class SecurityConfig {
     }
 
 
-    @Bean
     public SecurityFilterChain securityFilterChain(OAuth2ClientProperties oAuth2ClientProperties) {
         return new DefaultSecurityFilterChain(
                 List.of(
