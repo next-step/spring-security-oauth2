@@ -2,6 +2,11 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.oauth2.OAuth2ClientProperties;
+import nextstep.oauth2.google.GoogleAuthenticationFilter;
+import nextstep.oauth2.google.GoogleLoginRedirectFilter;
+import nextstep.oauth2.github.GithubAuthenticationFilter;
+import nextstep.oauth2.github.GithubLoginRedirectFilter;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
@@ -21,12 +26,9 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.oauth2.google.GithubAuthenticationFilter;
-import nextstep.security.oauth2.google.GithubLoginRedirectFilter;
-import nextstep.security.oauth2.github.GoogleAuthenticationFilter;
-import nextstep.security.oauth2.github.GoogleLoginRedirectFilter;
 import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -38,12 +40,15 @@ import java.util.Set;
 
 @EnableAspectJAutoProxy
 @Configuration
+@EnableConfigurationProperties(OAuth2ClientProperties.class)
 public class SecurityConfig {
 
     private final MemberRepository memberRepository;
+    private final OAuth2ClientProperties oAuth2ClientProperties;
 
-    public SecurityConfig(MemberRepository memberRepository) {
+    public SecurityConfig(MemberRepository memberRepository, OAuth2ClientProperties oAuth2ClientProperties) {
         this.memberRepository = memberRepository;
+        this.oAuth2ClientProperties = oAuth2ClientProperties;
     }
 
     @Bean

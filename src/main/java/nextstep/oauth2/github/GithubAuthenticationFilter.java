@@ -1,4 +1,4 @@
-package nextstep.oauth2.google;
+package nextstep.oauth2.github;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +23,7 @@ import java.util.Set;
 
 public class GithubAuthenticationFilter extends OncePerRequestFilter {
     public static final String GITHUB_AUTHORIZATION_REDIRECT_URI = "/login/oauth2/code/github";
-        public static final String GITHUB_USER_INFO_REQUEST_URI = "http://localhost:8089/user";
+    public static final String GITHUB_USER_INFO_REQUEST_URI = "http://localhost:8089/user";
     private static final String GITHUB_ACCESS_TOKEN_REQUEST_URI = "http://localhost:8089/login/oauth/access_token";
 //    public static final String GITHUB_ACCESS_TOKEN_REQUEST_URI = "https://github.com/login/oauth/access_token";
 //    public static final String GITHUB_USER_INFO_REQUEST_URI = "https://api.github.com/user";

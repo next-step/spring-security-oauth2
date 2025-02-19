@@ -1,4 +1,4 @@
-package nextstep.oauth2.google;
+package nextstep.oauth2.github;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
