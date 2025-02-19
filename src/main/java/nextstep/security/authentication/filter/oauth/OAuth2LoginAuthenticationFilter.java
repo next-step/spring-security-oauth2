@@ -5,11 +5,17 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
-import nextstep.security.authentication.*;
+import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.TokenResponse;
+import nextstep.security.authentication.oauth.OAuth2AuthenticationToken;
+import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
+import nextstep.security.authentication.oauth.OAuth2EmailResolver;
+import nextstep.security.authentication.oauth.OAuth2TokenRequester;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContextHolder;
-import nextstep.security.userdetails.UserDetails;
-import nextstep.security.userdetails.UserDetailsService;
+import nextstep.security.userservice.OAuth2UserService;
+import nextstep.security.userservice.UserDetails;
+import nextstep.security.userservice.UserDetailsService;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,15 +24,23 @@ import java.io.IOException;
 
 public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String CODE = "code";
+    private static final String STATE = "state";
+
     private final MvcRequestMatcher requestMatcher;
     private final OAuth2TokenRequester auth2TokenRequester;
     private final OAuth2EmailResolver oAuth2EmailResolver;
     private final UserDetailsService userDetailsService;
-    private final OAuth2ProviderSupportChecker providerSupportChecker;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final OAuth2UserService auth2UserService;
 
-    public OAuth2LoginAuthenticationFilter(OAuth2TokenRequester auth2TokenRequester, OAuth2EmailResolver oAuth2EmailResolver, UserDetailsService userDetailsService, OAuth2ProviderSupportChecker providerSupportChecker) {
-        this.providerSupportChecker = providerSupportChecker;
+    public OAuth2LoginAuthenticationFilter(
+            OAuth2TokenRequester auth2TokenRequester,
+            OAuth2EmailResolver oAuth2EmailResolver,
+            UserDetailsService userDetailsService,
+            OAuth2UserService auth2UserService
+    ) {
+        this.auth2UserService = auth2UserService;
         this.requestMatcher = new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/{provider}");
         this.auth2TokenRequester = auth2TokenRequester;
         this.oAuth2EmailResolver = oAuth2EmailResolver;
@@ -40,42 +54,34 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String oAuth2Type = getOAuth2Type(request.getRequestURI());
-        String code = getCodeFromParam(request);
+        final String code = getParameterValueByName(request, CODE);
+        final String state = getParameterValueByName(request, STATE);
 
-        TokenResponse tokenResponse = auth2TokenRequester.request(oAuth2Type, code);
+        final OAuth2AuthorizationRequest authorizationRequest = auth2UserService.consumeOAuth2AuthorizationRequest(state);
+
+        TokenResponse tokenResponse = auth2TokenRequester.request(authorizationRequest, code);
         if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
             throw new AuthenticationException();
         }
 
-        String username = oAuth2EmailResolver.resolve(oAuth2Type, tokenResponse);
+        String username = oAuth2EmailResolver.resolve(authorizationRequest.registrationId(), tokenResponse);
         UserDetails userDetails = getUserOrCreateIfNotExists(username);
 
         registerAuthenticationContext(request, userDetails);
-
         response.sendRedirect("/");
     }
 
     private boolean noRequiresAuthentication(HttpServletRequest request) {
-        try {
-            providerSupportChecker.checkRequest(request, requestMatcher);
-            return false;
-        } catch (UnsupportedOAuth2ProviderException e) {
-            return true;
-        }
+        return !requestMatcher.matches(request);
     }
 
-    private String getOAuth2Type(String requestUri) {
-        return requestUri.substring(requestUri.lastIndexOf("/") + 1);
-    }
-
-    private String getCodeFromParam(HttpServletRequest request) {
-        String code = request.getParameter("code");
-        if (StringUtils.hasText(code)) {
-            return code;
+    private String getParameterValueByName(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (StringUtils.hasText(value)) {
+            return value;
         }
 
-        throw new AuthenticationException("Invalid code");
+        throw new AuthenticationException("Invalid parameter value : '" + name + "'");
     }
 
     private UserDetails getUserOrCreateIfNotExists(String username) {
