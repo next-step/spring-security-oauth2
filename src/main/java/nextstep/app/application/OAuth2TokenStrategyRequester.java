@@ -29,7 +29,7 @@ public class OAuth2TokenStrategyRequester implements OAuth2TokenRequester {
         this.restTemplate = restTemplate;
         this.strategies = strategies.stream()
                 .collect(Collectors.toUnmodifiableMap(
-                        OAuth2TokenRequestStrategy::getOAuth2Type,
+                        OAuth2TokenRequestStrategy::getRegistrationId,
                         strategy -> strategy
                 ));
         this.clientRegistrationRepository = clientRegistrationRepository;

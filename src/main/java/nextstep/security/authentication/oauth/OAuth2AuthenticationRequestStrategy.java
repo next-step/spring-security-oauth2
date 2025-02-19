@@ -2,7 +2,7 @@ package nextstep.security.authentication.oauth;
 
 public interface OAuth2AuthenticationRequestStrategy {
     String RESPONSE_TYPE = "code";
-    String getOAuth2Type();
+    String getRegistrationId();
     String getScope();
     String getClientId();
     String getClientSecret();

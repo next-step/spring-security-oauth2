@@ -18,7 +18,7 @@ public class GithubAuthenticationRequestStrategy implements OAuth2Authentication
     private String redirectUri;
 
     @Override
-    public String getOAuth2Type() {
+    public String getRegistrationId() {
         return "github";
     }
 

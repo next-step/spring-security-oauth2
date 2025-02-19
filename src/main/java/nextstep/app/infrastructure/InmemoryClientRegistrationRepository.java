@@ -19,7 +19,7 @@ public class InmemoryClientRegistrationRepository implements ClientRegistrationR
     public InmemoryClientRegistrationRepository(List<OAuth2AuthenticationRequestStrategy> strategies) {
         clientRegistrations = strategies.stream()
                 .collect(Collectors.toUnmodifiableMap(
-                        OAuth2AuthenticationRequestStrategy::getOAuth2Type,
+                        OAuth2AuthenticationRequestStrategy::getRegistrationId,
                         getClientRegistrationFunction()
                 ));
     }
@@ -32,7 +32,7 @@ public class InmemoryClientRegistrationRepository implements ClientRegistrationR
     private Function<OAuth2AuthenticationRequestStrategy, ClientRegistration> getClientRegistrationFunction() {
         return it ->
                 ClientRegistration.builder()
-                        .registrationId(it.getOAuth2Type())
+                        .registrationId(it.getRegistrationId())
                         .clientId(it.getClientId())
                         .clientSecret(it.getClientSecret())
                         .redirectUri(it.getRedirectUri())

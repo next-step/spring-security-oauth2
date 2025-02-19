@@ -12,7 +12,7 @@ public class GoogleEmailResolveStrategy implements OAuth2EmailResolveStrategy {
     private String requestUri;
 
     @Override
-    public String getOAuth2Type() {
+    public String getRegistrationId() {
         return "google";
     }
 

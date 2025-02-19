@@ -29,7 +29,7 @@ public class OAuth2EmailStrategyResolver implements OAuth2EmailResolver {
         this.restTemplate = restTemplate;
         this.strategies = strategies.stream()
                 .collect(Collectors.toUnmodifiableMap(
-                        OAuth2EmailResolveStrategy::getOAuth2Type,
+                        OAuth2EmailResolveStrategy::getRegistrationId,
                         strategy -> strategy
                 ));
     }

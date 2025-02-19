@@ -20,14 +20,14 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
     public OAuth2AuthenticationStrategyResolver(List<OAuth2AuthenticationRequestStrategy> strategies) {
         this.strategies = strategies.stream()
                 .collect(Collectors.toUnmodifiableMap(
-                        OAuth2AuthenticationRequestStrategy::getOAuth2Type,
+                        OAuth2AuthenticationRequestStrategy::getRegistrationId,
                         strategy -> strategy
                 ));
     }
 
     @Override
     public OAuth2AuthorizationRequest resolve(OAuth2ClientRegistration clientRegistration) {
-        OAuth2AuthenticationRequestStrategy strategy = findStrategyByType(clientRegistration.getRegistrationId());
+        OAuth2AuthenticationRequestStrategy strategy = findStrategyByRegistrationId(clientRegistration.getRegistrationId());
 
         String randomState = UUID.randomUUID().toString();
         String authorizationUri = UriComponentsBuilder.fromHttpUrl(strategy.getBaseRequestUri())
@@ -41,10 +41,10 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
         return new OAuth2AuthorizationRecord(clientRegistration.getRegistrationId(), authorizationUri, randomState);
     }
 
-    private OAuth2AuthenticationRequestStrategy findStrategyByType(String oAuth2Type) {
-        OAuth2AuthenticationRequestStrategy strategy = strategies.get(oAuth2Type);
+    private OAuth2AuthenticationRequestStrategy findStrategyByRegistrationId(String registrationId) {
+        OAuth2AuthenticationRequestStrategy strategy = strategies.get(registrationId);
         if (strategy == null) {
-            throw new IllegalArgumentException("Unsupported OAuth2 type: " + oAuth2Type);
+            throw new IllegalArgumentException("Unsupported registrationId: " + registrationId);
         }
         return strategy;
     }

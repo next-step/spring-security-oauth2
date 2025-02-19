@@ -5,7 +5,7 @@ import nextstep.security.authentication.TokenRequest;
 import nextstep.security.authentication.TokenResponse;
 
 public interface OAuth2TokenRequestStrategy {
-    String getOAuth2Type();
+    String getRegistrationId();
     TokenRequest requestToken(ClientRegistration clientRegistration, String code);
     String getRequestUri();
     Class<? extends TokenResponse> getResponseClass();

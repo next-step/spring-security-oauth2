@@ -18,7 +18,7 @@ public class GoogleAuthenticationRequestStrategy implements OAuth2Authentication
     private String redirectUri;
 
     @Override
-    public String getOAuth2Type() {
+    public String getRegistrationId() {
         return "google";
     }
 

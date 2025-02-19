@@ -16,7 +16,7 @@ public class GoogleTokenRequestStrategy implements OAuth2TokenRequestStrategy {
     private String requestUri;
 
     @Override
-    public String getOAuth2Type() {
+    public String getRegistrationId() {
         return "google";
     }
 

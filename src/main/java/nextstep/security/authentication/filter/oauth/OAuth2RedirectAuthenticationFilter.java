@@ -33,8 +33,8 @@ public class OAuth2RedirectAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String oAuth2Type = getOAuth2Type(request.getRequestURI());
-        OAuth2ClientRegistration clientRegistration = auth2UserService.loadClientRegistrationByRegistrationId(oAuth2Type);
+        String registrationId = getRegistrationId(request.getRequestURI());
+        OAuth2ClientRegistration clientRegistration = auth2UserService.loadClientRegistrationByRegistrationId(registrationId);
 
         OAuth2AuthorizationRequest authorizationRequest = oAuth2AuthenticationRequestResolver.resolve(clientRegistration);
 
@@ -47,7 +47,7 @@ public class OAuth2RedirectAuthenticationFilter extends OncePerRequestFilter {
         return !requestMatcher.matches(request);
     }
 
-    private String getOAuth2Type(String requestUri) {
+    private String getRegistrationId(String requestUri) {
         return requestUri.substring(requestUri.lastIndexOf("/") + 1);
     }
 }
