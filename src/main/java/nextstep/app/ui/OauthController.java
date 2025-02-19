@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,25 @@ import java.util.Set;
 
 @Controller
 public class OauthController {
+    private static final String GITHUB_AUTHORIZATION_URI = "https://github.com/login/oauth/authorize";
+    private static final String GITHUB_CLIENT_ID = "mock_github_client_id";
+    private static final String GITHUB_SCOPE = "read:user";
+    private static final String GITHUB_APPROVED_REDIRECT_URI = "http://localhost:8080/login/oauth2/code/github";
+    private static final String GITHUB_TOKEN_REQUEST_URI = "http://localhost:8089/login/oauth/access_token";
+    private static final String GITHUB_RESOURCE_REQUEST_URI = "http://localhost:8089/user";
+
+    private static final String RESPONSE_TYPE = "code";
+
+    private static final String GOOGLE_AUTHORIZATION_URI = "https://accounts.google.com/o/oauth2/v2/auth";
+    private static final String GOOGLE_CLIENT_ID = "mock_google_client_id";
+    private static final String GOOGLE_CLIENT_SECRET = "mock_google_client_secret";
+    private static final String GOOGLE_SCOPE = "https://www.googleapis.com/auth/userinfo.profile";
+    private static final String GOOGLE_APPROVED_REDIRECT_URI = "http://localhost:8080/login/oauth2/code/google";
+    private static final String GOOGLE_TOKEN_REQUEST_URI = "http://localhost:8089/token";
+    private static final String GOOGLE_RESOURCE_REQUEST_URI = "http://localhost:8089/oauth2/v2/userinfo";
+    private static final String GOOGLE_GRANT_TYPE = "authorization_code";
+
+
     private final MemberRepository memberRepository;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final RestTemplate restTemplate = new RestTemplate();
@@ -31,32 +51,24 @@ public class OauthController {
 
     @GetMapping("/oauth2/authorization/github")
     public String gitHubAuthenticationRequest() {
-        String clientId = "mock_client_id";
-        String responseType = "code";
-        String scope = "read:user";
-        String redirectUrl = "http://localhost:8080/login/oauth2/code/github";
-
-        String url = "https://github.com/login/oauth/authorize" +
-                "?client_id=" + clientId +
-                "&response_type=" + responseType +
-                "&scope=" + scope +
-                "&redirect_uri=" + redirectUrl;
+        String url = UriComponentsBuilder.fromHttpUrl(GITHUB_AUTHORIZATION_URI)
+                .queryParam("client_id", GITHUB_CLIENT_ID)
+                .queryParam("response_type", RESPONSE_TYPE)
+                .queryParam("scope", GITHUB_SCOPE)
+                .queryParam("redirect_uri", GITHUB_APPROVED_REDIRECT_URI)
+                .toUriString();
 
         return "redirect:" + url;
     }
 
     @GetMapping("/oauth2/authorization/google")
     public String googleAuthenticationRequest() {
-        String clientId = "mock_client_id";
-        String responseType = "code";
-        String scope = "https://www.googleapis.com/auth/userinfo.profile";
-        String redirectUrl = "http://localhost:8080/login/oauth2/code/google";
-
-        String url = "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id=" + clientId +
-                "&response_type=" + responseType +
-                "&scope=" + scope +
-                "&redirect_uri=" + redirectUrl;
+        String url = UriComponentsBuilder.fromHttpUrl(GOOGLE_AUTHORIZATION_URI)
+                .queryParam("client_id", GOOGLE_CLIENT_ID)
+                .queryParam("response_type", RESPONSE_TYPE)
+                .queryParam("scope", GOOGLE_SCOPE)
+                .queryParam("redirect_uri", GOOGLE_APPROVED_REDIRECT_URI)
+                .toUriString();
 
         return "redirect:" + url;
     }
@@ -67,8 +79,6 @@ public class OauthController {
             HttpServletResponse response,
             @RequestParam("code") String code) {
         //토큰요청
-        String accessTokenRequestUrl = "http://localhost:8089/login/oauth/access_token";
-
         Map<String, String> accessTokenRequestBody = new HashMap<>();
         accessTokenRequestBody.put("code", code);
 
@@ -78,7 +88,7 @@ public class OauthController {
         HttpEntity<Map<String, String>> accessTokenRequestEntity = new HttpEntity<>(accessTokenRequestBody, accessTokenHeaders);
 
         ResponseEntity<Map> accessTokenResponseEntity = restTemplate.exchange(
-                accessTokenRequestUrl, HttpMethod.POST, accessTokenRequestEntity, Map.class);
+                GITHUB_TOKEN_REQUEST_URI, HttpMethod.POST, accessTokenRequestEntity, Map.class);
         Map<String, Object> accessTokenBody = (Map<String, Object>) accessTokenResponseEntity.getBody();
         if (Objects.isNull(accessTokenBody)) {
             throw new RuntimeException();
@@ -87,8 +97,6 @@ public class OauthController {
         String tokenType = accessTokenBody.get("token_type").toString();
 
         //리소스 조회 요청
-        String resourceRequestUrl = "http://localhost:8089/user";
-
         Map<String, String> resourceRequestBody = new HashMap<>();
         resourceRequestBody.put("access_token", accessToken);
 
@@ -98,7 +106,7 @@ public class OauthController {
         HttpEntity<Map<String, String>> resourceRequestEntity = new HttpEntity<>(resourceRequestBody, resourceHeaders);
 
         ResponseEntity<Map> resourceResponseEntity = restTemplate.exchange(
-                resourceRequestUrl, HttpMethod.GET, resourceRequestEntity, Map.class);
+                GITHUB_RESOURCE_REQUEST_URI, HttpMethod.GET, resourceRequestEntity, Map.class);
         Map<String, Object> resourceBody = (Map<String, Object>) resourceResponseEntity.getBody();
         if (Objects.isNull(resourceBody)) {
             throw new RuntimeException();
@@ -127,14 +135,12 @@ public class OauthController {
             HttpServletResponse response,
             @RequestParam("code") String code) {
         //토큰요청
-        String accessTokenRequestUrl = "http://localhost:8089/token";
-
         Map<String, String> accessTokenRequestBody = new HashMap<>();
         accessTokenRequestBody.put("code", code);
-        accessTokenRequestBody.put("redirect_uri", "http://localhost:8080/login/oauth2/code/google");
-        accessTokenRequestBody.put("client_id", "mock_client_id");
-        accessTokenRequestBody.put("client_secret", "mock_client_secret");
-        accessTokenRequestBody.put("grant_type", "authorization_code");
+        accessTokenRequestBody.put("redirect_uri", GOOGLE_APPROVED_REDIRECT_URI);
+        accessTokenRequestBody.put("client_id", GOOGLE_CLIENT_ID);
+        accessTokenRequestBody.put("client_secret", GOOGLE_CLIENT_SECRET);
+        accessTokenRequestBody.put("grant_type", GOOGLE_GRANT_TYPE);
 
         HttpHeaders accessTokenRequestHeaders = new HttpHeaders();
         accessTokenRequestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -142,7 +148,7 @@ public class OauthController {
         HttpEntity<Map<String, String>> accessTokenRequestEntity = new HttpEntity<>(accessTokenRequestBody, accessTokenRequestHeaders);
 
         ResponseEntity<Map> accessTokenResponseEntity = restTemplate.exchange(
-                accessTokenRequestUrl, HttpMethod.POST, accessTokenRequestEntity, Map.class);
+                GOOGLE_TOKEN_REQUEST_URI, HttpMethod.POST, accessTokenRequestEntity, Map.class);
         Map<String, Object> accessTokenBody = (Map<String, Object>) accessTokenResponseEntity.getBody();
         if (Objects.isNull(accessTokenBody)) {
             throw new RuntimeException();
@@ -155,8 +161,6 @@ public class OauthController {
         String idToken = accessTokenBody.get("id_token").toString();
 
         //리소스 조회 요청
-        String resourceRequestUrl = "http://localhost:8089/oauth2/v2/userinfo";
-
         Map<String, String> resourceRequestBody = new HashMap<>();
         resourceRequestBody.put("access_token", accessToken);
 
@@ -166,7 +170,7 @@ public class OauthController {
         HttpEntity<Map<String, String>> resourceRequestEntity = new HttpEntity<>(resourceRequestBody, resourceHeaders);
 
         ResponseEntity<Map> resourceResponseEntity = restTemplate.exchange(
-                resourceRequestUrl, HttpMethod.GET, resourceRequestEntity, Map.class);
+                GOOGLE_RESOURCE_REQUEST_URI, HttpMethod.GET, resourceRequestEntity, Map.class);
         Map<String, Object> resourceBody = (Map<String, Object>) resourceResponseEntity.getBody();
         if (Objects.isNull(resourceBody)) {
             throw new RuntimeException();

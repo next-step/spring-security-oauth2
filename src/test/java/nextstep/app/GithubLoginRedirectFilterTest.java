@@ -19,7 +19,7 @@ class GithubLoginRedirectFilterTest {
     void redirectTest() throws Exception {
         String requestUri = "/oauth2/authorization/github";
         String expectedRedirectUri = "https://github.com/login/oauth/authorize" +
-                "?client_id=mock_client_id" +
+                "?client_id=mock_github_client_id" +
                 "&response_type=code" +
                 "&scope=read:user" +
                 "&redirect_uri=http://localhost:8080/login/oauth2/code/github";

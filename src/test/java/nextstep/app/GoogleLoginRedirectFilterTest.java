@@ -19,7 +19,7 @@ class GoogleLoginRedirectFilterTest {
     void redirectTest() throws Exception {
         String requestUri = "/oauth2/authorization/google";
         String expectedRedirectUri = "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id=mock_client_id" +
+                "?client_id=mock_google_client_id" +
                 "&response_type=code" +
                 "&scope=https://www.googleapis.com/auth/userinfo.profile" +
                 "&redirect_uri=http://localhost:8080/login/oauth2/code/google";
