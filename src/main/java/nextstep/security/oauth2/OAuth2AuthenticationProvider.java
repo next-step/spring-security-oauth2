@@ -8,10 +8,10 @@ import nextstep.security.userdetails.UserDetailsService;
 
 import java.util.Optional;
 
-public class Oauth2AuthenticationProvider implements AuthenticationProvider {
+public class OAuth2AuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
 
-    public Oauth2AuthenticationProvider(UserDetailsService userDetailsService) {
+    public OAuth2AuthenticationProvider(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -23,11 +23,11 @@ public class Oauth2AuthenticationProvider implements AuthenticationProvider {
             userDetailsService.saveUser(authentication.getPrincipal().toString());
         }
 
-        return Oauth2AuthenticationToken.authenticated(authentication.getPrincipal().toString(), authentication.getCredentials().toString(), authentication.getAuthorities());
+        return OAuth2AuthenticationToken.authenticated(authentication.getPrincipal().toString(), authentication.getCredentials().toString(), authentication.getAuthorities());
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return Oauth2AuthenticationToken.class.isAssignableFrom(authentication);
+        return OAuth2AuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

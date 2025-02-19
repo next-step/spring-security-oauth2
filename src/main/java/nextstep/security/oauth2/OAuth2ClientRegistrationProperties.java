@@ -1,13 +1,13 @@
 package nextstep.security.oauth2;
 
-public class Oauth2ClientRegistrationProperties {
+public class OAuth2ClientRegistrationProperties {
     private final String clientId;
     private final String responseType;
     private final String redirectUri;
     private final String scope;
     private final String clientSecret;
 
-    public Oauth2ClientRegistrationProperties(String clientId, String responseType, String redirectUri, String scope, String clientSecret) {
+    public OAuth2ClientRegistrationProperties(String clientId, String responseType, String redirectUri, String scope, String clientSecret) {
         this.clientId = clientId;
         this.responseType = responseType;
         this.redirectUri = redirectUri;

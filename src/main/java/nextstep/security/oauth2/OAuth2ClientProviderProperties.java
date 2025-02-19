@@ -1,13 +1,13 @@
 package nextstep.security.oauth2;
 
-public class Oauth2ClientProviderProperties {
+public class OAuth2ClientProviderProperties {
     private final String tokenUri;
 
     private final String userInfoUri;
 
     private final String authorizationUri;
 
-    public Oauth2ClientProviderProperties(String tokenUri, String userInfoUri, String authorizationUri) {
+    public OAuth2ClientProviderProperties(String tokenUri, String userInfoUri, String authorizationUri) {
         this.tokenUri = tokenUri;
         this.userInfoUri = userInfoUri;
         this.authorizationUri = authorizationUri;

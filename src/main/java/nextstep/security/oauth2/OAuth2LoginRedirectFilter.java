@@ -34,11 +34,12 @@ public class OAuth2LoginRedirectFilter extends GenericFilterBean {
 
         if (matchInfo == null) {
             chain.doFilter(request, httpServletResponse);
+            return;
         }
 
         final String providerName = matchInfo.getUriVariables().get(REGISTRATION);
-        final Oauth2ClientRegistrationProperties registration = properties.getOauth2Registration(providerName);
-        final Oauth2ClientProviderProperties oauth2Provider = properties.getOauth2Provider(providerName);
+        final OAuth2ClientRegistrationProperties registration = properties.getOauth2Registration(providerName);
+        final OAuth2ClientProviderProperties oauth2Provider = properties.getOauth2Provider(providerName);
 
         httpServletResponse.sendRedirect(UriComponentsBuilder.fromHttpUrl(oauth2Provider.getAuthorizationUri())
                 .queryParam("client_id", registration.getClientId())
