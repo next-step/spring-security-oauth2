@@ -1,17 +1,17 @@
 package nextstep.app.application.github;
 
-import nextstep.app.application.OAuth2Provider;
-import nextstep.security.authentication.OAuth2AuthenticationRequestStrategy;
+import nextstep.security.authentication.oauth.OAuth2AuthenticationRequestStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@OAuth2Provider("github")
 public class GithubAuthenticationRequestStrategy implements OAuth2AuthenticationRequestStrategy {
     private static final String SCOPE = "read:user";
     
     @Value("${oauth2.github.client-id}")
     private String clientId;
+    @Value("${oauth2.github.client-secret}")
+    private String clientSecret;
     @Value("${oauth2.github.authorization.request-uri}")
     private String baseRequestUri;
     @Value("${oauth2.github.authorization.redirect-uri}")
@@ -30,6 +30,11 @@ public class GithubAuthenticationRequestStrategy implements OAuth2Authentication
     @Override
     public String getClientId() {
         return clientId;
+    }
+
+    @Override
+    public String getClientSecret() {
+        return clientSecret;
     }
 
     @Override
