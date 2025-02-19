@@ -2,7 +2,8 @@ package nextstep.app.application.github;
 
 import nextstep.app.application.github.dto.GithubTokenRequest;
 import nextstep.app.application.github.dto.GithubTokenResponse;
-import nextstep.security.authentication.OAuth2TokenRequestStrategy;
+import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
+import nextstep.security.authentication.oauth.OAuth2TokenRequestStrategy;
 import nextstep.security.authentication.TokenRequest;
 import nextstep.security.authentication.TokenResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,12 +12,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class GithubTokenRequestStrategy implements OAuth2TokenRequestStrategy {
 
-    @Value("${oauth2.github.client-id}")
-    private String clientId;
-    @Value("${oauth2.github.client-secret}")
-    private String clientSecret;
-    @Value("${oauth2.github.token.redirect-uri}")
-    private String redirectUri;
     @Value("${oauth2.github.token.request-uri}")
     private String requestUri;
 
@@ -26,8 +21,10 @@ public class GithubTokenRequestStrategy implements OAuth2TokenRequestStrategy {
     }
 
     @Override
-    public TokenRequest requestToken(String code) {
-        return GithubTokenRequest.of(clientId, clientSecret, code, redirectUri);
+    public TokenRequest requestToken(OAuth2AuthorizationRequest request, String code) {
+        return GithubTokenRequest.of(
+                request.clientId(), request.clientSecret(), code, request.redirectUri()
+        );
     }
 
     @Override

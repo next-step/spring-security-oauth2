@@ -1,10 +1,11 @@
 package nextstep.app.application;
 
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.OAuth2TokenRequestStrategy;
+import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
+import nextstep.security.authentication.oauth.OAuth2TokenRequestStrategy;
 import nextstep.security.authentication.TokenRequest;
 import nextstep.security.authentication.TokenResponse;
-import nextstep.security.authentication.OAuth2TokenRequester;
+import nextstep.security.authentication.oauth.OAuth2TokenRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -34,14 +35,14 @@ public class OAuth2TokenStrategyRequester implements OAuth2TokenRequester {
     }
 
     @Override
-    public TokenResponse request(String oAuth2Type, String code) {
-        OAuth2TokenRequestStrategy strategy = strategies.get(oAuth2Type);
+    public TokenResponse request(OAuth2AuthorizationRequest authorizationRequest, String code) {
+        OAuth2TokenRequestStrategy strategy = strategies.get(authorizationRequest.registrationId());
         if (strategy == null) {
-            throw new IllegalArgumentException("Unsupported OAuth2 auth2Type: " + oAuth2Type);
+            throw new IllegalArgumentException("Unsupported OAuth2 auth2Type: " + authorizationRequest.registrationId());
         }
 
         try {
-            TokenRequest request = strategy.requestToken(code);
+            TokenRequest request = strategy.requestToken(authorizationRequest, code);
             String requestUri = strategy.getRequestUri();
             var response = restTemplate.postForEntity(
                     requestUri,
