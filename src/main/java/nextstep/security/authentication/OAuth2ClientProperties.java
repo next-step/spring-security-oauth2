@@ -80,6 +80,7 @@ public class OAuth2ClientProperties {
     private String authorizationUri;
     private String tokenUri;
     private String userInfoUri;
+    private String accessTokenUri;
 
     public String getAuthorizationUri() {
       return authorizationUri;
@@ -103,6 +104,14 @@ public class OAuth2ClientProperties {
 
     public void setUserInfoUri(String userInfoUri) {
       this.userInfoUri = userInfoUri;
+    }
+
+    public String getAccessTokenUri() {
+      return accessTokenUri;
+    }
+
+    public void setAccessTokenUri(String accessTokenUri) {
+      this.accessTokenUri = accessTokenUri;
     }
   }
 }
