@@ -4,7 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @ConfigurationProperties(prefix = "spring.security.oauth2.client")
@@ -24,7 +23,7 @@ public class OAuth2ClientProperties {
         OAuth2ClientProperties.Registration registration = this.registration.get(registrationId);
 
         if (registration == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("OAuth2 registration not found for '" + registrationId + "'");
         }
 
         return registration;
@@ -34,7 +33,7 @@ public class OAuth2ClientProperties {
         Provider provider = this.provider.get(registrationId);
 
         if (provider == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("OAuth2 provider not found for '" + registrationId + "'");
         }
 
         return provider;

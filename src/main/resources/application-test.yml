@@ -6,11 +6,15 @@ spring:
           github:
             authorization-uri: https://github.com/login/oauth/authorize
             token-uri: http://localhost:8089/login/oauth/access_token
+#            token-uri: /access_token
             user-info-uri: http://localhost:8089/user
+#            user-info-uri: /user
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: http://localhost:8089/token
+#            token-uri: /token
             user-info-uri: http://localhost:8089/oauth2/v1/userinfo
+#            user-info-uri: /oauth2/v1/userinfo
         registration:
           github:
             provider: gitHub

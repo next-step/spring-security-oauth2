@@ -20,7 +20,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         this.oAuth2ClientProperties = oAuth2ClientProperties;
     }
 
-    public static String extractRegistrationId(String requestUri) {
+    public String extractRegistrationId(String requestUri) {
         return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
     }
 
