@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -79,6 +80,8 @@ class GithubAuthenticationFilterTest {
     private void stubForAccessToken(UserStub user) throws JsonProcessingException {
         stubFor(post(
                 urlEqualTo("/login/oauth/access_token")
+        ).withRequestBody(
+                containing("code=" + user.code)
         ).willReturn(
                 aResponse().withHeader(
                         HttpHeaders.CONTENT_TYPE, "application/json"
