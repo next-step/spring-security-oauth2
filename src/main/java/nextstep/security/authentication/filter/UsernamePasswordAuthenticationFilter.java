@@ -53,7 +53,7 @@ public class UsernamePasswordAuthenticationFilter extends GenericFilterBean {
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authenticationResult);
             SecurityContextHolder.setContext(context);
-            this.securityContextRepository.saveContext(context, request, response);
+            this.securityContextRepository.saveContext(context, request);
 
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();

@@ -100,7 +100,6 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
     private void registerAuthenticationContext(HttpServletRequest request, UserDetails userDetails) {
         OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticated);
-        request.getSession()
-                .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+        securityContextRepository.saveContext(SecurityContextHolder.getContext(), request);
     }
 }
