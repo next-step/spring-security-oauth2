@@ -2,7 +2,9 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.oauth.GithubAuthenticationFilter;
 import nextstep.oauth.GithubRedirectFilter;
+import nextstep.oauth.GoogleAuthenticationFilter;
 import nextstep.oauth.GoogleRedirectFilter;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
@@ -62,7 +64,9 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new GithubRedirectFilter(),
+                        new GithubAuthenticationFilter(memberRepository),
                         new GoogleRedirectFilter(),
+                        new GoogleAuthenticationFilter(memberRepository),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
