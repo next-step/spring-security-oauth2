@@ -5,9 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
-import nextstep.security.authentication.OAuth2AuthenticationRequestResolver;
-import nextstep.security.authentication.OAuth2ProviderSupportChecker;
-import nextstep.security.authentication.UnsupportedOAuth2ProviderException;
+import nextstep.security.authentication.oauth.OAuth2AuthenticationRequestResolver;
+import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
+import nextstep.security.userservice.OAuth2ClientRegistration;
+import nextstep.security.userservice.OAuth2UserService;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,10 +18,10 @@ public class OAuth2RedirectAuthenticationFilter extends OncePerRequestFilter {
 
     private final MvcRequestMatcher requestMatcher;
     private final OAuth2AuthenticationRequestResolver oAuth2AuthenticationRequestResolver;
-    private final OAuth2ProviderSupportChecker providerSupportChecker;
+    private final OAuth2UserService auth2UserService;
 
-    public OAuth2RedirectAuthenticationFilter(OAuth2AuthenticationRequestResolver oAuth2AuthenticationRequestResolver, OAuth2ProviderSupportChecker providerSupportChecker) {
-        this.providerSupportChecker = providerSupportChecker;
+    public OAuth2RedirectAuthenticationFilter(OAuth2AuthenticationRequestResolver oAuth2AuthenticationRequestResolver, OAuth2UserService auth2UserService) {
+        this.auth2UserService = auth2UserService;
         this.requestMatcher = new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/{provider}");
         this.oAuth2AuthenticationRequestResolver = oAuth2AuthenticationRequestResolver;
     }
@@ -33,18 +34,17 @@ public class OAuth2RedirectAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String oAuth2Type = getOAuth2Type(request.getRequestURI());
-        String authorizationUri = oAuth2AuthenticationRequestResolver.resolve(oAuth2Type);
+        OAuth2ClientRegistration clientRegistration = auth2UserService.loadClientRegistrationByRegistrationId(oAuth2Type);
 
-        response.sendRedirect(authorizationUri);
+        OAuth2AuthorizationRequest authorizationRequest = oAuth2AuthenticationRequestResolver.resolve(clientRegistration);
+
+        auth2UserService.saveOAuth2AuthorizationRequest(authorizationRequest);
+
+        response.sendRedirect(authorizationRequest.authorizationUri());
     }
 
     private boolean noRequiresAuthentication(HttpServletRequest request) {
-        try {
-            providerSupportChecker.checkRequest(request, requestMatcher);
-            return false;
-        } catch (UnsupportedOAuth2ProviderException e) {
-            return true;
-        }
+        return !requestMatcher.matches(request);
     }
 
     private String getOAuth2Type(String requestUri) {
