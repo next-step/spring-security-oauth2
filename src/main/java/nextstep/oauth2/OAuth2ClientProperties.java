@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @ConfigurationProperties(prefix = "spring.security.oauth2.client")
@@ -17,6 +18,26 @@ public class OAuth2ClientProperties {
 
     public Map<String, Registration> getRegistration() {
         return this.registration;
+    }
+
+    public Registration findRegistration(final String registrationId) {
+        OAuth2ClientProperties.Registration registration = this.registration.get(registrationId);
+
+        if (registration == null) {
+            throw new IllegalArgumentException();
+        }
+
+        return registration;
+    }
+
+    public Provider findProvider(final String registrationId) {
+        Provider provider = this.provider.get(registrationId);
+
+        if (provider == null) {
+            throw new IllegalArgumentException();
+        }
+
+        return provider;
     }
 
     public static class Provider {

@@ -28,6 +28,8 @@ public class GoogleAuthenticationFilter extends OncePerRequestFilter {
     private static final String GOOGLE_ACCESS_TOKEN_REQUEST_URI = "http://localhost:8089/token";
     //    public static final String GOOGLE_ACCESS_TOKEN_REQUEST_URI = "https://oauth2.googleapis.com/token";
 //    public static final String GOOGLE_USER_INFO_REQUEST_URI = "https://www.googleapis.com/oauth2/v1/userinfo";
+    public static final String REDIRECT_URI = "http://localhost:8080/login/oauth2/code/google";
+
     private static final RestClient restClient = RestClient.create();
     private final MemberRepository memberRepository = new InmemoryMemberRepository();
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -90,7 +92,7 @@ public class GoogleAuthenticationFilter extends OncePerRequestFilter {
         body.add("client_id", "176481963463-r1n0954hb0g0tmrefbiq920k7014ka0n.apps.googleusercontent.com");
         body.add("client_secret", "secret");
         body.add("code", code);
-        body.add("redirect_uri", GoogleLoginRedirectFilter.REDIRECT_URI);
+        body.add("redirect_uri", REDIRECT_URI);
         body.add("grant_type", "authorization_code");
 
         return restClient.post()

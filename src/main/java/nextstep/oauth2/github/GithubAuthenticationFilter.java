@@ -25,8 +25,10 @@ public class GithubAuthenticationFilter extends OncePerRequestFilter {
     public static final String GITHUB_AUTHORIZATION_REDIRECT_URI = "/login/oauth2/code/github";
     public static final String GITHUB_USER_INFO_REQUEST_URI = "http://localhost:8089/user";
     private static final String GITHUB_ACCESS_TOKEN_REQUEST_URI = "http://localhost:8089/login/oauth/access_token";
-//    public static final String GITHUB_ACCESS_TOKEN_REQUEST_URI = "https://github.com/login/oauth/access_token";
+    //    public static final String GITHUB_ACCESS_TOKEN_REQUEST_URI = "https://github.com/login/oauth/access_token";
 //    public static final String GITHUB_USER_INFO_REQUEST_URI = "https://api.github.com/user";
+    public static final String REDIRECT_URI = "http://localhost:8080/login/oauth2/code/github";
+
     private static final RestClient restClient = RestClient.create();
     private final MemberRepository memberRepository = new InmemoryMemberRepository();
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -87,7 +89,7 @@ public class GithubAuthenticationFilter extends OncePerRequestFilter {
         body.add("client_id", "Ov23liWTGdV9MeJBRLwC");
         body.add("client_secret", "secret");
         body.add("code", code);
-        body.add("redirect_uri", GithubLoginRedirectFilter.REDIRECT_URI);
+        body.add("redirect_uri", REDIRECT_URI);
 
         return restClient.post()
                 .uri(url)
