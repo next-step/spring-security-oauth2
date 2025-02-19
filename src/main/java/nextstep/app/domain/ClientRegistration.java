@@ -15,6 +15,21 @@ public record ClientRegistration(
         return registrationId;
     }
 
+    @Override
+    public String getClientId() {
+        return this.clientId;
+    }
+
+    @Override
+    public String getRedirectUri() {
+        return this.redirectUri;
+    }
+
+    @Override
+    public String getScope() {
+        return this.scope;
+    }
+
     public static class Builder {
         private String registrationId;
         private String clientId;

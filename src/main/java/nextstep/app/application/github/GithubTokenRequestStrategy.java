@@ -14,10 +14,12 @@ public class GithubTokenRequestStrategy implements OAuth2TokenRequestStrategy {
 
     @Value("${oauth2.github.token.request-uri}")
     private String requestUri;
+    @Value("${oauth2.github.registration-id}")
+    private String registrationId;
 
     @Override
     public String getRegistrationId() {
-        return "github";
+        return registrationId;
     }
 
     @Override

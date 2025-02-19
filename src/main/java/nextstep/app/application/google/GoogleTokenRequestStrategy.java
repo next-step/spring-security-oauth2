@@ -14,10 +14,12 @@ public class GoogleTokenRequestStrategy implements OAuth2TokenRequestStrategy {
 
     @Value("${oauth2.google.token.request-uri}")
     private String requestUri;
+    @Value("${oauth2.google.registration-id}")
+    private String registrationId;
 
     @Override
     public String getRegistrationId() {
-        return "google";
+        return registrationId;
     }
 
     @Override

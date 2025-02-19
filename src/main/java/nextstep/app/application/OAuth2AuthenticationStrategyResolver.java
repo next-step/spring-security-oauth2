@@ -27,25 +27,22 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
 
     @Override
     public OAuth2AuthorizationRequest resolve(OAuth2ClientRegistration clientRegistration) {
-        OAuth2AuthenticationRequestStrategy strategy = findStrategyByRegistrationId(clientRegistration.getRegistrationId());
+        OAuth2AuthenticationRequestStrategy strategy = strategies.get(clientRegistration.getRegistrationId());
+        if (strategy == null) {
+            throw new IllegalArgumentException("Unsupported registrationId: " + clientRegistration.getRegistrationId());
+        }
 
         String randomState = UUID.randomUUID().toString();
+
         String authorizationUri = UriComponentsBuilder.fromHttpUrl(strategy.getBaseRequestUri())
                 .queryParam("response_type", OAuth2AuthenticationRequestStrategy.RESPONSE_TYPE)
-                .queryParam("client_id", strategy.getClientId())
-                .queryParam("scope", strategy.getScope())
+                .queryParam("client_id", clientRegistration.getClientId())
+                .queryParam("scope", clientRegistration.getScope())
                 .queryParam("state", randomState)
-                .queryParam("redirect_uri", strategy.getRedirectUri())
+                .queryParam("redirect_uri",clientRegistration.getRedirectUri())
                 .toUriString();
 
         return new OAuth2AuthorizationRecord(clientRegistration.getRegistrationId(), authorizationUri, randomState);
     }
 
-    private OAuth2AuthenticationRequestStrategy findStrategyByRegistrationId(String registrationId) {
-        OAuth2AuthenticationRequestStrategy strategy = strategies.get(registrationId);
-        if (strategy == null) {
-            throw new IllegalArgumentException("Unsupported registrationId: " + registrationId);
-        }
-        return strategy;
-    }
 }

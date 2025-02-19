@@ -6,44 +6,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class GoogleAuthenticationRequestStrategy implements OAuth2AuthenticationRequestStrategy {
-    private static final String SCOPE = "email profile";
-    
-    @Value("${oauth2.google.client-id}")
-    private String clientId;
-    @Value("${oauth2.google.client-secret}")
-    private String clientSecret;
+
     @Value("${oauth2.google.authorization.request-uri}")
     private String baseRequestUri;
-    @Value("${oauth2.google.authorization.redirect-uri}")
-    private String redirectUri;
+    @Value("${oauth2.google.registration-id}")
+    private String registrationId;
 
     @Override
     public String getRegistrationId() {
-        return "google";
+        return registrationId;
     }
 
-    @Override
-    public String getScope() {
-        return SCOPE;
-    }
-
-    @Override
-    public String getClientId() {
-        return clientId;
-    }
-
-    @Override
-    public String getClientSecret() {
-        return clientSecret;
-    }
 
     @Override
     public String getBaseRequestUri() {
         return baseRequestUri;
     }
 
-    @Override
-    public String getRedirectUri() {
-        return redirectUri;
-    }
 }

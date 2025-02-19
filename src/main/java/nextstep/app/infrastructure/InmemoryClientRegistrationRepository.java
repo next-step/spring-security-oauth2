@@ -1,8 +1,8 @@
 package nextstep.app.infrastructure;
 
+import nextstep.app.config.OAuth2Properties;
 import nextstep.app.domain.ClientRegistration;
 import nextstep.app.domain.ClientRegistrationRepository;
-import nextstep.security.authentication.oauth.OAuth2AuthenticationRequestStrategy;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,11 +16,12 @@ public class InmemoryClientRegistrationRepository implements ClientRegistrationR
 
     private final Map<String, ClientRegistration> clientRegistrations;
 
-    public InmemoryClientRegistrationRepository(List<OAuth2AuthenticationRequestStrategy> strategies) {
-        clientRegistrations = strategies.stream()
+    public InmemoryClientRegistrationRepository(List<OAuth2Properties> properties) {
+        this.clientRegistrations = properties.stream()
+                .map(this::createClientRegistration)
                 .collect(Collectors.toUnmodifiableMap(
-                        OAuth2AuthenticationRequestStrategy::getRegistrationId,
-                        getClientRegistrationFunction()
+                        ClientRegistration::registrationId,
+                        Function.identity()
                 ));
     }
 
@@ -29,14 +30,14 @@ public class InmemoryClientRegistrationRepository implements ClientRegistrationR
         return Optional.ofNullable(clientRegistrations.get(registrationId));
     }
 
-    private Function<OAuth2AuthenticationRequestStrategy, ClientRegistration> getClientRegistrationFunction() {
-        return it ->
-                ClientRegistration.builder()
-                        .registrationId(it.getRegistrationId())
-                        .clientId(it.getClientId())
-                        .clientSecret(it.getClientSecret())
-                        .redirectUri(it.getRedirectUri())
-                        .scope(it.getScope())
-                        .build();
+
+    private ClientRegistration createClientRegistration(OAuth2Properties properties) {
+        return ClientRegistration.builder()
+                .registrationId(properties.getRegistrationId())
+                .clientId(properties.getClientId())
+                .clientSecret(properties.getClientSecret())
+                .redirectUri(properties.getAuthorization().getRedirectUri())
+                .scope(properties.getScope())
+                .build();
     }
 }

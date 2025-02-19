@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 public class GithubEmailResolveStrategy implements OAuth2EmailResolveStrategy {
     @Value("${oauth2.github.user.request-uri}")
     private String requestUri;
+    @Value("${oauth2.github.registration-id}")
+    private String registrationId;
 
     @Override
     public String getRegistrationId() {
-        return "github";
+        return registrationId;
     }
 
     @Override

@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 public class GoogleEmailResolveStrategy implements OAuth2EmailResolveStrategy {
     @Value("${oauth2.google.user.request-uri}")
     private String requestUri;
+    @Value("${oauth2.google.registration-id}")
+    private String registrationId;
 
     @Override
     public String getRegistrationId() {
-        return "google";
+        return registrationId;
     }
 
     @Override
