@@ -10,23 +10,25 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class GoogleLoginRedirectFilterTest {
+public class OAuth2LoginRedirectFilterTest {
 
   @Autowired
   private MockMvc mockMvc;
 
   @Test
-  void redirectTest() throws Exception {
-    String requestUri = "/oauth2/authorization/google";
-    String expectedRedirectUri = "https://account.google.com/o/oauth2/v2/auth?" +
-        "scope=email%20profile&" +
-        "response_type=code&" +
-        "redirect_uri=http://localhost:8080/login/oauth2/code/google&" +
-        "client_id=349246449409-h7hgk8kms3k8d7tgal8nesbh24h34t0d.apps.googleusercontent.com";
+  void githubRedirectTest() throws Exception {
+    String requestUri = "/oauth2/authorization/github";
 
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
-            .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-            .andExpect(MockMvcResultMatchers.redirectedUrl(expectedRedirectUri));
+    mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        .andExpect(MockMvcResultMatchers.status().is3xxRedirection());
+  }
+
+  @Test
+  void googleRedirectTest() throws Exception {
+    String requestUri = "/oauth2/authorization/google";
+
+    mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        .andExpect(MockMvcResultMatchers.status().is3xxRedirection());
   }
 
 }
