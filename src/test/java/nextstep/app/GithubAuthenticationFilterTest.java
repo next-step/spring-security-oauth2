@@ -3,6 +3,8 @@ package nextstep.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
+import nextstep.app.domain.OAuth2AuthorizationRecord;
+import nextstep.app.domain.OAuth2AuthorizationRecordRepository;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,15 +33,29 @@ class GithubAuthenticationFilterTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private OAuth2AuthorizationRecordRepository oAuth2AuthorizationRecordRepository;
+
     @BeforeEach
     void setupMockServer() throws Exception {
         stubForAccessToken();
         stubForUser();
+        OAuth2AuthorizationRecord oAuth2AuthorizationRecord = OAuth2AuthorizationRecord.of(
+                "github",
+                "code",
+                "mock",
+                "/login/oauth2/code/github?code=mock_code&state=mock_state",
+                "비밀비밀",
+                "mcok",
+                "scope",
+                "mock_state"
+        );
+        oAuth2AuthorizationRecordRepository.save(oAuth2AuthorizationRecord);
     }
 
     @Test
     void redirectAndRequestGithubAccessToken() throws Exception {
-        String requestUri = "/login/oauth2/code/github?code=mock_code";
+        String requestUri = "/login/oauth2/code/github?code=mock_code&state=mock_state";
 
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
