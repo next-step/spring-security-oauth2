@@ -26,7 +26,7 @@ public class OAuth2EmailStrategyResolver implements OAuth2EmailResolver {
     public OAuth2EmailStrategyResolver(RestTemplate restTemplate, List<OAuth2EmailResolveStrategy> strategies) {
         this.restTemplate = restTemplate;
         this.strategies = strategies.stream()
-                .collect(Collectors.toMap(
+                .collect(Collectors.toUnmodifiableMap(
                         OAuth2EmailResolveStrategy::getOAuth2Type,
                         strategy -> strategy
                 ));

@@ -27,7 +27,7 @@ public class OAuth2TokenStrategyRequester implements OAuth2TokenRequester {
     public OAuth2TokenStrategyRequester(RestTemplate restTemplate, List<OAuth2TokenRequestStrategy> strategies) {
         this.restTemplate = restTemplate;
         this.strategies = strategies.stream()
-                .collect(Collectors.toMap(
+                .collect(Collectors.toUnmodifiableMap(
                         OAuth2TokenRequestStrategy::getOAuth2Type,
                         strategy -> strategy
                 ));

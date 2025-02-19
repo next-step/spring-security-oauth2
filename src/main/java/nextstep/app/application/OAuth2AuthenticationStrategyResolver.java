@@ -3,6 +3,7 @@ package nextstep.app.application;
 import nextstep.security.authentication.OAuth2AuthenticationRequestResolver;
 import nextstep.security.authentication.OAuth2AuthenticationRequestStrategy;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
 
     public OAuth2AuthenticationStrategyResolver(List<OAuth2AuthenticationRequestStrategy> strategies) {
         this.strategies = strategies.stream()
-                .collect(Collectors.toMap(
+                .collect(Collectors.toUnmodifiableMap(
                         OAuth2AuthenticationRequestStrategy::getOAuth2Type,
                         strategy -> strategy
                 ));
@@ -27,10 +28,11 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
             throw new IllegalArgumentException("Unsupported OAuth2 type: " + oAuth2Type);
         }
 
-        return strategy.getBaseRequestUri()
-                + "?response_type=" + OAuth2AuthenticationRequestStrategy.RESPONSE_TYPE
-                + "&client_id=" + strategy.getClientId()
-                + "&scope=" + strategy.getScope()
-                + "&redirect_uri=" + strategy.getRedirectUri();
+        return UriComponentsBuilder.fromHttpUrl(strategy.getBaseRequestUri())
+                .queryParam("response_type", OAuth2AuthenticationRequestStrategy.RESPONSE_TYPE)
+                .queryParam("client_id", strategy.getClientId())
+                .queryParam("scope", strategy.getScope())
+                .queryParam("redirect_uri", strategy.getRedirectUri())
+                .toUriString();
     }
 }
