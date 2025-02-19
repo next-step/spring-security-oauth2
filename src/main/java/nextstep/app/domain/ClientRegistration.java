@@ -6,7 +6,6 @@ public record ClientRegistration(
         String registrationId, // provider
         String clientId,
         String clientSecret,
-        String clientAuthenticationMethod,
         String redirectUri,
         String scope
 ) implements OAuth2ClientRegistration {
@@ -16,31 +15,10 @@ public record ClientRegistration(
         return registrationId;
     }
 
-    @Override
-    public String getClientId() {
-        return clientId;
-    }
-
-    @Override
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    @Override
-    public String getRedirectUri() {
-        return redirectUri;
-    }
-
-    @Override
-    public String getScope() {
-        return scope;
-    }
-
     public static class Builder {
         private String registrationId;
         private String clientId;
         private String clientSecret;
-        private String clientAuthenticationMethod;
         private String redirectUri;
         private String scope;
 
@@ -74,7 +52,6 @@ public record ClientRegistration(
                     registrationId,
                     clientId,
                     clientSecret,
-                    clientAuthenticationMethod,
                     redirectUri,
                     scope
             );

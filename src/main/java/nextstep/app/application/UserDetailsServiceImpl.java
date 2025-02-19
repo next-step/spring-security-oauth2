@@ -26,8 +26,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails addNewMemberByOAuth2(String email, String name) {
-        Member saved = memberRepository.save(Member.oAuthMember(email, name));
+    public UserDetails addNewMemberByOAuth2(String email) {
+        Member saved = memberRepository.save(Member.oAuthMember(email));
         return new UserDetailsImpl(saved.getEmail(), saved.getPassword(), saved.getRoles());
     }
 
