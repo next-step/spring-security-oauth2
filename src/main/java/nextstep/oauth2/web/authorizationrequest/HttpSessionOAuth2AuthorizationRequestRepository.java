@@ -36,10 +36,9 @@ public class HttpSessionOAuth2AuthorizationRequestRepository implements OAuth2Au
     }
 
     @Override
-    public OAuth2AuthorizationRequest removeAuthorizationRequest
-            (HttpServletRequest request,
-             HttpServletResponse response
-            ) {
+    public OAuth2AuthorizationRequest removeAuthorizationRequest(
+            HttpServletRequest request, HttpServletResponse response
+    ) {
         final OAuth2AuthorizationRequest authorizationRequest = loadAuthorizationRequest(request);
         request.getSession().removeAttribute(ATTRIBUTE_NAME);
         return authorizationRequest;

@@ -44,7 +44,8 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        final OAuth2LoginAuthenticationToken loginToken = getLoginToken(request);
+        final OAuth2AuthorizationRequest authorizationRequest = popAuthorizationRequest(request, response);
+        final OAuth2LoginAuthenticationToken loginToken = getLoginToken(request, authorizationRequest);
         final OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
                 loginToken.getClientRegistration(),
                 loginToken.getPrincipal().toString(),
@@ -59,11 +60,10 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
     }
 
     public OAuth2LoginAuthenticationToken getLoginToken(
-            HttpServletRequest request
+            HttpServletRequest request, OAuth2AuthorizationRequest authorizationRequest
     ) {
         final MultiValueMap<String, String> params = getParams(request);
         final ClientRegistration clientRegistration = getClientRegistration(request);
-        final OAuth2AuthorizationRequest authorizationRequest = getAuthorizationRequest(request);
         final OAuth2AuthorizationResponse authorizationResponse = new OAuth2AuthorizationResponse(
                 clientRegistration.redirectUri(),
                 params.getFirst(OAuth2ParameterNames.CODE),
@@ -107,8 +107,10 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
         return clientRegistration;
     }
 
-    public OAuth2AuthorizationRequest getAuthorizationRequest(HttpServletRequest request) {
-        final OAuth2AuthorizationRequest authorizationRequest = requestRepository.loadAuthorizationRequest(request);
+    public OAuth2AuthorizationRequest popAuthorizationRequest(
+            HttpServletRequest request, HttpServletResponse response
+    ) {
+        final OAuth2AuthorizationRequest authorizationRequest = requestRepository.removeAuthorizationRequest(request, response);
         if (authorizationRequest == null) {
             throw new OAuth2AuthenticationException();
         }
