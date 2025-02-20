@@ -6,7 +6,7 @@ import nextstep.security.authentication.Authentication;
 
 public interface OAuth2AuthorizedClientRepository {
     static OAuth2AuthorizedClientRepository getInstance() {
-        return OAuth2AuthorizedClientDao.getInstance();
+        return HttpSessionOAuth2AuthorizedClientRepository.getInstance();
     }
 
     OAuth2AuthorizedClient loadAuthorizedClient(

@@ -11,8 +11,8 @@ public record OAuth2ClientProperties(
         Map<String, Provider> provider,
         Map<String, Registration> registration
 ) {
-    public ClientRegistrationDao createClientRegistrationDao() {
-        return new ClientRegistrationDao(getClientRegistration());
+    public InMemoryClientRegistrationRepository createClientRegistrationDao() {
+        return new InMemoryClientRegistrationRepository(getClientRegistration());
     }
 
     private Map<String, ClientRegistration> getClientRegistration() {

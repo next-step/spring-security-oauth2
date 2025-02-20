@@ -8,12 +8,12 @@ import nextstep.security.authentication.Authentication;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OAuth2AuthorizedClientDao implements OAuth2AuthorizedClientRepository {
+public class HttpSessionOAuth2AuthorizedClientRepository implements OAuth2AuthorizedClientRepository {
     private static final String ATTRIBUTE_NAME = "AUTHORIZED_CLIENTS";
 
-    private OAuth2AuthorizedClientDao() {}
+    private HttpSessionOAuth2AuthorizedClientRepository() {}
 
-    public static OAuth2AuthorizedClientDao getInstance() {
+    public static HttpSessionOAuth2AuthorizedClientRepository getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -53,6 +53,6 @@ public class OAuth2AuthorizedClientDao implements OAuth2AuthorizedClientReposito
     }
 
     private static class SingletonHolder {
-        private static final OAuth2AuthorizedClientDao INSTANCE = new OAuth2AuthorizedClientDao();
+        private static final HttpSessionOAuth2AuthorizedClientRepository INSTANCE = new HttpSessionOAuth2AuthorizedClientRepository();
     }
 }

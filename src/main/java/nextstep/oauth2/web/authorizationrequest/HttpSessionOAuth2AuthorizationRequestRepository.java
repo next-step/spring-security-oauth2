@@ -7,12 +7,12 @@ import nextstep.oauth2.endpoint.dto.OAuth2AuthorizationRequest;
 import nextstep.oauth2.exception.UnmatchedStateException;
 import nextstep.oauth2.web.OAuth2ParameterNames;
 
-public class OAuth2AuthorizationRequestDao implements OAuth2AuthorizationRequestRepository {
+public class HttpSessionOAuth2AuthorizationRequestRepository implements OAuth2AuthorizationRequestRepository {
     private final String ATTRIBUTE_NAME = "AUTHORIZATION_REQUEST";
 
-    private OAuth2AuthorizationRequestDao() {}
+    private HttpSessionOAuth2AuthorizationRequestRepository() {}
 
-    public static OAuth2AuthorizationRequestDao getInstance() {
+    public static HttpSessionOAuth2AuthorizationRequestRepository getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -63,6 +63,6 @@ public class OAuth2AuthorizationRequestDao implements OAuth2AuthorizationRequest
     }
 
     private static class SingletonHolder {
-        private static final OAuth2AuthorizationRequestDao INSTANCE = new OAuth2AuthorizationRequestDao();
+        private static final HttpSessionOAuth2AuthorizationRequestRepository INSTANCE = new HttpSessionOAuth2AuthorizationRequestRepository();
     }
 }

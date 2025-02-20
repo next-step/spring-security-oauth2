@@ -6,10 +6,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Map;
 
 @Repository
-public final class ClientRegistrationDao implements ClientRegistrationRepository {
+public final class InMemoryClientRegistrationRepository implements ClientRegistrationRepository {
     private final Map<String, ClientRegistration> registrations;
 
-    public ClientRegistrationDao(Map<String, ClientRegistration> registrations) {
+    public InMemoryClientRegistrationRepository(Map<String, ClientRegistration> registrations) {
         this.registrations = registrations;
     }
 

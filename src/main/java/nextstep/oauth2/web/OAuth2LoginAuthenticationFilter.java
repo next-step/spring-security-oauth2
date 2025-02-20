@@ -10,7 +10,7 @@ import nextstep.oauth2.endpoint.dto.OAuth2AuthorizationResponse;
 import nextstep.oauth2.exception.OAuth2AuthenticationException;
 import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
-import nextstep.oauth2.web.authorizationrequest.OAuth2AuthorizationRequestDao;
+import nextstep.oauth2.web.authorizationrequest.HttpSessionOAuth2AuthorizationRequestRepository;
 import nextstep.oauth2.web.authorizationrequest.OAuth2AuthorizationRequestRepository;
 import nextstep.oauth2.web.authorizedclient.OAuth2AuthorizedClient;
 import nextstep.oauth2.web.authorizedclient.OAuth2AuthorizedClientRepository;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     private static final String BASE_URI = "/login/oauth2/code/";
-    private static final OAuth2AuthorizationRequestRepository requestRepository = OAuth2AuthorizationRequestDao.getInstance();
+    private static final OAuth2AuthorizationRequestRepository requestRepository = HttpSessionOAuth2AuthorizationRequestRepository.getInstance();
 
     private final ClientRegistrationRepository registrationRepository;
     private final OAuth2AuthorizedClientRepository clientRepository;
