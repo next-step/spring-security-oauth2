@@ -52,12 +52,13 @@ public final class OAuth2AuthorizationCodeAuthenticationToken implements Authent
 
     @Override
     public Object getCredentials() {
-        return null;
+        return (accessToken != null) ? accessToken.token()
+                : authorizationExchange.authorizationResponse().code();
     }
 
     @Override
     public Object getPrincipal() {
-        return null;
+        return clientRegistration.clientId();
     }
 
     @Override
