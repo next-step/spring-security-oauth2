@@ -1,5 +1,8 @@
 package nextstep.security.oauth2.exchange;
 
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.util.Set;
 
 public final class OAuth2AuthorizationRequest {

@@ -93,7 +93,7 @@ class GithubAuthenticationFilterTest {
                                                                                     .clientId(github.getClientId())
                                                                                     .redirectUri(github.getRedirectUri())
                                                                                     .scopes(github.getScopes())
-                                                                                    .authorizationRequestUri(github.getAuthorizationRequestUri())
+                                                                                    .authorizationRequestUri(github.getAuthorizationUri())
                                                                                     .build();
 
         MockHttpSession mockSession = new MockHttpSession();

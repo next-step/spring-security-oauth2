@@ -5,7 +5,7 @@ oauth2:
         clientId: ...
         clientSecret: ...
         redirectUri: http://localhost:8089/login/oauth2/code/google
-        authorizationRequestUri: https://accounts.google.com/o/oauth2/auth?
+        authorizationUri: https://accounts.google.com/o/oauth2/auth?
         scopes:
           - https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
 
@@ -13,7 +13,7 @@ oauth2:
         clientId: ...
         clientSecret: ...
         redirectUri: http://localhost:8089/login/oauth2/code/github
-        authorizationRequestUri: https://github.com/login/oauth/authorize
+        authorizationUri: https://github.com/login/oauth/authorize
         scopes:
           - read:user
   url:

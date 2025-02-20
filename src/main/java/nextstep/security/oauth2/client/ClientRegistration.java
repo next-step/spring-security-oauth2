@@ -11,17 +11,17 @@ public class ClientRegistration {
     private final String clientId;
     private final String clientSecret;
     private final String redirectUri;
-    private final String authorizationRequestUri;
+    private final String authorizationUri;
     private final Set<String> scopes;
 
     public ClientRegistration(String registrationId, String clientId, String clientSecret,
-                              String redirectUri, String authorizationRequestUri, Set<String> scopes) {
+                              String redirectUri, String authorizationUri, Set<String> scopes) {
 
         this.registrationId = registrationId;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.redirectUri = redirectUri;
-        this.authorizationRequestUri = authorizationRequestUri;
+        this.authorizationUri = authorizationUri;
         this.scopes = scopes;
     }
 
@@ -41,8 +41,8 @@ public class ClientRegistration {
         return redirectUri;
     }
 
-    public String getAuthorizationRequestUri() {
-        return authorizationRequestUri;
+    public String getAuthorizationUri() {
+        return authorizationUri;
     }
 
     public Set<String> getScopes() {

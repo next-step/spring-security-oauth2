@@ -47,14 +47,6 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
                                               OAuth2AuthorizationRequest authorizationRequest) throws IOException {
 
         this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
-
-        UriComponents redirectUrl = UriComponentsBuilder.fromHttpUrl(authorizationRequest.getAuthorizationRequestUri())
-                                                        .queryParam("client_id", authorizationRequest.getClientId())
-                                                        .queryParam("response_type", "code")
-                                                        .queryParam("scope", authorizationRequest.getScopes())
-                                                        .queryParam("redirect_uri", authorizationRequest.getRedirectUri())
-                                                        .build();
-
-        response.sendRedirect(redirectUrl.toUriString());
+        response.sendRedirect(authorizationRequest.getAuthorizationRequestUri());
     }
 }

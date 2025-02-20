@@ -3,6 +3,7 @@ package nextstep.security.oauth2.exchange;
 import jakarta.servlet.http.HttpServletRequest;
 import nextstep.security.oauth2.client.ClientRegistration;
 import nextstep.security.oauth2.client.ClientRegistrationRepository;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class DefaultOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
     private static final String OAUTH2_AUTHORIZATION_URL = "/oauth2/authorization/";
@@ -24,12 +25,19 @@ public class DefaultOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
             return null;
         }
 
+        String authorizationRequestUri = UriComponentsBuilder.fromHttpUrl(clientRegistration.getAuthorizationUri())
+                                                             .queryParam("client_id", clientRegistration.getClientId())
+                                                             .queryParam("response_type", "code")
+                                                             .queryParam("scope", clientRegistration.getScopes())
+                                                             .queryParam("redirect_uri", clientRegistration.getRedirectUri())
+                                                             .build().toUriString();
+
         return OAuth2AuthorizationRequest.builder()
                                          .registrationId(clientRegistration.getRegistrationId())
                                          .clientId(clientRegistration.getClientId())
                                          .redirectUri(clientRegistration.getRedirectUri())
                                          .scopes(clientRegistration.getScopes())
-                                         .authorizationRequestUri(clientRegistration.getAuthorizationRequestUri())
+                                         .authorizationRequestUri(authorizationRequestUri)
                                          .build();
     }
 
