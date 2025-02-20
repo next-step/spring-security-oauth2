@@ -9,8 +9,6 @@ import nextstep.security.oauth2.exchange.AuthorizationRequestRepository;
 import nextstep.security.oauth2.exchange.OAuth2AuthorizationRequest;
 import nextstep.security.oauth2.exchange.OAuth2AuthorizationRequestResolver;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 

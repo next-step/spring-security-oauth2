@@ -60,7 +60,6 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
         // session에서 authorizationRequest를 가져오기
         OAuth2AuthorizationRequest authorizationRequest = this.authorizationRequestRepository
                 .removeAuthorizationRequest(request, response);
-
         if (authorizationRequest == null) {
             throw new OAuth2AuthenticationException("authorizationRequest is null");
         }
@@ -72,7 +71,7 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
             throw new OAuth2AuthenticationException("client registration is null");
         }
 
-        OAuth2AuthorizationResponse authorizationResponse =  OAuth2AuthorizationResponseUtils.convert(params);
+        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponseUtils.convert(params);
 
         // access token 을 가져오기 위한 request 객체 만들기
         // OAuth2LoginAuthenticationToken 만들기

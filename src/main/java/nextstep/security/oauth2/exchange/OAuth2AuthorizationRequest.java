@@ -13,6 +13,8 @@ public final class OAuth2AuthorizationRequest {
 
     private String redirectUri;
 
+    private String state;
+
     private Set<String> scopes;
 
     private String authorizationRequestUri;
@@ -23,6 +25,10 @@ public final class OAuth2AuthorizationRequest {
 
     public String getClientId() {
         return clientId;
+    }
+
+    public String getState() {
+        return state;
     }
 
     public String getRedirectUri() {
@@ -85,6 +91,7 @@ public final class OAuth2AuthorizationRequest {
             oAuth2AuthorizationRequest.clientId = this.clientId;
             oAuth2AuthorizationRequest.scopes = this.scopes;
             oAuth2AuthorizationRequest.redirectUri = this.redirectUri;
+            oAuth2AuthorizationRequest.state = this.state;
             oAuth2AuthorizationRequest.authorizationRequestUri = this.authorizationRequestUri;
             return oAuth2AuthorizationRequest;
         }

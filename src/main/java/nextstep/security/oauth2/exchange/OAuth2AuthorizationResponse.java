@@ -1,8 +1,8 @@
 package nextstep.security.oauth2.exchange;
 
 public class OAuth2AuthorizationResponse {
-    private String code;
-    private String state;
+    private final String code;
+    private final String state;
 
     public OAuth2AuthorizationResponse(String code, String state) {
         this.code = code;

@@ -25,6 +25,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,17 +89,27 @@ class GithubAuthenticationFilterTest {
     @Test
     void loginAndAuthorizeWithGithub() throws Exception {
         ClientRegistration github = clientRegistrations.getMatchingRegistration("github");
+        String state = "mock_state";
+        String authorizationRequestUri = UriComponentsBuilder.fromHttpUrl(github.getAuthorizationUri())
+                                                             .queryParam("client_id", github.getClientId())
+                                                             .queryParam("response_type", "code")
+                                                             .queryParam("scope", github.getScopes())
+                                                             .queryParam("redirect_uri", github.getRedirectUri())
+                                                             .queryParam("state", state)
+                                                             .build().toUriString();
+
         OAuth2AuthorizationRequest authorizationRequest = OAuth2AuthorizationRequest.builder()
                                                                                     .registrationId(github.getRegistrationId())
                                                                                     .clientId(github.getClientId())
                                                                                     .redirectUri(github.getRedirectUri())
                                                                                     .scopes(github.getScopes())
-                                                                                    .authorizationRequestUri(github.getAuthorizationUri())
+                                                                                    .state(state)
+                                                                                    .authorizationRequestUri(authorizationRequestUri)
                                                                                     .build();
 
         MockHttpSession mockSession = new MockHttpSession();
         mockSession.setAttribute(DEFAULT_AUTHORIZATION_REQUEST_ATTR_NAME, authorizationRequest);
-        String requestUri = "/login/oauth2/code/github?code=mock_code";
+        String requestUri = "/login/oauth2/code/github?code=mock_code&state=" + state;
 
         // 인증 성공
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri)
@@ -121,14 +132,14 @@ class GithubAuthenticationFilterTest {
 
         // 사용자 정보 조회 가능
         mockMvc.perform(MockMvcRequestBuilders.get("/members/me")
-                                .session(mockSession))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("a@a.com"));
+                                              .session(mockSession))
+               .andExpect(MockMvcResultMatchers.status().isOk())
+               .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("a@a.com"));
 
         // 어드민 정보 조회 불가능
         mockMvc.perform(MockMvcRequestBuilders.get("/search")
-                                .session(mockSession))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
+                                              .session(mockSession))
+               .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     private static void stubForAccessToken() throws JsonProcessingException {
