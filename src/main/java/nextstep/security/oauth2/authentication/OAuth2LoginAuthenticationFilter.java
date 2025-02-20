@@ -1,9 +1,6 @@
 package nextstep.security.oauth2.authentication;
 
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.authentication.AbstractAuthenticationProcessingFilter;
@@ -42,11 +39,6 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.authenticationManager = authenticationManager;
         this.authorizedClientRepository = authorizedClientRepository;
-    }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        super.doFilter(request, response, chain);
     }
 
     @Override

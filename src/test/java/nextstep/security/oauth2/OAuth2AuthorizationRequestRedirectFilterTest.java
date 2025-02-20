@@ -22,7 +22,7 @@ class OAuth2AuthorizationRequestRedirectFilterTest {
     void githubRedirectTest() throws Exception {
         String requestUri = "/oauth2/authorization/github";
         String expectedRedirectUri = "https://github.com/login/oauth/authorize" +
-                "?client_id= ..." +
+                "?client_id=..." +
                 "&response_type=code" +
                 "&scope=read:user" +
                 "&redirect_uri=http://localhost:8089/login/oauth2/code/github";
@@ -36,7 +36,7 @@ class OAuth2AuthorizationRequestRedirectFilterTest {
     void googleRedirectTest() throws Exception {
         String requestUri = "/oauth2/authorization/google";
         String expectedRedirectUri = "https://accounts.google.com/o/oauth2/auth" +
-                "?client_id= ..." +
+                "?client_id=..." +
                 "&response_type=code" +
                 "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email" +
                 "&redirect_uri=http://localhost:8089/login/oauth2/code/google";
