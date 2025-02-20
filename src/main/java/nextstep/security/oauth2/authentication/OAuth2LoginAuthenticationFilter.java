@@ -16,7 +16,9 @@ import nextstep.security.oauth2.exchange.HttpSessionOAuth2AuthorizationRequestRe
 import nextstep.security.oauth2.exchange.OAuth2AuthorizationExchange;
 import nextstep.security.oauth2.exchange.OAuth2AuthorizationRequest;
 import nextstep.security.oauth2.exchange.OAuth2AuthorizationResponse;
+import nextstep.security.oauth2.utils.OAuth2AuthorizationResponseUtils;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.util.Set;
@@ -50,6 +52,11 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
     protected Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
 
         // request에서 parameter를 가져오기
+        MultiValueMap<String, String> params = OAuth2AuthorizationResponseUtils.toMultiMap(request.getParameterMap());
+        if (!OAuth2AuthorizationResponseUtils.isAuthorizationResponse(params)) {
+            throw new OAuth2AuthenticationException("authorizationRequest param is not authorization response");
+        }
+
         // session에서 authorizationRequest를 가져오기
         OAuth2AuthorizationRequest authorizationRequest = this.authorizationRequestRepository
                 .removeAuthorizationRequest(request, response);
@@ -65,14 +72,7 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
             throw new OAuth2AuthenticationException("client registration is null");
         }
 
-        // code를 포함한 authorization response를 객체로 가져오기
-        String code = request.getParameter("code");
-        String state = request.getParameter("state");
-
-        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.builder()
-                                                                                       .code(code)
-                                                                                       .state(state)
-                                                                                       .build();
+        OAuth2AuthorizationResponse authorizationResponse =  OAuth2AuthorizationResponseUtils.convert(params);
 
         // access token 을 가져오기 위한 request 객체 만들기
         // OAuth2LoginAuthenticationToken 만들기
