@@ -37,6 +37,7 @@ public class OAuth2ClientProperties {
     }
 
     public record Provider(
+            String name,
             String authorizationUri,
             String tokenUri,
             String userInfoUri,

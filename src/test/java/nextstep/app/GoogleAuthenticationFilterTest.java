@@ -75,7 +75,7 @@ class GoogleAuthenticationFilterTest {
         Map<String, String> userProfile = new HashMap<>();
         userProfile.put("email", "a@a.com");
         userProfile.put("name", "a");
-        userProfile.put("avatar_url", "");
+        userProfile.put("picture", "");
         String profileJsonResponse = new ObjectMapper().writeValueAsString(userProfile);
 
         stubFor(get(urlEqualTo("/oauth2/v1/userinfo"))

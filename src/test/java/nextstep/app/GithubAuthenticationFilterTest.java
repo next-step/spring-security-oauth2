@@ -71,7 +71,7 @@ class GithubAuthenticationFilterTest {
     private static void stubForUser() throws JsonProcessingException {
         Map<String, String> userProfile = new HashMap<>();
         userProfile.put("email", "a@a.com");
-        userProfile.put("name", "a");
+        userProfile.put("login", "a");
         userProfile.put("avatar_url", "");
         String profileJsonResponse = new ObjectMapper().writeValueAsString(userProfile);
 

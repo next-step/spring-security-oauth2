@@ -7,7 +7,6 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
@@ -59,12 +58,12 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
 
       String accessToken = oAuth2AccessTokenClient.getAccessToken(code, registration, provider);
 
-      Map<String, String> userInfo = oAuth2UserInfoClient.getUserInfo(accessToken, provider);
+      OAuth2UserInfo userInfo = oAuth2UserInfoClient.getUserInfo(accessToken, provider);
 
-      String email = userInfo.get("email");
+      String email = userInfo.getEmail();
       Member member = memberRepository.findByEmail(email)
           .orElse(new Member(
-              email, "", userInfo.get("name"), userInfo.get("avatar_url"), Set.of("USER")
+              email, "", userInfo.getName(), userInfo.getPictureUrl(), Set.of("USER")
           ));
 
       UsernamePasswordAuthenticationToken authentication =

@@ -10,16 +10,18 @@ import org.springframework.web.client.RestTemplate;
 
 public class OAuth2UserInfoClient {
 
-  private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate();
 
-  public Map<String, String> getUserInfo(String accessToken, Provider provider) {
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add("Authorization", "Bearer " + accessToken);
+    public OAuth2UserInfo getUserInfo(String accessToken, Provider provider) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", "Bearer " + accessToken);
 
-    HttpEntity<Void> request = new HttpEntity<>(httpHeaders);
-    ResponseEntity<Map> response = restTemplate.exchange(provider.userInfoUri(), HttpMethod.GET,
-        request, Map.class);
+        HttpEntity<Void> request = new HttpEntity<>(httpHeaders);
+        ResponseEntity<Map> response = restTemplate.exchange(provider.userInfoUri(), HttpMethod.GET,
+                request, Map.class);
 
-    return response.getBody();
-  }
+        Map<String, Object> attributes = response.getBody();
+
+        return OAuth2UserInfoFactory.getOAuth2UserInfo(provider.name(), attributes);
+    }
 }

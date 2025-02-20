@@ -22,11 +22,13 @@ spring:
             authorization-grant-type: authorization_code
         providers:
           github:
+            name: "github"
             authorization-uri: "https://github.com/login/oauth/authorize?"
             token-uri: "https://github.com/login/oauth/access_token"
             access-token-uri: "http://localhost:8089/login/oauth/access_token"
             user-info-uri: "http://localhost:8089/user"
           google:
+            name: "google"
             authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth?"
             token-uri: "https://oauth2.googleapis.com/token"
             access-token-uri: "http://localhost:8089/oauth2.googleapis.com/token"
