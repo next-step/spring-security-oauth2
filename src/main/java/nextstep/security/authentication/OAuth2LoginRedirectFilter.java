@@ -46,16 +46,16 @@ public class OAuth2LoginRedirectFilter extends GenericFilterBean {
       Provider provider = providers.get(registrationSource);
 
       String queryString = UriComponentsBuilder.newInstance()
-          .queryParam("client_id", registration.getClientId())
-          .queryParam("scope", registration.getScope())
+          .queryParam("client_id", registration.clientId())
+          .queryParam("scope", registration.scope())
           .queryParam("response_type", "code")
-          .queryParam("redirect_uri", registration.getRedirectUri())
-          .queryParam("authorization_grant_type", registration.getAuthorizationGrantType())
+          .queryParam("redirect_uri", registration.redirectUri())
+          .queryParam("authorization_grant_type", registration.authorizationGrantType())
           .build()
           .toUri()
           .getQuery();
 
-      httpServletResponse.sendRedirect(provider.getAuthorizationUri() + queryString);
+      httpServletResponse.sendRedirect(provider.authorizationUri() + queryString);
       return;
     }
 

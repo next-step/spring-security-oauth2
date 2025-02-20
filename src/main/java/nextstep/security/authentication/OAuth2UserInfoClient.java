@@ -17,7 +17,7 @@ public class OAuth2UserInfoClient {
     httpHeaders.add("Authorization", "Bearer " + accessToken);
 
     HttpEntity<Void> request = new HttpEntity<>(httpHeaders);
-    ResponseEntity<Map> response = restTemplate.exchange(provider.getUserInfoUri(), HttpMethod.GET,
+    ResponseEntity<Map> response = restTemplate.exchange(provider.userInfoUri(), HttpMethod.GET,
         request, Map.class);
 
     return response.getBody();

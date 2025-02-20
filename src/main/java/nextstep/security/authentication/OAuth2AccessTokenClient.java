@@ -21,15 +21,15 @@ public class OAuth2AccessTokenClient {
 
     Map<String, String> params = new HashMap<>();
     params.put("code", code);
-    params.put("client_id", registration.getClientId());
-    params.put("client_secret", registration.getClientSecret());
-    params.put("redirect_uri", registration.getRedirectUri());
+    params.put("client_id", registration.clientId());
+    params.put("client_secret", registration.clientSecret());
+    params.put("redirect_uri", registration.redirectUri());
     params.put("grant_type", "authorization_code");
 
     HttpEntity<Map<String, String>> request = new HttpEntity<>(params, headers);
 
     ResponseEntity<Map> response = restTemplate.exchange(
-        provider.getAccessTokenUri(),
+        provider.accessTokenUri(),
         HttpMethod.POST,
         request,
         Map.class
