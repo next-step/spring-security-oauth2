@@ -72,7 +72,6 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponse.builder()
                                                                                        .code(code)
                                                                                        .state(state)
-                                                                                       // redirect uri?
                                                                                        .build();
 
         // access token 을 가져오기 위한 request 객체 만들기
