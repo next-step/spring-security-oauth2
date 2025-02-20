@@ -24,7 +24,7 @@ public class OAuth2AccessTokenClient {
     params.put("client_id", registration.clientId());
     params.put("client_secret", registration.clientSecret());
     params.put("redirect_uri", registration.redirectUri());
-    params.put("grant_type", "authorization_code");
+    params.put("grant_type", registration.authorizationGrantType());
 
     HttpEntity<Map<String, String>> request = new HttpEntity<>(params, headers);
 
