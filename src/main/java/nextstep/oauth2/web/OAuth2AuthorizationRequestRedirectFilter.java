@@ -17,14 +17,14 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
     private static final String BASE_URI = "/oauth2/authorization/";
 
     private final OAuth2AuthorizationRequestResolver authorizationRequestResolver;
-    private final OAuth2AuthorizationRequestRepository OAuth2AuthorizationRequestRepository;
+    private final OAuth2AuthorizationRequestRepository authorizationRequestRepository;
 
     private OAuth2AuthorizationRequestRedirectFilter(
             OAuth2AuthorizationRequestResolver authorizationRequestResolver,
             OAuth2AuthorizationRequestRepository oAuth2AuthorizationRequestRepository
     ) {
         this.authorizationRequestResolver = authorizationRequestResolver;
-        this.OAuth2AuthorizationRequestRepository = oAuth2AuthorizationRequestRepository;
+        this.authorizationRequestRepository = oAuth2AuthorizationRequestRepository;
     }
 
     public OAuth2AuthorizationRequestRedirectFilter(
@@ -43,7 +43,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
             filterChain.doFilter(request, response);
             return;
         }
-        OAuth2AuthorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
+        authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
         response.sendRedirect(authorizationRequest.authorizationRequestUri());
     }
 }
