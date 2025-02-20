@@ -27,6 +27,7 @@ public class OAuth2ClientProperties {
     }
 
     public record Registration(
+            String provider,
             String clientId,
             String clientSecret,
             String redirectUri,

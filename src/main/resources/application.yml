@@ -4,6 +4,7 @@ spring:
       client:
         registrations:
           github:
+            provider: "github"
             client-id: "Ov23lijfjg9lkGyYVDXN"
             client-secret: "YOUR_GITHUB_CLIENT_SECRET"
             scope:
@@ -11,6 +12,7 @@ spring:
             redirect-uri: "http://localhost:8080/login/oauth2/code/github"
             authorization-grant-type: authorization_code
           google:
+            provider: "google"
             client-id: "349246449409-h7hgk8kms3k8d7tgal8nesbh24h34t0d.apps.googleusercontent.com"
             client-secret: "YOUR_GOOGLE_CLIENT_SECRET"
             scope:

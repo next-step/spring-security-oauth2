@@ -63,11 +63,10 @@ public class OAuth2LoginRedirectFilter extends GenericFilterBean {
   }
 
   private String getRegistrationId(String requestURI) {
-    if (requestURI.contains("github")) {
-      return "github";
-    }
-    if (requestURI.contains("google")) {
-      return "google";
+    for (String registrationId : registrations.keySet()) {
+      if (requestURI.contains(registrationId)) {
+        return registrationId;
+      }
     }
     return null;
   }

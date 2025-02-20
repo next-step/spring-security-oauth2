@@ -85,13 +85,11 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
     filterChain.doFilter(request, response);
   }
 
-
   private String getRegistrationId(String requestURI) {
-    if (requestURI.contains("github")) {
-      return "github";
-    }
-    if (requestURI.contains("google")) {
-      return "google";
+    for (String registrationId : oAuth2ClientProperties.getRegistrations().keySet()) {
+      if (requestURI.contains(registrationId)) {
+        return registrationId;
+      }
     }
     return null;
   }
