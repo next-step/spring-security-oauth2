@@ -2,12 +2,14 @@ package nextstep.app.domain;
 
 import nextstep.security.userservice.OAuth2ClientRegistration;
 
+import java.util.Set;
+
 public record ClientRegistration(
         String registrationId, // provider
         String clientId,
         String clientSecret,
         String redirectUri,
-        String scope
+        Set<String> scope
 ) implements OAuth2ClientRegistration {
 
     @Override
@@ -26,7 +28,7 @@ public record ClientRegistration(
     }
 
     @Override
-    public String getScope() {
+    public Set<String> getScope() {
         return this.scope;
     }
 
@@ -35,7 +37,7 @@ public record ClientRegistration(
         private String clientId;
         private String clientSecret;
         private String redirectUri;
-        private String scope;
+        private Set<String> scope;
 
         public Builder registrationId(String registrationId) {
             this.registrationId = registrationId;
@@ -57,7 +59,7 @@ public record ClientRegistration(
             return this;
         }
 
-        public Builder scope(String scope) {
+        public Builder scope(Set<String> scope) {
             this.scope = scope;
             return this;
         }
