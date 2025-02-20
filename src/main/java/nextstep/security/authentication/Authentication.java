@@ -10,4 +10,6 @@ public interface Authentication {
     Object getPrincipal();
 
     boolean isAuthenticated();
+
+    String getName();
 }

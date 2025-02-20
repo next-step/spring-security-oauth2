@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.context.SecurityContextHolder;
+import nextstep.security.oauth2.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +33,9 @@ public class LoginController {
         if (authentication.getPrincipal() instanceof String) {
             return (String) authentication.getPrincipal();
         }
-//        if (authentication.getPrincipal() instanceof OAuth2User) {
-//            String userNameAttributeName = ((OAuth2User) authentication.getPrincipal()).getUserNameAttributeName();
-//            return (String) ((OAuth2User) authentication.getPrincipal()).getAttributes().get(userNameAttributeName);
-//        }
+        if (authentication.getPrincipal() instanceof OAuth2User) {
+            return ((OAuth2User) authentication.getPrincipal()).getName();
+        }
         return "";
     }
 
