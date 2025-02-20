@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
+import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.oauth.OAuth2AuthenticationRequestResolver;
 import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
 import nextstep.security.userservice.OAuth2ClientRegistration;
@@ -33,10 +34,7 @@ public class OAuth2RedirectAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String registrationId = getRegistrationId(request.getRequestURI());
-        OAuth2ClientRegistration clientRegistration = auth2UserService.loadClientRegistrationByRegistrationId(registrationId);
-
-        OAuth2AuthorizationRequest authorizationRequest = oAuth2AuthenticationRequestResolver.resolve(clientRegistration);
+        OAuth2AuthorizationRequest authorizationRequest = oAuth2AuthenticationRequestResolver.resolve(request);
 
         auth2UserService.saveOAuth2AuthorizationRequest(authorizationRequest);
 
@@ -45,9 +43,5 @@ public class OAuth2RedirectAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean noRequiresAuthentication(HttpServletRequest request) {
         return !requestMatcher.matches(request);
-    }
-
-    private String getRegistrationId(String requestUri) {
-        return requestUri.substring(requestUri.lastIndexOf("/") + 1);
     }
 }
