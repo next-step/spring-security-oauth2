@@ -22,15 +22,19 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
 
   private static final String REQUEST_URI = "/login/oauth2/code";
 
-  private final OAuth2AccessTokenClient oAuth2AccessTokenClient = new OAuth2AccessTokenClient();
-  private final OAuth2UserInfoClient oAuth2UserInfoClient = new OAuth2UserInfoClient();
-  private final OAuth2ClientProperties oAuth2ClientProperties;
-  private final MemberRepository memberRepository;
+    private final OAuth2ClientProperties oAuth2ClientProperties;
+    private final OAuth2AccessTokenClient oAuth2AccessTokenClient;
+    private final MemberRepository memberRepository;
+    private final OAuth2UserInfoClient oAuth2UserInfoClient;
 
-  public OAuth2AuthenticationFilter(
-      OAuth2ClientProperties oAuth2ClientProperties, MemberRepository memberRepository) {
-    this.memberRepository = memberRepository;
+  public OAuth2AuthenticationFilter(OAuth2ClientProperties oAuth2ClientProperties,
+                                    MemberRepository memberRepository,
+                                    OAuth2AccessTokenClient oAuth2AccessTokenClient,
+                                    OAuth2UserInfoClient oAuth2UserInfoClient) {
+    this.oAuth2AccessTokenClient = oAuth2AccessTokenClient;
+    this.oAuth2UserInfoClient = oAuth2UserInfoClient;
     this.oAuth2ClientProperties = oAuth2ClientProperties;
+    this.memberRepository = memberRepository;
   }
 
   @Override
