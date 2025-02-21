@@ -74,7 +74,6 @@ public class SecurityConfig {
         final var oAuth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(
                 oAuth2TokenStrategyRequester,
                 oAuth2EmailStrategyResolver,
-                userDetailsService,
                 auth2UserService
         );
 

@@ -2,7 +2,7 @@ oauth2:
   google:
     registration-id: google
     client-id: 976592378-6id8vdld0ogcdf3stj8ik85v8ka036ui.apps.googleusercontent.com
-    client-secret: NEED SECRET KEY!
+    client-secret: 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
     authorization:
       request-uri: https://accounts.google.com/o/oauth2/v2/auth
       redirect-uri: http://localhost:8080/login/oauth2/code/google

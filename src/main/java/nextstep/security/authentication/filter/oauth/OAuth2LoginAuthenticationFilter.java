@@ -7,15 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.oauth.OAuth2AuthenticationToken;
-import nextstep.security.authentication.oauth.OAuth2AuthorizationRequest;
-import nextstep.security.authentication.oauth.OAuth2EmailResolver;
-import nextstep.security.authentication.oauth.OAuth2TokenRequester;
+import nextstep.security.authentication.oauth.*;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContextHolder;
 import nextstep.security.userservice.OAuth2UserService;
-import nextstep.security.userservice.UserDetails;
-import nextstep.security.userservice.UserDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -34,21 +29,18 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private final MvcRequestMatcher requestMatcher;
     private final OAuth2TokenRequester auth2TokenRequester;
     private final OAuth2EmailResolver oAuth2EmailResolver;
-    private final UserDetailsService userDetailsService;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final OAuth2UserService auth2UserService;
 
     public OAuth2LoginAuthenticationFilter(
             OAuth2TokenRequester auth2TokenRequester,
             OAuth2EmailResolver oAuth2EmailResolver,
-            UserDetailsService userDetailsService,
             OAuth2UserService auth2UserService
     ) {
         this.auth2UserService = auth2UserService;
         this.requestMatcher = new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/{provider}");
         this.auth2TokenRequester = auth2TokenRequester;
         this.oAuth2EmailResolver = oAuth2EmailResolver;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -87,15 +79,11 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
             throw new AuthenticationException();
         }
 
-        UserDetails userDetails;
-        String username = oAuth2EmailResolver.resolve(registrationId, tokenResponse);
-        try {
-            userDetails = userDetailsService.loadUserByUsername(username);
-        } catch (AuthenticationException ex) {
-            userDetails = userDetailsService.addNewMemberByOAuth2(username);
-        }
+        final String username = oAuth2EmailResolver.resolve(registrationId, tokenResponse);
 
-        return OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+        final OAuth2User auth2User = auth2UserService.loadUserBy(username);
+
+        return OAuth2AuthenticationToken.authenticated(auth2User);
     }
 
     private String getParameterValueByName(HttpServletRequest request, String name) {

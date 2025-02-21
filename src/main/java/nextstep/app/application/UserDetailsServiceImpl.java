@@ -24,11 +24,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return new UserDetailsImpl(member.getEmail(), member.getPassword(), member.getRoles());
     }
-
-    @Override
-    public UserDetails addNewMemberByOAuth2(String email) {
-        Member saved = memberRepository.save(Member.oAuthMember(email));
-        return new UserDetailsImpl(saved.getEmail(), saved.getPassword(), saved.getRoles());
-    }
-
 }

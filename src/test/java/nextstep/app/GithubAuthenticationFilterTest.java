@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import nextstep.app.domain.OAuth2AuthorizationRecord;
 import nextstep.app.domain.OAuth2AuthorizationRecordRepository;
+import nextstep.security.authentication.oauth.OAuth2User;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +63,8 @@ class GithubAuthenticationFilterTest {
                     assertThat(context).isNotNull();
                     assertThat(context.getAuthentication()).isNotNull();
                     assertThat(context.getAuthentication().isAuthenticated()).isTrue();
-                    assertThat(context.getAuthentication().getPrincipal()).isEqualTo("a@a.com");
+                    assertThat(context.getAuthentication().getPrincipal()).isInstanceOf(OAuth2User.class);
+                    assertThat(((OAuth2User)context.getAuthentication().getPrincipal()).attributes().get("username")).isEqualTo("a@a.com");
                 });
     }
 

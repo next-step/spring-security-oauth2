@@ -6,20 +6,21 @@ import java.util.Set;
 
 public class OAuth2AuthenticationToken implements Authentication {
 
-    private final Object principal;
-    private final Object credentials;
+    private final OAuth2User principal;
     private final boolean authenticated;
     private final Set<String> authorities;
 
-    private OAuth2AuthenticationToken(Object principal, Object credentials, boolean authenticated, Set<String> authorities) {
+    private OAuth2AuthenticationToken(OAuth2User principal, boolean authenticated, Set<String> authorities) {
         this.principal = principal;
-        this.credentials = credentials;
         this.authenticated = authenticated;
         this.authorities = authorities;
     }
 
-    public static OAuth2AuthenticationToken authenticated(String principal, String credentials, Set<String> authorities) {
-        return new OAuth2AuthenticationToken(principal, credentials, true, authorities);
+    public static OAuth2AuthenticationToken authenticated(OAuth2User auth2User) {
+        if (auth2User == null) {
+            throw new IllegalArgumentException("auth2User cannot be null");
+        }
+        return new OAuth2AuthenticationToken(auth2User, true, auth2User.authorities());
     }
 
     @Override
@@ -28,12 +29,12 @@ public class OAuth2AuthenticationToken implements Authentication {
     }
 
     @Override
-    public Object getCredentials() {
-        return credentials;
+    public String getCredentials() {
+        return "";
     }
 
     @Override
-    public Object getPrincipal() {
+    public OAuth2User getPrincipal() {
         return principal;
     }
 
