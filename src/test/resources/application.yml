@@ -1,5 +1,6 @@
 oauth2:
   google:
+    registration-id: google
     client-id: 976592378-6id8vdld0ogcdf3stj8ik85v8ka036ui.apps.googleusercontent.com
     client-secret: NEED SECRET KEY!
     authorization:
@@ -11,6 +12,7 @@ oauth2:
     user:
       request-uri: http://localhost:8089/user
   github:
+    registration-id: github
     client-id: Ov23lia9fJuRN9SpjM8v
     client-secret: NEED SECRET KEY!
     authorization:

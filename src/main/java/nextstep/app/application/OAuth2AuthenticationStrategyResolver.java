@@ -43,10 +43,11 @@ public class OAuth2AuthenticationStrategyResolver implements OAuth2Authenticatio
 
         String randomState = UUID.randomUUID().toString();
 
+        String scopeValue = String.join(" ", clientRegistration.getScope());
         String authorizationUri = UriComponentsBuilder.fromHttpUrl(strategy.getBaseRequestUri())
                 .queryParam("response_type", OAuth2AuthenticationRequestStrategy.RESPONSE_TYPE)
                 .queryParam("client_id", clientRegistration.getClientId())
-                .queryParam("scope", clientRegistration.getScope())
+                .queryParam("scope", scopeValue)
                 .queryParam("state", randomState)
                 .queryParam("redirect_uri",clientRegistration.getRedirectUri())
                 .toUriString();

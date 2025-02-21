@@ -1,10 +1,12 @@
 package nextstep.app.config;
 
+import java.util.Set;
+
 public interface OAuth2Properties {
     String getRegistrationId();
     String getClientId();
     String getClientSecret();
-    String getScope();
+    Set<String> getScope();
     Authorization getAuthorization();
 
     interface Authorization {

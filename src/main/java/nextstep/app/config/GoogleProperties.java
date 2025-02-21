@@ -3,6 +3,8 @@ package nextstep.app.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Set;
+
 @Configuration
 @ConfigurationProperties(prefix = "oauth2.google")
 public class GoogleProperties implements OAuth2Properties {
@@ -76,8 +78,8 @@ public class GoogleProperties implements OAuth2Properties {
     }
 
     @Override
-    public String getScope() {
-        return "email profile";
+    public Set<String> getScope() {
+        return Set.of("email profile");
     }
 
     public void setClientSecret(String clientSecret) {

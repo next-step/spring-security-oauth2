@@ -3,6 +3,8 @@ package nextstep.app.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Set;
+
 @Configuration
 @ConfigurationProperties(prefix = "oauth2.github")
 public class GithubProperties implements OAuth2Properties{
@@ -75,8 +77,8 @@ public class GithubProperties implements OAuth2Properties{
     }
 
     @Override
-    public String getScope() {
-        return "read:user";
+    public Set<String> getScope() {
+        return Set.of("read:user");
     }
 
     public void setClientSecret(String clientSecret) {
