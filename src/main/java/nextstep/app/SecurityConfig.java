@@ -2,9 +2,9 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
-import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
+import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
 import nextstep.oauth2.access.OAuth2AuthorizationRequestMatcher;
 import nextstep.oauth2.client.ClientRegistration;
 import nextstep.oauth2.client.ClientRegistrationFactory;
