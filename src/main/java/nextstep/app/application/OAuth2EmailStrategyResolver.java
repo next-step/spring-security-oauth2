@@ -1,6 +1,8 @@
 package nextstep.app.application;
 
-import nextstep.security.authentication.*;
+import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.TokenResponse;
+import nextstep.security.authentication.UserResponse;
 import nextstep.security.authentication.oauth.OAuth2EmailResolveStrategy;
 import nextstep.security.authentication.oauth.OAuth2EmailResolver;
 import org.slf4j.Logger;

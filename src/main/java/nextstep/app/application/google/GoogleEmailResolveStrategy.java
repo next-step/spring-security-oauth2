@@ -1,8 +1,8 @@
 package nextstep.app.application.google;
 
 import nextstep.app.application.google.dto.GoogleUserResponse;
-import nextstep.security.authentication.oauth.OAuth2EmailResolveStrategy;
 import nextstep.security.authentication.UserResponse;
+import nextstep.security.authentication.oauth.OAuth2EmailResolveStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
