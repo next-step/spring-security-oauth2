@@ -65,33 +65,12 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         response.sendRedirect("/");
     }
 
-    private void saveAuthentication(final HttpServletRequest request, final HttpServletResponse response, final UsernamePasswordAuthenticationToken authenticationToken) {
-        final SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authenticationToken);
-        SecurityContextHolder.setContext(context);
-        this.securityContextRepository.saveContext(context, request, response);
+    private boolean isNotStartingWithBaseUrl(final HttpServletRequest request) {
+        return !request.getRequestURI().startsWith(OAUTH_BASE_REQUEST_URI);
     }
 
-    private Member retrieveMember(final Map<String, String> userInfoResponse) {
-        final String email = userInfoResponse.get("email");
-        final String name = userInfoResponse.get("name");
-        final String avatarUrl = userInfoResponse.get("picture");
-
-        final Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(new Member(email, "", name, avatarUrl, Set.of())));
-        return member;
-    }
-
-    private UsernamePasswordAuthenticationToken createSuccessAuthentication(final Member member) {
-        return UsernamePasswordAuthenticationToken.authenticated(member.getEmail(), member.getPassword(), member.getRoles());
-    }
-
-    public Map<String, String> sendGetRequestWithToken(Provider provider, String accessToken) {
-        return restClient.get()
-                .uri(provider.getUserInfoUri())
-                .header("Authorization", "Bearer " + accessToken)
-                .retrieve()
-                .body(Map.class);
+    private String extractRegistrationId(String requestUri) {
+        return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
     }
 
     public Map<String, String> sendPostRequest(Registration registration, Provider provider, String code) {
@@ -111,11 +90,32 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
                 .body(Map.class);
     }
 
-    private boolean isNotStartingWithBaseUrl(final HttpServletRequest request) {
-        return !request.getRequestURI().startsWith(OAUTH_BASE_REQUEST_URI);
+    public Map<String, String> sendGetRequestWithToken(Provider provider, String accessToken) {
+        return restClient.get()
+                .uri(provider.getUserInfoUri())
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .body(Map.class);
     }
 
-    public String extractRegistrationId(String requestUri) {
-        return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
+    private Member retrieveMember(final Map<String, String> userInfoResponse) {
+        final String email = userInfoResponse.get("email");
+        final String name = userInfoResponse.get("name");
+        final String avatarUrl = userInfoResponse.get("picture");
+
+        final Member member = memberRepository.findByEmail(email)
+                .orElseGet(() -> memberRepository.save(new Member(email, "", name, avatarUrl, Set.of())));
+        return member;
+    }
+
+    private UsernamePasswordAuthenticationToken createSuccessAuthentication(final Member member) {
+        return UsernamePasswordAuthenticationToken.authenticated(member.getEmail(), member.getPassword(), member.getRoles());
+    }
+    
+    private void saveAuthentication(final HttpServletRequest request, final HttpServletResponse response, final UsernamePasswordAuthenticationToken authenticationToken) {
+        final SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authenticationToken);
+        SecurityContextHolder.setContext(context);
+        this.securityContextRepository.saveContext(context, request, response);
     }
 }

@@ -20,10 +20,6 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         this.oAuth2ClientProperties = oAuth2ClientProperties;
     }
 
-    public String extractRegistrationId(String requestUri) {
-        return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
-    }
-
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
 
@@ -45,6 +41,14 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         response.sendRedirect(uriString);
     }
 
+    private boolean isNotStartingWithBaseUrl(final HttpServletRequest request) {
+        return !request.getRequestURI().startsWith(OAUTH_BASE_REQUEST_URI);
+    }
+
+    private String extractRegistrationId(String requestUri) {
+        return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
+    }
+
     private String buildRedirectURI(final Registration registration, final Provider provider) {
         final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(provider.getAuthorizationUri());
         uriBuilder.queryParam("response_type", "code");
@@ -53,9 +57,5 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         uriBuilder.queryParam("redirect_uri", registration.getRedirectUri());
 
         return uriBuilder.toUriString();
-    }
-
-    private boolean isNotStartingWithBaseUrl(final HttpServletRequest request) {
-        return !request.getRequestURI().startsWith(OAUTH_BASE_REQUEST_URI);
     }
 }
