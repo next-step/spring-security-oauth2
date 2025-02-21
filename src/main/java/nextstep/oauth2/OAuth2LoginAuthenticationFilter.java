@@ -9,6 +9,7 @@ import nextstep.app.domain.MemberRepository;
 import nextstep.app.infrastructure.InmemoryMemberRepository;
 import nextstep.oauth2.client.ClientRegistration;
 import nextstep.oauth2.client.ClientRegistrationRepository;
+import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
 import nextstep.security.authentication.UsernamePasswordAuthenticationToken;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
@@ -48,6 +49,9 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         }
 
         final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
+        if (clientRegistration == null) {
+            throw new OAuth2RegistrationNotFoundException(registrationId);
+        }
 
         final String code = request.getParameter("code");
         final Map<String, String> tokenResponse = sendTokenRequest(clientRegistration, code);

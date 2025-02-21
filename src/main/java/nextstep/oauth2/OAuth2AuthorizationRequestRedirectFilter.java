@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.oauth2.client.ClientRegistration;
 import nextstep.oauth2.client.ClientRegistrationRepository;
+import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
 
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
     private static final String OAUTH_BASE_REQUEST_URI = "/oauth2/authorization/";
+
     private final ClientRegistrationRepository clientRegistrationRepository;
 
     public OAuth2AuthorizationRequestRedirectFilter(final ClientRegistrationRepository clientRegistrationRepository) {
@@ -34,6 +36,9 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         }
 
         final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
+        if (clientRegistration == null) {
+            throw new OAuth2RegistrationNotFoundException(registrationId);
+        }
 
         final String uriString = buildRedirectURI(clientRegistration);
         response.sendRedirect(uriString);
