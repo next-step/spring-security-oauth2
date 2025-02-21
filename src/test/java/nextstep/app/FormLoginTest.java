@@ -1,6 +1,5 @@
 package nextstep.app;
 
-import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,8 +12,9 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.util.Set;
-
+import static nextstep.app.Fixture.TEST_ADMIN_MEMBER;
+import static nextstep.app.Fixture.TEST_USER_MEMBER;
+import static nextstep.app.Fixture.setUpMembers;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,9 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class FormLoginTest {
-    private final Member TEST_ADMIN_MEMBER = new Member("a@a.com", "password", "a", "", Set.of("ADMIN"));
-    private final Member TEST_USER_MEMBER = new Member("b@b.com", "password", "b", "", Set.of());
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -33,29 +30,30 @@ class FormLoginTest {
 
     @BeforeEach
     void setUp() {
-        memberRepository.save(TEST_ADMIN_MEMBER);
-        memberRepository.save(TEST_USER_MEMBER);
+        setUpMembers(memberRepository);
     }
 
     @DisplayName("로그인 성공")
     @Test
     void login_success() throws Exception {
-        ResultActions loginResponse = mockMvc.perform(post("/login")
-                .param("username", TEST_USER_MEMBER.getEmail())
-                .param("password", TEST_USER_MEMBER.getPassword())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions loginResponse = mockMvc.perform(
+                post("/login")
+                        .param("username", TEST_USER_MEMBER.getEmail())
+                        .param("password", TEST_USER_MEMBER.getPassword())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
-        loginResponse.andExpect(status().isOk());
+        loginResponse.andExpect(status().is3xxRedirection());
     }
 
     @DisplayName("로그인 실패 - 사용자 없음")
     @Test
     void login_fail_with_no_user() throws Exception {
-        ResultActions response = mockMvc.perform(post("/login")
-                .param("username", "none")
-                .param("password", "none")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions response = mockMvc.perform(
+                post("/login")
+                        .param("username", "none")
+                        .param("password", "none")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
         response.andExpect(status().isUnauthorized());
@@ -64,10 +62,11 @@ class FormLoginTest {
     @DisplayName("로그인 실패 - 비밀번호 불일치")
     @Test
     void login_fail_with_invalid_password() throws Exception {
-        ResultActions response = mockMvc.perform(post("/login")
-                .param("username", TEST_USER_MEMBER.getEmail())
-                .param("password", "invalid")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions response = mockMvc.perform(
+                post("/login")
+                        .param("username", TEST_USER_MEMBER.getEmail())
+                        .param("password", "invalid")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
         response.andExpect(status().isUnauthorized());
@@ -78,18 +77,20 @@ class FormLoginTest {
     void admin_login_after_members() throws Exception {
         MockHttpSession session = new MockHttpSession();
 
-        ResultActions loginResponse = mockMvc.perform(post("/login")
-                .param("username", TEST_ADMIN_MEMBER.getEmail())
-                .param("password", TEST_ADMIN_MEMBER.getPassword())
-                .session(session)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions loginResponse = mockMvc.perform(
+                post("/login")
+                        .param("username", TEST_ADMIN_MEMBER.getEmail())
+                        .param("password", TEST_ADMIN_MEMBER.getPassword())
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
-        loginResponse.andExpect(status().isOk());
+        loginResponse.andExpect(status().is3xxRedirection());
 
-        ResultActions membersResponse = mockMvc.perform(get("/members")
-                .session(session)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions membersResponse = mockMvc.perform(
+                get("/members")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
         membersResponse.andExpect(status().isOk());
@@ -100,18 +101,20 @@ class FormLoginTest {
     void user_login_after_members() throws Exception {
         MockHttpSession session = new MockHttpSession();
 
-        ResultActions loginResponse = mockMvc.perform(post("/login")
-                .param("username", TEST_USER_MEMBER.getEmail())
-                .param("password", TEST_USER_MEMBER.getPassword())
-                .session(session)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions loginResponse = mockMvc.perform(
+                post("/login")
+                        .param("username", TEST_USER_MEMBER.getEmail())
+                        .param("password", TEST_USER_MEMBER.getPassword())
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
-        loginResponse.andExpect(status().isOk());
+        loginResponse.andExpect(status().is3xxRedirection());
 
-        ResultActions membersResponse = mockMvc.perform(get("/members")
-                .session(session)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ResultActions membersResponse = mockMvc.perform(
+                get("/members")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
         membersResponse.andExpect(status().isForbidden());
