@@ -13,7 +13,7 @@ import static nextstep.oauth2.OAuth2ClientProperties.Provider;
 import static nextstep.oauth2.OAuth2ClientProperties.Registration;
 
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
-    public static final String OAUTH_BASE_REQUEST_URI = "/oauth2/authorization/";
+    private static final String OAUTH_BASE_REQUEST_URI = "/oauth2/authorization/";
     private final OAuth2ClientProperties oAuth2ClientProperties;
 
     public OAuth2AuthorizationRequestRedirectFilter(final OAuth2ClientProperties oAuth2ClientProperties) {

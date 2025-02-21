@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
-    public static final String OAUTH_BASE_REQUEST_URI = "/login/oauth2/code/";
-
+    private static final String OAUTH_BASE_REQUEST_URI = "/login/oauth2/code/";
     private final OAuth2ClientProperties oAuth2ClientProperties;
     private final RestClient restClient = RestClient.create();
     private final MemberRepository memberRepository = new InmemoryMemberRepository();
