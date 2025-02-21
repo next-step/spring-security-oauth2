@@ -4,20 +4,19 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nextstep.oauth2.client.ClientRegistration;
+import nextstep.oauth2.client.ClientRegistrationRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
-import static nextstep.oauth2.OAuth2ClientProperties.Provider;
-import static nextstep.oauth2.OAuth2ClientProperties.Registration;
-
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
     private static final String OAUTH_BASE_REQUEST_URI = "/oauth2/authorization/";
-    private final OAuth2ClientProperties oAuth2ClientProperties;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2AuthorizationRequestRedirectFilter(final OAuth2ClientProperties oAuth2ClientProperties) {
-        this.oAuth2ClientProperties = oAuth2ClientProperties;
+    public OAuth2AuthorizationRequestRedirectFilter(final ClientRegistrationRepository clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @Override
@@ -34,10 +33,9 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
             return;
         }
 
-        final Registration registration = oAuth2ClientProperties.findRegistration(registrationId);
-        final Provider provider = oAuth2ClientProperties.findProvider(registrationId);
+        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
 
-        final String uriString = buildRedirectURI(registration, provider);
+        final String uriString = buildRedirectURI(clientRegistration);
         response.sendRedirect(uriString);
     }
 
@@ -49,11 +47,11 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
     }
 
-    private String buildRedirectURI(final Registration registration, final Provider provider) {
-        final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(provider.getAuthorizationUri());
+    private String buildRedirectURI(final ClientRegistration registration) {
+        final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(registration.getAuthorizationUri());
         uriBuilder.queryParam("response_type", "code");
         uriBuilder.queryParam("client_id", registration.getClientId());
-        uriBuilder.queryParam("scope", String.join(" ", registration.getScope()));
+        uriBuilder.queryParam("scope", String.join(" ", registration.getScopes()));
         uriBuilder.queryParam("redirect_uri", registration.getRedirectUri());
 
         return uriBuilder.toUriString();

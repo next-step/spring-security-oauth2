@@ -5,6 +5,10 @@ import nextstep.app.domain.MemberRepository;
 import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
+import nextstep.oauth2.client.ClientRegistration;
+import nextstep.oauth2.client.ClientRegistrationFactory;
+import nextstep.oauth2.client.ClientRegistrationRepository;
+import nextstep.oauth2.client.InMemoryClientRegistrationRepository;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
@@ -34,6 +38,7 @@ import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @EnableAspectJAutoProxy
@@ -71,8 +76,8 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
-                        new OAuth2AuthorizationRequestRedirectFilter(oAuth2ClientProperties),
-                        new OAuth2LoginAuthenticationFilter(oAuth2ClientProperties),
+                        new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository()),
+                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -118,5 +123,11 @@ public class SecurityConfig {
                 }
             };
         };
+    }
+
+    @Bean
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        Map<String, ClientRegistration> registrations = ClientRegistrationFactory.createRegistrations(this.oAuth2ClientProperties);
+        return new InMemoryClientRegistrationRepository(registrations);
     }
 }

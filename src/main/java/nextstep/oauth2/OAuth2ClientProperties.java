@@ -19,26 +19,6 @@ public class OAuth2ClientProperties {
         return this.registration;
     }
 
-    public Registration findRegistration(final String registrationId) {
-        OAuth2ClientProperties.Registration registration = this.registration.get(registrationId);
-
-        if (registration == null) {
-            throw new IllegalArgumentException("OAuth2 registration not found for '" + registrationId + "'");
-        }
-
-        return registration;
-    }
-
-    public Provider findProvider(final String registrationId) {
-        Provider provider = this.provider.get(registrationId);
-
-        if (provider == null) {
-            throw new IllegalArgumentException("OAuth2 provider not found for '" + registrationId + "'");
-        }
-
-        return provider;
-    }
-
     public static class Provider {
 
         /**

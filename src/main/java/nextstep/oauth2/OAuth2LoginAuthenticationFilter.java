@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.app.infrastructure.InmemoryMemberRepository;
-import nextstep.oauth2.OAuth2ClientProperties.Provider;
-import nextstep.oauth2.OAuth2ClientProperties.Registration;
+import nextstep.oauth2.client.ClientRegistration;
+import nextstep.oauth2.client.ClientRegistrationRepository;
 import nextstep.security.authentication.UsernamePasswordAuthenticationToken;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
@@ -25,13 +25,13 @@ import java.util.Set;
 
 public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private static final String OAUTH_BASE_REQUEST_URI = "/login/oauth2/code/";
-    private final OAuth2ClientProperties oAuth2ClientProperties;
     private final RestClient restClient = RestClient.create();
     private final MemberRepository memberRepository = new InmemoryMemberRepository();
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2LoginAuthenticationFilter(final OAuth2ClientProperties oAuth2ClientProperties) {
-        this.oAuth2ClientProperties = oAuth2ClientProperties;
+    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @Override
@@ -47,14 +47,13 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        final Registration registration = oAuth2ClientProperties.findRegistration(registrationId);
-        final Provider provider = oAuth2ClientProperties.findProvider(registrationId);
+        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
 
         final String code = request.getParameter("code");
-        final Map<String, String> tokenResponse = sendPostRequest(registration, provider, code);
+        final Map<String, String> tokenResponse = sendTokenRequest(clientRegistration, code);
 
         final String accessToken = tokenResponse.get("access_token");
-        final Map<String, String> userInfoResponse = sendGetRequestWithToken(provider, accessToken);
+        final Map<String, String> userInfoResponse = sendUserInfoRequestWithToken(clientRegistration, accessToken);
 
         final Member member = retrieveMember(userInfoResponse);
 
@@ -73,16 +72,16 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
     }
 
-    public Map<String, String> sendPostRequest(Registration registration, Provider provider, String code) {
+    public Map<String, String> sendTokenRequest(final ClientRegistration clientRegistration, final String code) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("client_id", registration.getClientId());
-        body.add("client_secret", registration.getClientSecret());
+        body.add("client_id", clientRegistration.getClientId());
+        body.add("client_secret", clientRegistration.getClientSecret());
         body.add("code", code);
-        body.add("redirect_uri", registration.getRedirectUri());
+        body.add("redirect_uri", clientRegistration.getRedirectUri());
         body.add("grant_type", "authorization_code");
 
         return restClient.post()
-                .uri(provider.getTokenUri())
+                .uri(clientRegistration.getTokenUri())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(body)
@@ -90,9 +89,9 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
                 .body(Map.class);
     }
 
-    public Map<String, String> sendGetRequestWithToken(Provider provider, String accessToken) {
+    public Map<String, String> sendUserInfoRequestWithToken(ClientRegistration clientRegistration, String accessToken) {
         return restClient.get()
-                .uri(provider.getUserInfoUri())
+                .uri(clientRegistration.getUserInfoUri())
                 .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
                 .body(Map.class);
@@ -111,7 +110,7 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private UsernamePasswordAuthenticationToken createSuccessAuthentication(final Member member) {
         return UsernamePasswordAuthenticationToken.authenticated(member.getEmail(), member.getPassword(), member.getRoles());
     }
-    
+
     private void saveAuthentication(final HttpServletRequest request, final HttpServletResponse response, final UsernamePasswordAuthenticationToken authenticationToken) {
         final SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authenticationToken);
