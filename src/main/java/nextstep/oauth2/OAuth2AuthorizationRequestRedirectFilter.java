@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nextstep.oauth2.access.OAuth2RequestExtractor;
+import nextstep.oauth2.access.OAuth2RequestMatcher;
 import nextstep.oauth2.client.ClientRegistration;
 import nextstep.oauth2.client.ClientRegistrationRepository;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
@@ -13,23 +15,22 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
-    private static final String OAUTH_BASE_REQUEST_URI = "/oauth2/authorization/";
-
     private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuth2RequestMatcher requestMatcher;
 
-    public OAuth2AuthorizationRequestRedirectFilter(final ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2AuthorizationRequestRedirectFilter(final ClientRegistrationRepository clientRegistrationRepository, final OAuth2RequestMatcher requestMatcher) {
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.requestMatcher = requestMatcher;
     }
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
-
-        if (isNotStartingWithBaseUrl(request)) {
+        if (!requestMatcher.matches(request)) {
             doFilter(request, response, filterChain);
             return;
         }
 
-        final String registrationId = extractRegistrationId(request.getRequestURI());
+        final String registrationId = OAuth2RequestExtractor.extractRegistrationId(request.getRequestURI(), requestMatcher.getBaseRequestUri());
         if (registrationId == null) {
             doFilter(request, response, filterChain);
             return;
@@ -42,14 +43,6 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 
         final String uriString = buildRedirectURI(clientRegistration);
         response.sendRedirect(uriString);
-    }
-
-    private boolean isNotStartingWithBaseUrl(final HttpServletRequest request) {
-        return !request.getRequestURI().startsWith(OAUTH_BASE_REQUEST_URI);
-    }
-
-    private String extractRegistrationId(String requestUri) {
-        return requestUri.substring(OAUTH_BASE_REQUEST_URI.length());
     }
 
     private String buildRedirectURI(final ClientRegistration registration) {

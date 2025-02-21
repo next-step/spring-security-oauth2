@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.app.infrastructure.InmemoryMemberRepository;
+import nextstep.oauth2.access.OAuth2RequestExtractor;
+import nextstep.oauth2.access.OAuth2RequestMatcher;
 import nextstep.oauth2.client.ClientRegistration;
 import nextstep.oauth2.client.ClientRegistrationRepository;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
@@ -30,19 +32,21 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private final MemberRepository memberRepository = new InmemoryMemberRepository();
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuth2RequestMatcher requestMatcher;
 
-    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository, final OAuth2RequestMatcher requestMatcher) {
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.requestMatcher = requestMatcher;
     }
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
-        if (isNotStartingWithBaseUrl(request)) {
+        if (!requestMatcher.matches(request)) {
             doFilter(request, response, filterChain);
             return;
         }
 
-        final String registrationId = extractRegistrationId(request.getRequestURI());
+        final String registrationId = OAuth2RequestExtractor.extractRegistrationId(request.getRequestURI(), requestMatcher.getBaseRequestUri());
         if (registrationId == null) {
             doFilter(request, response, filterChain);
             return;
