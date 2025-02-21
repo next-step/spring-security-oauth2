@@ -2,7 +2,7 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
-import nextstep.oauth2.OAuth2AuthenticationFilter;
+import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
 import nextstep.security.access.AnyRequestMatcher;
@@ -72,7 +72,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new OAuth2AuthorizationRequestRedirectFilter(oAuth2ClientProperties),
-                        new OAuth2AuthenticationFilter(oAuth2ClientProperties),
+                        new OAuth2LoginAuthenticationFilter(oAuth2ClientProperties),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

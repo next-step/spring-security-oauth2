@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
+public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private static final String OAUTH_BASE_REQUEST_URI = "/login/oauth2/code/";
     private final OAuth2ClientProperties oAuth2ClientProperties;
     private final RestClient restClient = RestClient.create();
     private final MemberRepository memberRepository = new InmemoryMemberRepository();
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
-    public OAuth2AuthenticationFilter(final OAuth2ClientProperties oAuth2ClientProperties) {
+    public OAuth2LoginAuthenticationFilter(final OAuth2ClientProperties oAuth2ClientProperties) {
         this.oAuth2ClientProperties = oAuth2ClientProperties;
     }
 
