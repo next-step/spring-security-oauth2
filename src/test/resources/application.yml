@@ -27,9 +27,11 @@ spring:
             token-uri: "https://github.com/login/oauth/access_token"
             access-token-uri: "http://localhost:8089/login/oauth/access_token"
             user-info-uri: "http://localhost:8089/user"
+            user-name-attribute-name: "email"
           google:
             name: "google"
             authorization-uri: "https://accounts.google.com/o/oauth2/v2/auth?"
             token-uri: "https://oauth2.googleapis.com/token"
             access-token-uri: "http://localhost:8089/oauth2.googleapis.com/token"
             user-info-uri: "http://localhost:8089/oauth2/v1/userinfo"
+            user-name-attribute-name: "email"
