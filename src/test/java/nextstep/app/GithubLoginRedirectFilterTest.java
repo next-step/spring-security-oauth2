@@ -6,8 +6,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -20,14 +28,27 @@ class GithubLoginRedirectFilterTest {
     @Test
     void redirectTest() throws Exception {
         String requestUri = "/oauth2/authorization/github";
-        String expectedRedirectUri = "http://localhost:8089/login/oauth/authorize?" +
-                "response_type=code" +
-                "&client_id=Ov23lia9fJuRN9SpjM8v" +
-                "&scope=read:user" +
-                "&redirect_uri=http://localhost:8080/login/oauth2/code/github";
 
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl(expectedRedirectUri));
+                .andReturn();
+
+        String redirectedUrl = result.getResponse().getRedirectedUrl();
+
+        assertThat(redirectedUrl).isNotNull();
+        URI uri = new URI(redirectedUrl);
+        Map<String, String> params = Arrays.stream(uri.getQuery().split("&"))
+                .map(param -> param.split("="))
+                .collect(Collectors.toMap(
+                        param -> param[0],
+                        param -> param[1]
+                ));
+
+        assertThat(params.get("response_type")).isNotNull().isEqualTo("code");
+        assertThat(params.get("client_id")).isNotNull().isEqualTo("Ov23lia9fJuRN9SpjM8v");
+        assertThat(params.get("scope")).isNotNull().isEqualTo("read:user");
+        assertThat(params.get("redirect_uri")).isNotNull().isEqualTo("http://localhost:8080/login/oauth2/code/github");
+        assertThat(params).containsKey("state");
+        assertThat(params.get("state")).isNotBlank();
     }
 }

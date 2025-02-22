@@ -1,10 +1,10 @@
 package nextstep.app.application;
 
+import nextstep.app.domain.ClientRegistrationRepository;
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.OAuth2TokenRequestStrategy;
-import nextstep.security.authentication.TokenRequest;
 import nextstep.security.authentication.TokenResponse;
-import nextstep.security.authentication.OAuth2TokenRequester;
+import nextstep.security.authentication.oauth.OAuth2TokenRequestStrategy;
+import nextstep.security.authentication.oauth.OAuth2TokenRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,27 +23,32 @@ public class OAuth2TokenStrategyRequester implements OAuth2TokenRequester {
 
     private final RestTemplate restTemplate;
     private final Map<String, OAuth2TokenRequestStrategy> strategies;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2TokenStrategyRequester(RestTemplate restTemplate, List<OAuth2TokenRequestStrategy> strategies) {
+    public OAuth2TokenStrategyRequester(RestTemplate restTemplate, List<OAuth2TokenRequestStrategy> strategies, ClientRegistrationRepository clientRegistrationRepository) {
         this.restTemplate = restTemplate;
         this.strategies = strategies.stream()
-                .collect(Collectors.toMap(
-                        OAuth2TokenRequestStrategy::getOAuth2Type,
+                .collect(Collectors.toUnmodifiableMap(
+                        OAuth2TokenRequestStrategy::getRegistrationId,
                         strategy -> strategy
                 ));
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @Override
-    public TokenResponse request(String oAuth2Type, String code) {
-        OAuth2TokenRequestStrategy strategy = strategies.get(oAuth2Type);
+    public TokenResponse request(String registrationId, String code) {
+        final var strategy = strategies.get(registrationId);
         if (strategy == null) {
-            throw new IllegalArgumentException("Unsupported OAuth2 auth2Type: " + oAuth2Type);
+            throw new IllegalArgumentException("Unsupported registrationId: " + registrationId);
         }
 
+        final var clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId)
+                .orElseThrow(() -> new IllegalArgumentException("Unsupported registrationId: " + registrationId));
+
         try {
-            TokenRequest request = strategy.requestToken(code);
-            String requestUri = strategy.getRequestUri();
-            var response = restTemplate.postForEntity(
+            final var request = strategy.requestToken(clientRegistration, code);
+            final var requestUri = strategy.getRequestUri();
+            final var response = restTemplate.postForEntity(
                     requestUri,
                     request,
                     strategy.getResponseClass()

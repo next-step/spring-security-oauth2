@@ -3,6 +3,9 @@ package nextstep.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
+import nextstep.app.domain.OAuth2AuthorizationRecord;
+import nextstep.app.domain.OAuth2AuthorizationRecordRepository;
+import nextstep.security.authentication.oauth.OAuth2User;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,15 +34,24 @@ class GithubAuthenticationFilterTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private OAuth2AuthorizationRecordRepository oAuth2AuthorizationRecordRepository;
+
     @BeforeEach
     void setupMockServer() throws Exception {
         stubForAccessToken();
         stubForUser();
+        OAuth2AuthorizationRecord oAuth2AuthorizationRecord = OAuth2AuthorizationRecord.of(
+                "github",
+                "/login/oauth2/code/github?code=mock_code&state=mock_state",
+                "mock_state"
+        );
+        oAuth2AuthorizationRecordRepository.save(oAuth2AuthorizationRecord);
     }
 
     @Test
     void redirectAndRequestGithubAccessToken() throws Exception {
-        String requestUri = "/login/oauth2/code/github?code=mock_code";
+        String requestUri = "/login/oauth2/code/github?code=mock_code&state=mock_state";
 
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
@@ -51,7 +63,8 @@ class GithubAuthenticationFilterTest {
                     assertThat(context).isNotNull();
                     assertThat(context.getAuthentication()).isNotNull();
                     assertThat(context.getAuthentication().isAuthenticated()).isTrue();
-                    assertThat(context.getAuthentication().getPrincipal()).isEqualTo("a@a.com");
+                    assertThat(context.getAuthentication().getPrincipal()).isInstanceOf(OAuth2User.class);
+                    assertThat(((OAuth2User)context.getAuthentication().getPrincipal()).attributes().get("username")).isEqualTo("a@a.com");
                 });
     }
 

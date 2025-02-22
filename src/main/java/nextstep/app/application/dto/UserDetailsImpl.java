@@ -1,6 +1,6 @@
 package nextstep.app.application.dto;
 
-import nextstep.security.userdetails.UserDetails;
+import nextstep.security.userservice.UserDetails;
 
 import java.util.Set;
 

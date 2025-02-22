@@ -2,32 +2,31 @@ package nextstep.app.application.google;
 
 import nextstep.app.application.google.dto.GoogleTokenRequest;
 import nextstep.app.application.google.dto.GoogleTokenResponse;
-import nextstep.security.authentication.OAuth2TokenRequestStrategy;
+import nextstep.app.domain.ClientRegistration;
 import nextstep.security.authentication.TokenRequest;
 import nextstep.security.authentication.TokenResponse;
+import nextstep.security.authentication.oauth.OAuth2TokenRequestStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GoogleTokenRequestStrategy implements OAuth2TokenRequestStrategy {
 
-    @Value("${oauth2.google.client-id}")
-    private String clientId;
-    @Value("${oauth2.google.client-secret}")
-    private String clientSecret;
-    @Value("${oauth2.google.token.redirect-uri}")
-    private String redirectUri;
     @Value("${oauth2.google.token.request-uri}")
     private String requestUri;
+    @Value("${oauth2.google.registration-id}")
+    private String registrationId;
 
     @Override
-    public String getOAuth2Type() {
-        return "google";
+    public String getRegistrationId() {
+        return registrationId;
     }
 
     @Override
-    public TokenRequest requestToken(String code) {
-        return GoogleTokenRequest.of(code, clientId, clientSecret, redirectUri);
+    public TokenRequest requestToken(ClientRegistration clientRegistration, String code) {
+        return GoogleTokenRequest.of(
+                code, clientRegistration.clientId(), clientRegistration.clientSecret(), clientRegistration.redirectUri()
+        );
     }
 
     @Override

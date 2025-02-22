@@ -1,8 +1,8 @@
 package nextstep.app.application.github;
 
 import nextstep.app.application.github.dto.GithubUserResponse;
-import nextstep.security.authentication.OAuth2EmailResolveStrategy;
 import nextstep.security.authentication.UserResponse;
+import nextstep.security.authentication.oauth.OAuth2EmailResolveStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 public class GithubEmailResolveStrategy implements OAuth2EmailResolveStrategy {
     @Value("${oauth2.github.user.request-uri}")
     private String requestUri;
+    @Value("${oauth2.github.registration-id}")
+    private String registrationId;
 
     @Override
-    public String getOAuth2Type() {
-        return "github";
+    public String getRegistrationId() {
+        return registrationId;
     }
 
     @Override

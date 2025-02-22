@@ -1,4 +1,4 @@
-package nextstep.security.userdetails;
+package nextstep.security.userservice;
 
 import java.util.Set;
 

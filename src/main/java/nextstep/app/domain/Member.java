@@ -18,9 +18,9 @@ public class Member {
         this.roles = roles;
     }
 
-    public static Member oAuthMember(String email, String name) {
+    public static Member oAuthMember(String email) {
         String randomPassword = UUID.randomUUID().toString();
-        return new Member(email, randomPassword, name, "", Set.of("MEMBER"));
+        return new Member(email, randomPassword, email, "", Set.of("MEMBER"));
     }
 
     public String getEmail() {

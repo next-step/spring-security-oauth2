@@ -2,105 +2,116 @@ package nextstep.security.authentication.filter.oauth;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.MvcRequestMatcher;
-import nextstep.security.authentication.*;
+import nextstep.security.authentication.Authentication;
+import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.oauth.*;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContextHolder;
-import nextstep.security.userdetails.UserDetails;
-import nextstep.security.userdetails.UserDetailsService;
+import nextstep.security.userservice.OAuth2UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
-public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
+public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
 
-    private final MvcRequestMatcher[] requestMatchers;
+    private static final String CODE = "code";
+    private static final String STATE = "state";
+    private static final Logger log = LoggerFactory.getLogger(OAuth2LoginAuthenticationFilter.class);
+
+    private final MvcRequestMatcher requestMatcher;
     private final OAuth2TokenRequester auth2TokenRequester;
     private final OAuth2EmailResolver oAuth2EmailResolver;
-    private final UserDetailsService userDetailsService;
+    private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final OAuth2UserService auth2UserService;
 
-    public OAuth2LoginAuthenticationFilter(OAuth2TokenRequester auth2TokenRequester, OAuth2EmailResolver oAuth2EmailResolver, UserDetailsService userDetailsService) {
-        this.requestMatchers = new MvcRequestMatcher[]{
-                new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"),
-                new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google")
-        };
+    public OAuth2LoginAuthenticationFilter(
+            OAuth2TokenRequester auth2TokenRequester,
+            OAuth2EmailResolver oAuth2EmailResolver,
+            OAuth2UserService auth2UserService
+    ) {
+        this.auth2UserService = auth2UserService;
+        this.requestMatcher = new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/{provider}");
         this.auth2TokenRequester = auth2TokenRequester;
         this.oAuth2EmailResolver = oAuth2EmailResolver;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        if (servletRequest instanceof HttpServletRequest request
-                && servletResponse instanceof HttpServletResponse response) {
-            if (noRequiresAuthentication(request)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            String oAuth2Type = getOAuth2Type(request.getRequestURI());
-            String code = getCodeFromParam(request);
-
-            TokenResponse tokenResponse = auth2TokenRequester.request(oAuth2Type, code);
-            if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
-                throw new AuthenticationException();
-            }
-
-            String username = oAuth2EmailResolver.resolve(oAuth2Type, tokenResponse);
-
-            UserDetails userDetails = getUserOrCreateIfNotExists(username);
-
-            registerAuthenticationContext(request, userDetails);
-
-            response.sendRedirect("/");
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if (noRequiresAuthentication(request)) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        try {
+            Authentication authentication = attemptAuthentication(request);
+
+            successfulAuthentication(request, response, authentication);
+
+        } catch (AuthenticationException | NoSuchElementException e) {
+            unsuccessfulAuthentication(response, e);
+        }
     }
 
     private boolean noRequiresAuthentication(HttpServletRequest request) {
-        for (MvcRequestMatcher requestMatcher : requestMatchers) {
-            if (requestMatcher.matches(request)) {
-                return false;
-            }
-        }
-        return true;
+        return !requestMatcher.matches(request);
     }
 
-    private String getOAuth2Type(String requestUri) {
-        return requestUri.substring(requestUri.lastIndexOf("/") + 1);
-    }
-
-    private String getCodeFromParam(HttpServletRequest request) {
-        String code = request.getParameter("code");
-        if (StringUtils.hasText(code)) {
-            return code;
+    private Authentication attemptAuthentication(HttpServletRequest request) {
+        final String state = getParameterValueByName(request, STATE);
+        final OAuth2AuthorizationRequest authorizationRequest = auth2UserService.consumeOAuth2AuthorizationRequest(state);
+        if (authorizationRequest == null) {
+            throw new AuthenticationException();
         }
 
-        throw new AuthenticationException("Invalid code");
-    }
+        final String code = getParameterValueByName(request, CODE);
+        final String registrationId = authorizationRequest.registrationId();
 
-    private UserDetails getUserOrCreateIfNotExists(String username) {
-        UserDetails userDetails;
-        try {
-            userDetails = userDetailsService.loadUserByUsername(username);
-        } catch (AuthenticationException ex) {
-            userDetails = userDetailsService.addNewMemberByOAuth2(username, username);
+        final var tokenResponse = auth2TokenRequester.request(registrationId, code);
+        if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
+            throw new AuthenticationException();
         }
-        return userDetails;
+
+        final String username = oAuth2EmailResolver.resolve(registrationId, tokenResponse);
+
+        final OAuth2User auth2User = auth2UserService.loadUserBy(username);
+
+        return OAuth2AuthenticationToken.authenticated(auth2User);
     }
 
-    private void registerAuthenticationContext(HttpServletRequest request, UserDetails userDetails) {
-        OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authenticated);
-        request.getSession()
-                .setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+    private String getParameterValueByName(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (StringUtils.hasText(value)) {
+            return value;
+        }
+
+        throw new AuthenticationException("Invalid parameter value : '" + name + "'");
+    }
+
+    private void successfulAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication
+    ) throws IOException {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        securityContextRepository.saveContext(SecurityContextHolder.getContext(), request);
+        response.sendRedirect("/");
+    }
+
+    private void unsuccessfulAuthentication(
+            HttpServletResponse response,
+            RuntimeException e
+    ) throws IOException {
+        SecurityContextHolder.clearContext();
+        log.error(e.getMessage());
+        log.error("[stack trace] : ", e);
+        response.sendRedirect("/");
     }
 }

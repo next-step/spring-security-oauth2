@@ -4,8 +4,8 @@ import nextstep.app.application.dto.UserDetailsImpl;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.userdetails.UserDetails;
-import nextstep.security.userdetails.UserDetailsService;
+import nextstep.security.userservice.UserDetails;
+import nextstep.security.userservice.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,11 +24,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return new UserDetailsImpl(member.getEmail(), member.getPassword(), member.getRoles());
     }
-
-    @Override
-    public UserDetails addNewMemberByOAuth2(String email, String name) {
-        Member saved = memberRepository.save(Member.oAuthMember(email, name));
-        return new UserDetailsImpl(saved.getEmail(), saved.getPassword(), saved.getRoles());
-    }
-
 }

@@ -1,7 +1,7 @@
 package nextstep.security.authentication;
 
-import nextstep.security.userdetails.UserDetails;
-import nextstep.security.userdetails.UserDetailsService;
+import nextstep.security.userservice.UserDetails;
+import nextstep.security.userservice.UserDetailsService;
 
 import java.util.Objects;
 
