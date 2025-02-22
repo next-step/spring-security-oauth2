@@ -6,34 +6,36 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.app.OAuth2ClientProperties;
+import nextstep.security.access.PathPatternRequestMatcher;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.authentication.ProviderManager;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
+import nextstep.security.oauth2.registration.ClientRegistration;
+import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.userdetails.UserDetailsService;
-import org.springframework.http.server.PathContainer;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.web.util.pattern.PathPattern;
-import org.springframework.web.util.pattern.PathPatternParser;
 
 import java.io.IOException;
 import java.util.List;
 
 public class OAuth2AuthenticationFilter extends GenericFilterBean {
+    private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/{registration-id}";
     private static final String REGISTRATION_ID = "registration-id";
-    private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/{" + REGISTRATION_ID + "}";
-    private static final PathPattern pattern = new PathPatternParser().parse(OAUTH_REQUEST_URI_PATTERN);
 
+    private final PathPatternRequestMatcher requestMatcher;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ProviderManager providerManager;
-    private final OAuth2ClientProperties properties;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2AuthenticationFilter(UserDetailsService userDetailsService, OAuth2ClientProperties properties) {
+    public OAuth2AuthenticationFilter(UserDetailsService userDetailsService, ClientRegistrationRepository clientRegistrationRepository) {
         this.providerManager = new ProviderManager(
                 List.of(new OAuth2AuthenticationProvider(userDetailsService))
         );
-        this.properties = properties;
+
+        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.requestMatcher = new PathPatternRequestMatcher(HttpMethod.GET, OAUTH_REQUEST_URI_PATTERN);
     }
 
     @Override
@@ -41,18 +43,23 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
         final HttpServletRequest httpServletRequest =  ((HttpServletRequest) request);
         final HttpServletResponse httpServletResponse = ((HttpServletResponse) response);
 
-        final PathPattern.PathMatchInfo matchInfo = getPathMatchInfo(((HttpServletRequest) request));
-
-        if (matchInfo == null) {
+        if (!requestMatcher.matches(httpServletRequest)) {
             chain.doFilter(request, response);
             return;
         }
 
-        final OAuth2ProviderClient oauth2ProviderClient = getProviderClient(matchInfo);
+        final String registrationId = requestMatcher.getPathVariable(httpServletRequest, REGISTRATION_ID);
+        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
 
-        final OAuth2AccessToken oauth2AccessToken = oauth2ProviderClient.accessTokenRequest(httpServletRequest.getParameter("code"));
+        if (clientRegistration == null) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
-        final OAuth2UserInfo userInfo = oauth2ProviderClient.getUserInfo(oauth2AccessToken);
+        final OAuth2ProviderClient oAuth2ProviderClient = new OAuth2ProviderClient(clientRegistration);
+
+        final OAuth2AccessToken oauth2AccessToken = oAuth2ProviderClient.accessTokenRequest(httpServletRequest.getParameter("code"));
+        final OAuth2UserInfo userInfo = oAuth2ProviderClient.getUserInfo(oauth2AccessToken);
 
         storeContext(userInfo, oauth2AccessToken, httpServletRequest, httpServletResponse);
 
@@ -66,23 +73,4 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
         securityContext.setAuthentication(authenticate);
         securityContextRepository.saveContext(securityContext, httpServletRequest, httpServletResponse);
     }
-
-    private OAuth2ProviderClient getProviderClient(PathPattern.PathMatchInfo matchInfo) {
-        final String providerName = matchInfo.getUriVariables().get(REGISTRATION_ID);
-
-        final OAuth2ClientRegistrationProperties registration = properties.getOauth2Registration(providerName);
-
-        final OAuth2ClientProviderProperties oauth2Provider = properties.getOauth2Provider(providerName);
-
-        return new OAuth2ProviderClient(registration, oauth2Provider);
-    }
-
-
-    private static PathPattern.PathMatchInfo getPathMatchInfo(HttpServletRequest httpServletRequest) {
-        PathContainer path = PathContainer.parsePath(httpServletRequest.getRequestURI());
-        PathPattern.PathMatchInfo matchInfo = pattern.matchAndExtract(path);
-
-        return matchInfo;
-    }
-
 }

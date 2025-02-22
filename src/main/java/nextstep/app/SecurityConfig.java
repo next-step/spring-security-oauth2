@@ -14,7 +14,12 @@ import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
 import nextstep.security.oauth2.OAuth2AuthenticationFilter;
+import nextstep.security.oauth2.OAuth2ClientProviderProperties;
+import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
 import nextstep.security.oauth2.OAuth2LoginRedirectFilter;
+import nextstep.security.oauth2.registration.ClientRegistration;
+import nextstep.security.oauth2.registration.ClientRegistrationRepository;
+import nextstep.security.oauth2.registration.InMemoryClientRegistrationRepository;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,8 +40,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DelegatingFilterProxy delegatingFilterProxy(OAuth2ClientProperties oAuth2ClientProperties) {
-        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(oAuth2ClientProperties))));
+    public DelegatingFilterProxy delegatingFilterProxy(ClientRegistrationRepository clientRegistrationRepository) {
+        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(clientRegistrationRepository))));
     }
 
 
@@ -50,14 +55,14 @@ public class SecurityConfig {
     }
 
 
-    public SecurityFilterChain securityFilterChain(OAuth2ClientProperties oAuth2ClientProperties) {
+    public SecurityFilterChain securityFilterChain(ClientRegistrationRepository clientRegistrationRepository) {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
-                        new OAuth2LoginRedirectFilter(oAuth2ClientProperties),
-                        new OAuth2AuthenticationFilter(userDetailsService, oAuth2ClientProperties),
+                        new OAuth2LoginRedirectFilter(clientRegistrationRepository),
+                        new OAuth2AuthenticationFilter(userDetailsService, clientRegistrationRepository),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -79,5 +84,28 @@ public class SecurityConfig {
         mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager()));
         mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager()));
         return new RequestAuthorizationManager(mappings);
+    }
+
+
+    @Bean
+    public ClientRegistrationRepository clientRegistrationRepository(OAuth2ClientProperties oAuth2ClientProperties) {
+        return new InMemoryClientRegistrationRepository(oAuth2ClientProperties.getRegistrations()
+                        .stream()
+                        .map((it) -> clientRegistration(it, oAuth2ClientProperties.getOauth2Registration(it), oAuth2ClientProperties.getOauth2Provider(it)))
+                        .toList()
+        );
+    }
+
+    private ClientRegistration clientRegistration(String registrationId, OAuth2ClientRegistrationProperties oauth2Registration, OAuth2ClientProviderProperties oauth2Provider) {
+        return ClientRegistration.builder(registrationId)
+                .clientId(oauth2Registration.getClientId())
+                .clientSecret(oauth2Registration.getClientSecret())
+                .scope(oauth2Registration.getScope())
+                .responseType(oauth2Registration.getResponseType())
+                .redirectUri(oauth2Registration.getRedirectUri())
+                .tokenUri(oauth2Provider.getTokenUri())
+                .userInfoUri(oauth2Provider.getUserInfoUri())
+                .authorizationUri(oauth2Provider.getAuthorizationUri())
+        .build();
     }
 }

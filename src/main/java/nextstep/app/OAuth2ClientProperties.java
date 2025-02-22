@@ -5,6 +5,7 @@ import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
+import java.util.Set;
 
 @ConfigurationProperties(prefix = "oauth2.client")
 public class OAuth2ClientProperties {
@@ -22,5 +23,9 @@ public class OAuth2ClientProperties {
 
     public OAuth2ClientProviderProperties getOauth2Provider(String providerName) {
         return provider.get(providerName);
+    }
+
+    public Set<String> getRegistrations() {
+        return registration.keySet();
     }
 }

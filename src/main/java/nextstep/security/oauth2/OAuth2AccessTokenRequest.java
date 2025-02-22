@@ -1,6 +1,7 @@
 package nextstep.security.oauth2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nextstep.security.oauth2.registration.ClientRegistration;
 
 public class OAuth2AccessTokenRequest {
 
@@ -25,8 +26,8 @@ public class OAuth2AccessTokenRequest {
         this.redirectUri = redirectUri;
     }
 
-    public static OAuth2AccessTokenRequest of(OAuth2ClientRegistrationProperties properties, String code) {
-        return new OAuth2AccessTokenRequest(code, properties.getClientId(), properties.getClientSecret(), properties.getRedirectUri());
+    public static OAuth2AccessTokenRequest of(ClientRegistration clientRegistration, String code) {
+        return new OAuth2AccessTokenRequest(code, clientRegistration.getClientId(), clientRegistration.getClientSecret(), clientRegistration.getRedirectUri());
     }
 
     public String getClientId() {
