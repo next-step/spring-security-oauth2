@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
+import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,11 +20,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public class GithubAuthenticationFilter extends OncePerRequestFilter {
 
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final AuthenticationManager authenticationManager;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    public GithubAuthenticationFilter(UserDetailsService userDetailsService) {
+        this.authenticationManager = new ProviderManager(
+                List.of(new OAuth2AuthenticationProvider(userDetailsService)));
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -33,7 +42,6 @@ public class GithubAuthenticationFilter extends OncePerRequestFilter {
 
             AccessTokenRequestDTO requestDTO = new AccessTokenRequestDTO("Ov23limHOsuGxvCvCFss", "a9347ac79cd41d71844d55c967d99646d39faac7", code);
             String uri = "https://github.com/login/oauth/access_token";
-            RestTemplate restTemplate = new RestTemplate();
 
             HttpEntity<AccessTokenRequestDTO> requestEntity = new HttpEntity<>(requestDTO);
             ResponseEntity<AccessTokenResponseDTO> responseEntity = restTemplate.postForEntity(uri, requestEntity, AccessTokenResponseDTO.class);
@@ -47,7 +55,8 @@ public class GithubAuthenticationFilter extends OncePerRequestFilter {
             ResponseEntity<UserProfileDTO> userProfileDTOResponseEntity = restTemplate.exchange(url, HttpMethod.GET, httpEntity, UserProfileDTO.class);
             UserProfileDTO body = userProfileDTOResponseEntity.getBody();
 
-            UsernamePasswordAuthenticationToken authenticated = UsernamePasswordAuthenticationToken.authenticated(body.getName(), null, Set.of());
+            UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(body.getName(), null);
+            Authentication authenticated = authenticationManager.authenticate(unauthenticated);
             SecurityContext context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(authenticated);
             SecurityContextHolder.setContext(context);

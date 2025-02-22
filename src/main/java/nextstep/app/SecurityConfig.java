@@ -2,6 +2,7 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.app.domain.MemberService;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
@@ -56,7 +57,9 @@ public class SecurityConfig {
                 List.of(
                         new SecurityContextHolderFilter(),
                         new GithubLoginRedirectFilter(),
-                        new GithubAuthenticationFilter(),
+                        new GithubAuthenticationFilter(userDetailsService()),
+                        new GoogleLoginRedirectFilter(),
+                        new GoogleAuthenticationFilter(userDetailsService()),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
@@ -83,26 +86,6 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> {
-            Member member = memberRepository.findByEmail(username)
-                    .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자입니다."));
-
-            return new UserDetails() {
-                @Override
-                public String getUsername() {
-                    return member.getEmail();
-                }
-
-                @Override
-                public String getPassword() {
-                    return member.getPassword();
-                }
-
-                @Override
-                public Set<String> getAuthorities() {
-                    return member.getRoles();
-                }
-            };
-        };
+        return new MemberService(memberRepository);
     }
 }
