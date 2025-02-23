@@ -7,16 +7,22 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
-import nextstep.security.authorization.*;
+import nextstep.security.authorization.AuthorityAuthorizationManager;
+import nextstep.security.authorization.AuthorizationFilter;
+import nextstep.security.authorization.AuthorizationManager;
+import nextstep.security.authorization.PermitAllAuthorizationManager;
+import nextstep.security.authorization.RequestAuthorizationManager;
+import nextstep.security.authorization.SecuredMethodInterceptor;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
 import nextstep.security.oauth2.OAuth2AuthenticationFilter;
+import nextstep.security.oauth2.OAuth2AuthorizationRequestRedirectFilter;
+import nextstep.security.oauth2.OAuth2AuthorizationRequestResolver;
 import nextstep.security.oauth2.OAuth2ClientProviderProperties;
 import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
-import nextstep.security.oauth2.OAuth2LoginRedirectFilter;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.registration.InMemoryClientRegistrationRepository;
@@ -56,12 +62,14 @@ public class SecurityConfig {
 
 
     public SecurityFilterChain securityFilterChain(ClientRegistrationRepository clientRegistrationRepository) {
+        OAuth2AuthorizationRequestResolver authorizationRequestResolver = new OAuth2AuthorizationRequestResolver(clientRegistrationRepository);
+
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
-                        new OAuth2LoginRedirectFilter(clientRegistrationRepository),
+                        new OAuth2AuthorizationRequestRedirectFilter(authorizationRequestResolver),
                         new OAuth2AuthenticationFilter(userDetailsService, clientRegistrationRepository),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )

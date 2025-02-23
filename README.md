@@ -36,5 +36,6 @@ POST https://github.com/login/oauth/access_token
 OAuth2AuthorizationRequestRedirectFilter
 OAuth2 인증 요청을 리다이렉트하는 필터인 OAuth2AuthorizationRequestRedirectFilter를 구현한다. 
 이 필터는 사용자가 OAuth2 제공자(Google, Github)로 인증 요청을 보낼 때 사용된다
-- [ ] ClientRegistrationRepository 구현 
-- [ ] OAuth2AuthorizationRequestResolver 구현 
+- [X] ClientRegistrationRepository 구현 
+- [X] OAuth2AuthorizationRequestResolver 구현
+- [X] OAuth2AuthorizationRequestRedirectFilter 구현
