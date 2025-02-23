@@ -1,0 +1,15 @@
+oauth2:
+  google:
+    clientId: CLIENT_ID
+    clientSecret: CLIENT_SECRET
+    tokenUri: https://oauth2.googleapis.com/token
+    userInfoUri: https://www.googleapis.com/oauth2/v2/userinfo
+    grantType: authorization_code
+    redirectUri: http://localhost:8080/login/oauth2/code/google
+    loginRedirectUri: https://accounts.google.com/o/oauth2/v2/auth
+  github:
+    clientId: CLIENT_ID
+    clientSecret: CLIENT_SECRET
+    tokenUri: http://localhost:8089/login/oauth/access_token
+    userInfoUri: http://localhost:8089/user
+    loginRedirectUri: https://github.com/login/oauth/authorize
