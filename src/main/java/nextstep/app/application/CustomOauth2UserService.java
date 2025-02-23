@@ -2,6 +2,10 @@ package nextstep.app.application;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.security.oauth2.OAuth2AuthenticationException;
+import nextstep.security.oauth2.OAuth2ProviderClient;
+import nextstep.security.oauth2.OAuth2UserInfo;
+import nextstep.security.oauth2.user.OAuth2UserRequest;
 import nextstep.security.oauth2.user.OAuth2UserService;
 import nextstep.security.oauth2.user.Oauth2User;
 import org.springframework.stereotype.Service;
@@ -17,9 +21,14 @@ public class CustomOauth2UserService implements OAuth2UserService {
     }
 
     @Override
-    public Oauth2User loadUser(String principal) {
-        final Member member = memberRepository.findByEmail(principal)
-                .orElseGet(() -> memberRepository.save(new Member(principal, null, null, null, Set.of())));
+    public Oauth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        OAuth2ProviderClient oAuth2ProviderClient = new OAuth2ProviderClient(userRequest.getClientRegistration());
+
+        OAuth2UserInfo userInfo = oAuth2ProviderClient.getUserInfo(userRequest.getAccessToken());
+
+        final Member member = memberRepository.findByEmail(userInfo.getEmail())
+                .orElseGet(() -> memberRepository.save(new Member(userInfo.getEmail(), null, null, null, Set.of())));
+
 
         return new CustomOauth2User(member.getEmail(), member.getRoles());
     }

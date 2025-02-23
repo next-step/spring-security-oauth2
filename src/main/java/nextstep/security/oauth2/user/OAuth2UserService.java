@@ -1,5 +1,7 @@
 package nextstep.security.oauth2.user;
 
-public interface OAuth2UserService {
-    Oauth2User loadUser(String principal);
+import nextstep.security.oauth2.OAuth2AuthenticationException;
+
+public interface OAuth2UserService<R extends OAuth2UserRequest, U extends Oauth2User> {
+	U loadUser(R userRequest) throws OAuth2AuthenticationException;
 }

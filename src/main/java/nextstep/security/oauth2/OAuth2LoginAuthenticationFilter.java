@@ -50,29 +50,50 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
             return;
         }
 
-        final String registrationId = requestMatcher.getPathVariable(httpServletRequest, REGISTRATION_ID);
-        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
+        final Authentication authentication = attemptAuthentication(httpServletRequest, httpServletResponse);
 
-        if (clientRegistration == null) {
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        final OAuth2ProviderClient oAuth2ProviderClient = new OAuth2ProviderClient(clientRegistration);
-
-        final OAuth2AccessToken oauth2AccessToken = oAuth2ProviderClient.accessTokenRequest(httpServletRequest.getParameter("code"));
-        final OAuth2UserInfo userInfo = oAuth2ProviderClient.getUserInfo(oauth2AccessToken);
-
-        storeContext(userInfo, oauth2AccessToken, httpServletRequest, httpServletResponse);
+        storeContext(authentication, httpServletRequest, httpServletResponse);
 
         httpServletResponse.sendRedirect("/");
     }
 
-    private void storeContext(OAuth2UserInfo userInfo, OAuth2AccessToken oauth2AccessToken, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        OAuth2LoginAuthenticationToken authenticated = OAuth2LoginAuthenticationToken.unauthenticated(userInfo.getEmail(), oauth2AccessToken);
-        Authentication authenticate = providerManager.authenticate(authenticated);
-        SecurityContext securityContext = new SecurityContext();
-        securityContext.setAuthentication(authenticate);
+
+    private Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        // request에서 parameter를 가져오기 -- skip
+
+        // session에서 authorizationRequest를 가져오기
+
+        // registrationId를 가져오고 clientRegistration을 가져오기
+        final String registrationId = requestMatcher.getPathVariable(request, REGISTRATION_ID);
+        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
+
+        if (clientRegistration == null) {
+            throw new OAuth2AuthenticationException();
+        }
+
+
+        // code를 포함한 authorization response를 객체로 가져오기
+        // access token 을 가져오기 위한 request 객체 만들기
+        final OAuth2ProviderClient oAuth2ProviderClient = new OAuth2ProviderClient(clientRegistration);
+        final OAuth2AccessToken oauth2AccessToken = oAuth2ProviderClient.accessTokenRequest(request.getParameter("code"));
+
+        // OAuth2LoginAuthenticationToken 만들기
+        OAuth2LoginAuthenticationToken oAuth2LoginAuthenticationToken = OAuth2LoginAuthenticationToken.unauthenticated(clientRegistration, oauth2AccessToken);
+
+        // provider 인증 후 authenticated된 OAuth2AuthenticationToken 객체 가져오기
+        Authentication authenticate = providerManager.authenticate(oAuth2LoginAuthenticationToken);
+
+
+        // authorizedClientRepository 에 저장할 OAuth2AuthorizedClient을 만들고 저장
+
+        return authenticate;
+    }
+
+
+
+
+    private void storeContext(Authentication authenticate, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        SecurityContext securityContext = new SecurityContext(authenticate);
         securityContextRepository.saveContext(securityContext, httpServletRequest, httpServletResponse);
     }
 }
