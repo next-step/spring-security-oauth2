@@ -39,3 +39,32 @@ OAuth2 인증 요청을 리다이렉트하는 필터인 OAuth2AuthorizationReque
 - [X] ClientRegistrationRepository 구현 
 - [X] OAuth2AuthorizationRequestResolver 구현
 - [X] OAuth2AuthorizationRequestRedirectFilter 구현
+
+# 2-2단계 - Oauth 인증 필터
+OAuth2LoginAuthenticationFilter
+- 아래 의 흐름에 맞추어 구현
+```java
+private Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+
+    // request에서 parameter를 가져오기
+
+    // session에서 authorizationRequest를 가져오기
+
+    // registrationId를 가져오고 clientRegistration을 가져오기
+
+    // code를 포함한 authorization response를 객체로 가져오기
+
+    // access token 을 가져오기 위한 request 객체 만들기
+
+    // OAuth2LoginAuthenticationToken 만들기
+
+    // provider 인증 후 authenticated된 OAuth2AuthenticationToken 객체 가져오기
+
+    // authorizedClientRepository 에 저장할 OAuth2AuthorizedClient을 만들고 저장
+
+    return oauth2Authentication;
+}
+
+```
+
+
