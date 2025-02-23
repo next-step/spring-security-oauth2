@@ -2,7 +2,7 @@ package nextstep.fixture;
 
 import nextstep.security.oauth2.registration.ClientRegistration;
 
-public class TestClientFixture {
+public class TestClientRegistrationFixture {
     public static ClientRegistration create(String registrationId) {
         return ClientRegistration.builder(registrationId)
                 .clientId(registrationId + "-client-id")
