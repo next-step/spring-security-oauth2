@@ -13,14 +13,16 @@ import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
+import nextstep.security.oauth2.user.OAuth2UserRequest;
 import nextstep.security.oauth2.user.OAuth2UserService;
+import nextstep.security.oauth2.user.Oauth2User;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 import java.util.List;
 
-public class OAuth2AuthenticationFilter extends GenericFilterBean {
+public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
     private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/{registration-id}";
     private static final String REGISTRATION_ID = "registration-id";
 
@@ -29,7 +31,7 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
     private final ProviderManager providerManager;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2AuthenticationFilter(OAuth2UserService oAuth2UserService, ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2LoginAuthenticationFilter(OAuth2UserService<OAuth2UserRequest, Oauth2User> oAuth2UserService, ClientRegistrationRepository clientRegistrationRepository) {
         this.providerManager = new ProviderManager(
                 List.of(new OAuth2AuthenticationProvider(oAuth2UserService))
         );
@@ -67,7 +69,7 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
     }
 
     private void storeContext(OAuth2UserInfo userInfo, OAuth2AccessToken oauth2AccessToken, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        OAuth2AuthenticationToken authenticated = OAuth2AuthenticationToken.unauthenticated(userInfo.getEmail(), oauth2AccessToken);
+        OAuth2LoginAuthenticationToken authenticated = OAuth2LoginAuthenticationToken.unauthenticated(userInfo.getEmail(), oauth2AccessToken);
         Authentication authenticate = providerManager.authenticate(authenticated);
         SecurityContext securityContext = new SecurityContext();
         securityContext.setAuthentication(authenticate);

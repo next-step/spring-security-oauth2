@@ -1,4 +1,4 @@
-package nextstep.security.oauth2;
+package nextstep.security.oauth2.registration;
 
 public class OAuth2ClientProviderProperties {
     private final String tokenUri;

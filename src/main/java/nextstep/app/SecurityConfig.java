@@ -18,11 +18,11 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.oauth2.OAuth2AuthenticationFilter;
+import nextstep.security.oauth2.OAuth2LoginAuthenticationFilter;
 import nextstep.security.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.security.oauth2.OAuth2AuthorizationRequestResolver;
-import nextstep.security.oauth2.OAuth2ClientProviderProperties;
-import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
+import nextstep.security.oauth2.registration.OAuth2ClientProviderProperties;
+import nextstep.security.oauth2.registration.OAuth2ClientRegistrationProperties;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.registration.InMemoryClientRegistrationRepository;
@@ -73,7 +73,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
                         new OAuth2AuthorizationRequestRedirectFilter(authorizationRequestResolver),
-                        new OAuth2AuthenticationFilter(oAuth2UserService, clientRegistrationRepository),
+                        new OAuth2LoginAuthenticationFilter(oAuth2UserService, clientRegistrationRepository),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

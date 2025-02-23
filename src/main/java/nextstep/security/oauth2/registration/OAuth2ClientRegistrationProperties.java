@@ -1,4 +1,4 @@
-package nextstep.security.oauth2;
+package nextstep.security.oauth2.registration;
 
 public class OAuth2ClientRegistrationProperties {
     private final String clientId;

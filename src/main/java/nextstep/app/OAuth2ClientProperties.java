@@ -1,7 +1,7 @@
 package nextstep.app;
 
-import nextstep.security.oauth2.OAuth2ClientProviderProperties;
-import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
+import nextstep.security.oauth2.registration.OAuth2ClientProviderProperties;
+import nextstep.security.oauth2.registration.OAuth2ClientRegistrationProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
