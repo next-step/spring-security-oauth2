@@ -31,3 +31,10 @@ POST https://github.com/login/oauth/access_token
 - [X] Google, Github 계정을 사용한 인증 통합
 - [X] Google 계정을 사용한 인가 추가 
 - [X] Google, Github 계정을 사용한 인가 통합
+
+# 2-1단계 - 리다이렉트 필터
+OAuth2AuthorizationRequestRedirectFilter
+OAuth2 인증 요청을 리다이렉트하는 필터인 OAuth2AuthorizationRequestRedirectFilter를 구현한다. 
+이 필터는 사용자가 OAuth2 제공자(Google, Github)로 인증 요청을 보낼 때 사용된다
+- [ ] ClientRegistrationRepository 구현 
+- [ ] OAuth2AuthorizationRequestResolver 구현 
