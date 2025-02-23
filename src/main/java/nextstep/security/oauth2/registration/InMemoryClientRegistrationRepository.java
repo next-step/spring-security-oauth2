@@ -9,16 +9,16 @@ public class InMemoryClientRegistrationRepository implements ClientRegistrationR
     private final Map<String, ClientRegistration> registrations;
 
     public InMemoryClientRegistrationRepository(List<ClientRegistration> clientRegistrations) {
-		this.registrations = createRegistrations(clientRegistrations);
-	}
+        this.registrations = createRegistrations(clientRegistrations);
+    }
 
-	private Map<String, ClientRegistration> createRegistrations(List<ClientRegistration> clientRegistrations) {
-		Map<String, ClientRegistration> map = new ConcurrentHashMap<>();
-		for (ClientRegistration clientRegistration : clientRegistrations) {
-			map.put(clientRegistration.getRegistrationId(), clientRegistration);
-		}
-		return Collections.unmodifiableMap(map);
-	}
+    private Map<String, ClientRegistration> createRegistrations(List<ClientRegistration> clientRegistrations) {
+        Map<String, ClientRegistration> map = new ConcurrentHashMap<>();
+        for (ClientRegistration clientRegistration : clientRegistrations) {
+            map.put(clientRegistration.getRegistrationId(), clientRegistration);
+        }
+        return Collections.unmodifiableMap(map);
+    }
 
     @Override
     public ClientRegistration findByRegistrationId(String registrationId) {
