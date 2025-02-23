@@ -42,21 +42,10 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
         }
 
         String code = request.getParameter("code");
-        String tokenUri = oAuth2Client.getTokenUri();
-        MultiValueMap<String, String> paramsForToken = oAuth2Client.getParamsForToken(code);
-        AccessTokenResponseDTO tokenResponse = restTemplate.postForObject(tokenUri, paramsForToken, AccessTokenResponseDTO.class);
+        String token = getAccessToken(oAuth2Client, code);
+        UserProfileDTO userProfile = getUserProfile(token, oAuth2Client);
 
-        String token = tokenResponse.getToken();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
-        HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
-
-
-        String userInfoUri = oAuth2Client.getUserInfoUri();
-        ResponseEntity<UserProfileDTO> userProfileDTOResponseEntity = restTemplate.exchange(userInfoUri, HttpMethod.GET, httpEntity, UserProfileDTO.class);
-        UserProfileDTO userProfileDTO = userProfileDTOResponseEntity.getBody();
-
-        UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(userProfileDTO.getEmail(), null);
+        UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(userProfile.getEmail(), null);
         Authentication authenticated = authenticationManager.authenticate(unauthenticated);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authenticated);
@@ -65,5 +54,21 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
         response.sendRedirect("/");
+    }
+
+    private UserProfileDTO getUserProfile(String token, OAuth2Client oAuth2Client) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
+        String userInfoUri = oAuth2Client.getUserInfoUri();
+        ResponseEntity<UserProfileDTO> userProfileDTOResponseEntity = restTemplate.exchange(userInfoUri, HttpMethod.GET, httpEntity, UserProfileDTO.class);
+        return userProfileDTOResponseEntity.getBody();
+    }
+
+    private String getAccessToken(OAuth2Client oAuth2Client, String code) {
+        String tokenUri = oAuth2Client.getTokenUri();
+        MultiValueMap<String, String> paramsForToken = oAuth2Client.getParamsForToken(code);
+        AccessTokenResponseDTO tokenResponse = restTemplate.postForObject(tokenUri, paramsForToken, AccessTokenResponseDTO.class);
+        return tokenResponse.getToken();
     }
 }

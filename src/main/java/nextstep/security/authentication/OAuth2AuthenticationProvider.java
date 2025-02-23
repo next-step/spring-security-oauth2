@@ -20,7 +20,7 @@ public class OAuth2AuthenticationProvider implements AuthenticationProvider {
             userDetails = userDetailsService.loadUserByUsername(authentication.getPrincipal().toString());
             return UsernamePasswordAuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
         } catch (AuthenticationException e) {
-            UserDetails userDetails1 = new UserDetails() {
+            UserDetails newUserDetails = new UserDetails() {
                 @Override
                 public String getUsername() {
                     return authentication.getPrincipal().toString();
@@ -37,8 +37,8 @@ public class OAuth2AuthenticationProvider implements AuthenticationProvider {
                 }
             };
 
-            UserDetails userDetails2 = userDetailsService.signUpUser(userDetails1);
-            return UsernamePasswordAuthenticationToken.authenticated(userDetails2.getUsername(), userDetails2.getPassword(), userDetails2.getAuthorities());
+            UserDetails newUser = userDetailsService.signUpUser(newUserDetails);
+            return UsernamePasswordAuthenticationToken.authenticated(newUser.getUsername(), newUser.getPassword(), newUser.getAuthorities());
         }
     }
 
