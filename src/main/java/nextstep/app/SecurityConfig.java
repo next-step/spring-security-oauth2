@@ -1,6 +1,5 @@
 package nextstep.app;
 
-import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
 import nextstep.app.domain.MemberService;
 import nextstep.security.access.AnyRequestMatcher;
@@ -15,7 +14,6 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.userdetails.UserDetails;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,16 +22,18 @@ import org.springframework.http.HttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @EnableAspectJAutoProxy
 @Configuration
 public class SecurityConfig {
 
     private final MemberRepository memberRepository;
+    private final OAuth2Property oAuth2Property;
 
-    public SecurityConfig(MemberRepository memberRepository) {
+    public SecurityConfig(MemberRepository memberRepository, OAuth2Property oAuth2Property) {
         this.memberRepository = memberRepository;
+        this.oAuth2Property = oAuth2Property;
     }
 
     @Bean
@@ -57,9 +57,8 @@ public class SecurityConfig {
                 List.of(
                         new SecurityContextHolderFilter(),
                         new GithubLoginRedirectFilter(),
-                        new GithubAuthenticationFilter(userDetailsService()),
                         new GoogleLoginRedirectFilter(),
-                        new GoogleAuthenticationFilter(userDetailsService()),
+                        new OAuth2AuthenticationFilter(userDetailsService(), oAuth2ClientFactory()),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
@@ -82,6 +81,17 @@ public class SecurityConfig {
         mappings.add(new RequestMatcherEntry<>(new MvcRequestMatcher(HttpMethod.GET, "/search"), new PermitAllAuthorizationManager()));
         mappings.add(new RequestMatcherEntry<>(AnyRequestMatcher.INSTANCE, new PermitAllAuthorizationManager()));
         return new RequestAuthorizationManager(mappings);
+    }
+
+    @Bean
+    public OAuth2ClientFactory oAuth2ClientFactory() {
+        return new OAuth2ClientFactory(
+                Map.of(
+                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/google"), oAuth2Property.getGoogle(),
+                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), oAuth2Property.getGithub(),
+                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google"), oAuth2Property.getGoogle(),
+                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"), oAuth2Property.getGithub()
+                ));
     }
 
     @Bean
