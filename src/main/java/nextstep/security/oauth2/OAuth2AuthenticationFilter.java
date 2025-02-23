@@ -13,7 +13,7 @@ import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
-import nextstep.security.userdetails.UserDetailsService;
+import nextstep.security.oauth2.user.OAuth2UserService;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -29,9 +29,9 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
     private final ProviderManager providerManager;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2AuthenticationFilter(UserDetailsService userDetailsService, ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2AuthenticationFilter(OAuth2UserService oAuth2UserService, ClientRegistrationRepository clientRegistrationRepository) {
         this.providerManager = new ProviderManager(
-                List.of(new OAuth2AuthenticationProvider(userDetailsService))
+                List.of(new OAuth2AuthenticationProvider(oAuth2UserService))
         );
 
         this.clientRegistrationRepository = clientRegistrationRepository;
@@ -52,7 +52,7 @@ public class OAuth2AuthenticationFilter extends GenericFilterBean {
         final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
 
         if (clientRegistration == null) {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 

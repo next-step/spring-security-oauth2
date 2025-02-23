@@ -26,6 +26,7 @@ import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.registration.InMemoryClientRegistrationRepository;
+import nextstep.security.oauth2.user.OAuth2UserService;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,9 +41,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
+    private final OAuth2UserService oAuth2UserService;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
+    public SecurityConfig(UserDetailsService userDetailsService, OAuth2UserService oAuth2UserService) {
         this.userDetailsService = userDetailsService;
+        this.oAuth2UserService = oAuth2UserService;
     }
 
     @Bean
@@ -70,7 +73,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
                         new OAuth2AuthorizationRequestRedirectFilter(authorizationRequestResolver),
-                        new OAuth2AuthenticationFilter(userDetailsService, clientRegistrationRepository),
+                        new OAuth2AuthenticationFilter(oAuth2UserService, clientRegistrationRepository),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -98,9 +101,9 @@ public class SecurityConfig {
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository(OAuth2ClientProperties oAuth2ClientProperties) {
         return new InMemoryClientRegistrationRepository(oAuth2ClientProperties.getRegistrations()
-                        .stream()
-                        .map((it) -> clientRegistration(it, oAuth2ClientProperties.getOauth2Registration(it), oAuth2ClientProperties.getOauth2Provider(it)))
-                        .toList()
+                .stream()
+                .map((it) -> clientRegistration(it, oAuth2ClientProperties.getOauth2Registration(it), oAuth2ClientProperties.getOauth2Provider(it)))
+                .toList()
         );
     }
 
@@ -114,6 +117,6 @@ public class SecurityConfig {
                 .tokenUri(oauth2Provider.getTokenUri())
                 .userInfoUri(oauth2Provider.getUserInfoUri())
                 .authorizationUri(oauth2Provider.getAuthorizationUri())
-        .build();
+                .build();
     }
 }
