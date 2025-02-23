@@ -56,8 +56,7 @@ public class SecurityConfig {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new GithubLoginRedirectFilter(),
-                        new GoogleLoginRedirectFilter(),
+                        new OAuth2LoginRedirectFilter(oAuth2ClientFactory()),
                         new OAuth2AuthenticationFilter(userDetailsService(), oAuth2ClientFactory()),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
@@ -88,7 +87,8 @@ public class SecurityConfig {
         return new OAuth2ClientFactory(
                 Map.of(
                         new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/google"), oAuth2Property.getGoogle(),
-                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), oAuth2Property.getGithub(),
+                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), oAuth2Property.getGithub()),
+                Map.of(
                         new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google"), oAuth2Property.getGoogle(),
                         new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"), oAuth2Property.getGithub()
                 ));

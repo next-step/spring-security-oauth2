@@ -11,6 +11,7 @@ public class OAuth2Client {
     private String userInfoUri;
     private String grantType;
     private String redirectUri;
+    private String loginRedirectUri;
 
     public String getUserInfoUri() {
         return userInfoUri;
@@ -58,6 +59,14 @@ public class OAuth2Client {
 
     public void setGrantType(String grantType) {
         this.grantType = grantType;
+    }
+
+    public String getLoginRedirectUri() {
+        return loginRedirectUri;
+    }
+
+    public void setLoginRedirectUri(String loginRedirectUri) {
+        this.loginRedirectUri = loginRedirectUri;
     }
 
     public MultiValueMap<String, String> getParamsForToken(String code) {
