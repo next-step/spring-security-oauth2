@@ -2,9 +2,10 @@ package nextstep.app;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
+import nextstep.oauth.ClientRegistrationRepository;
+import nextstep.oauth.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth.OAuth2ClientProperties;
 import nextstep.oauth.Oauth2AuthenticationFilter;
-import nextstep.oauth.Oauth2RedirectFilter;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
@@ -66,11 +67,16 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
-                        new Oauth2RedirectFilter(oAuth2ClientProperties),
+                        new OAuth2AuthorizationRequestRedirectFilter(getClientRegistrationRepository()),
                         new Oauth2AuthenticationFilter(memberRepository, oAuth2ClientProperties),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
+    }
+
+    @Bean
+    public ClientRegistrationRepository getClientRegistrationRepository() {
+        return new ClientRegistrationRepository(oAuth2ClientProperties);
     }
 
     @Bean
