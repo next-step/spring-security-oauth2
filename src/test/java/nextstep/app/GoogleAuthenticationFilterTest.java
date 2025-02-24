@@ -6,14 +6,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
-import nextstep.security.context.HttpSessionSecurityContextRepository;
-import nextstep.security.context.SecurityContext;
+import nextstep.app.domain.Member;
+import nextstep.app.domain.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -35,6 +36,9 @@ class GoogleAuthenticationFilterTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     @BeforeEach
     void setupMockServer() throws Exception {
         stubForAccessToken();
@@ -43,20 +47,22 @@ class GoogleAuthenticationFilterTest {
 
     @Test
     void redirectAndRequestGoogleAccessToken() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/oauth2/authorization/google").session(session))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.status().is3xxRedirection());
+
         String requestUri = "/login/oauth2/code/google?code=mock_code";
 
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        mockMvc.perform(MockMvcRequestBuilders.get(requestUri).session(session))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl("/"))
-                .andExpect(request -> {
-                    HttpSession session = request.getRequest().getSession();
-                    assert session != null;
-                    SecurityContext context = (SecurityContext) session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-                    assertThat(context).isNotNull();
-                    assertThat(context.getAuthentication()).isNotNull();
-                    assertThat(context.getAuthentication().isAuthenticated()).isTrue();
-                    assertThat(context.getAuthentication().getPrincipal()).isEqualTo("a@a.com");
-                });
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/"));
+
+        Member savedMember = memberRepository.findByEmail("a@a.com").get();
+        assertThat(savedMember).isNotNull();
+        assertThat(savedMember.getEmail()).isEqualTo("a@a.com");
+        assertThat(savedMember.getName()).isEqualTo("a");
     }
 
     private static void stubForAccessToken() throws JsonProcessingException {
