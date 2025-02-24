@@ -42,7 +42,7 @@ OAuth2 인증 요청을 리다이렉트하는 필터인 OAuth2AuthorizationReque
 
 # 2-2단계 - Oauth 인증 필터
 OAuth2LoginAuthenticationFilter
-- 아래 의 흐름에 맞추어 구현
+- [X] 아래 의 흐름에 맞추어 구현
 ```java
 private Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
 

@@ -18,6 +18,9 @@ import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
+import nextstep.security.oauth2.AuthorizationRequestRepository;
+import nextstep.security.oauth2.HttpSessionOAuth2AuthorizedClientRepository;
+import nextstep.security.oauth2.OAuth2AuthorizedClientRepository;
 import nextstep.security.oauth2.OAuth2LoginAuthenticationFilter;
 import nextstep.security.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.security.oauth2.OAuth2AuthorizationRequestResolver;
@@ -49,8 +52,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DelegatingFilterProxy delegatingFilterProxy(ClientRegistrationRepository clientRegistrationRepository) {
-        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(clientRegistrationRepository))));
+    public DelegatingFilterProxy delegatingFilterProxy(ClientRegistrationRepository clientRegistrationRepository,
+                                                       OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository,
+                                                       AuthorizationRequestRepository authorizationRequestRepository) {
+        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(clientRegistrationRepository, oAuth2AuthorizedClientRepository, authorizationRequestRepository))));
     }
 
 
@@ -64,16 +69,27 @@ public class SecurityConfig {
     }
 
 
-    public SecurityFilterChain securityFilterChain(ClientRegistrationRepository clientRegistrationRepository) {
-        OAuth2AuthorizationRequestResolver authorizationRequestResolver = new OAuth2AuthorizationRequestResolver(clientRegistrationRepository);
+    @Bean
+    public OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository() {
+        return new HttpSessionOAuth2AuthorizedClientRepository();
+    }
+
+    @Bean
+    public AuthorizationRequestRepository authorizationRequestRepository() {
+        return new AuthorizationRequestRepository();
+    }
+
+    private SecurityFilterChain securityFilterChain(ClientRegistrationRepository clientRegistrationRepository,
+                                                   OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository,
+                                                   AuthorizationRequestRepository authorizationRequestRepository) {
 
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
-                        new OAuth2AuthorizationRequestRedirectFilter(authorizationRequestResolver),
-                        new OAuth2LoginAuthenticationFilter(oAuth2UserService, clientRegistrationRepository),
+                        new OAuth2AuthorizationRequestRedirectFilter(new OAuth2AuthorizationRequestResolver(clientRegistrationRepository), authorizationRequestRepository),
+                        new OAuth2LoginAuthenticationFilter(oAuth2UserService, clientRegistrationRepository, oAuth2AuthorizedClientRepository),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

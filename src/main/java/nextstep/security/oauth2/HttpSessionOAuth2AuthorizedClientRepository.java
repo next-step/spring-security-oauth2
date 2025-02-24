@@ -43,10 +43,17 @@ public final class HttpSessionOAuth2AuthorizedClientRepository implements OAuth2
 
 	private Map<String, OAuth2AuthorizedClient> getAuthorizedClients(HttpServletRequest request) {
 		HttpSession session = request.getSession(false);
+		Map<String, OAuth2AuthorizedClient> authorizedClients = new HashMap<>();
+
 		if (session != null) {
-			return (Map<String, OAuth2AuthorizedClient>) session.getAttribute(DEFAULT_AUTHORIZED_CLIENTS_ATTR_NAME);
+			authorizedClients = (Map<String, OAuth2AuthorizedClient>) session.getAttribute(DEFAULT_AUTHORIZED_CLIENTS_ATTR_NAME);
 		}
-		return new HashMap<>();
+
+		if (authorizedClients == null) {
+			return new HashMap<>();
+		}
+
+		return authorizedClients;
 	}
 
 }
