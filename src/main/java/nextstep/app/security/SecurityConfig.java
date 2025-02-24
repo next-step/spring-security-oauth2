@@ -1,4 +1,4 @@
-package nextstep.app;
+package nextstep.app.security;
 
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
@@ -9,6 +9,8 @@ import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.OAuthAuthenticationFilter;
+import nextstep.security.authentication.OAuthLoginRedirectFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.*;
 import nextstep.security.config.DefaultSecurityFilterChain;
@@ -32,9 +34,11 @@ import java.util.Set;
 public class SecurityConfig {
 
     private final MemberRepository memberRepository;
+    private final Oauth2LoginProperties oauth2LoginProperties;
 
-    public SecurityConfig(MemberRepository memberRepository) {
+    public SecurityConfig(MemberRepository memberRepository, Oauth2LoginProperties oauth2LoginProperties) {
         this.memberRepository = memberRepository;
+        this.oauth2LoginProperties = oauth2LoginProperties;
     }
 
     @Bean
@@ -59,6 +63,8 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
+                        new OAuthLoginRedirectFilter(oauth2LoginProperties),
+                        new OAuthAuthenticationFilter(oauth2LoginProperties, userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -83,26 +89,49 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> {
-            Member member = memberRepository.findByEmail(username)
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) {
+                Member member = memberRepository.findByEmail(username)
                     .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자입니다."));
+                return new UserDetails() {
+                    @Override
+                    public String getUsername() {
+                        return member.getEmail();
+                    }
 
-            return new UserDetails() {
-                @Override
-                public String getUsername() {
-                    return member.getEmail();
-                }
+                    @Override
+                    public String getPassword() {
+                        return member.getPassword();
+                    }
 
-                @Override
-                public String getPassword() {
-                    return member.getPassword();
-                }
+                    @Override
+                    public Set<String> getAuthorities() {
+                        return member.getRoles();
+                    }
+                };
+            }
 
-                @Override
-                public Set<String> getAuthorities() {
-                    return member.getRoles();
-                }
-            };
+            @Override
+            public UserDetails singup(String username) {
+                Member member = memberRepository.save(new Member(username, null, null, null, Set.of("USER")));
+                return new UserDetails() {
+                    @Override
+                    public String getUsername() {
+                        return member.getEmail();
+                    }
+
+                    @Override
+                    public String getPassword() {
+                        return member.getPassword();
+                    }
+
+                    @Override
+                    public Set<String> getAuthorities() {
+                        return member.getRoles();
+                    }
+                };
+            }
         };
     }
 }
