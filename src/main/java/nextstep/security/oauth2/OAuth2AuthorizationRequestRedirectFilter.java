@@ -15,9 +15,14 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
 
     private final OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver;
     private final PathPatternRequestMatcher pathPatternRequestMatcher;
+    private final AuthorizationRequestRepository authorizationRequestRepository;
 
-    public OAuth2AuthorizationRequestRedirectFilter(OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver) {
+    public OAuth2AuthorizationRequestRedirectFilter(OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver,
+                                                    AuthorizationRequestRepository authorizationRequestRepository
+
+    ) {
         this.oAuth2AuthorizationRequestResolver = oAuth2AuthorizationRequestResolver;
+        this.authorizationRequestRepository = authorizationRequestRepository;
         this.pathPatternRequestMatcher = new PathPatternRequestMatcher(HttpMethod.GET, OAUTH_REQUEST_URI_PATTERN);
     }
 
@@ -35,6 +40,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
             return;
         }
 
+        this.authorizationRequestRepository.saveAuthorizationRequest(oAuth2AuthorizationRequest, request, response);
         response.sendRedirect(oAuth2AuthorizationRequest.getOauth2AuthorizationRedirectURl());
     }
 }
