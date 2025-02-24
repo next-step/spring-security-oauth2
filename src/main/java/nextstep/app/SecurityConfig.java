@@ -17,11 +17,9 @@ import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.authentication.AuthenticationManager;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.DaoAuthenticationProvider;
-import nextstep.security.authentication.OAuth2AccessTokenClient;
 import nextstep.security.authentication.OAuth2ClientProperties;
 import nextstep.security.authentication.OAuth2ClientProperties.Provider;
 import nextstep.security.authentication.OAuth2ClientProperties.Registration;
-import nextstep.security.authentication.OAuth2UserInfoClient;
 import nextstep.security.authentication.ProviderManager;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.AuthorityAuthorizationManager;
@@ -66,16 +64,6 @@ public class SecurityConfig {
         this.memberRepository = memberRepository;
         this.oAuth2UserService = new DefaultOAuth2UserService(memberRepository);
         this.oAuth2ClientProperties = oAuth2ClientProperties;
-    }
-
-    @Bean
-    public OAuth2AccessTokenClient oAuth2AccessTokenClient() {
-        return new OAuth2AccessTokenClient();
-    }
-
-    @Bean
-    public OAuth2UserInfoClient oAuth2UserInfoClient() {
-        return new OAuth2UserInfoClient();
     }
 
     @Bean
