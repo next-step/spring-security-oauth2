@@ -5,7 +5,6 @@ import nextstep.app.domain.MemberRepository;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
 import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
-import nextstep.oauth2.access.OAuth2AuthorizationRequestMatcher;
 import nextstep.oauth2.client.ClientRegistration;
 import nextstep.oauth2.client.ClientRegistrationFactory;
 import nextstep.oauth2.client.ClientRegistrationRepository;
@@ -77,8 +76,8 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
-                        new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository(), new OAuth2AuthorizationRequestMatcher("/oauth2/authorization/")),
-                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository(), new OAuth2AuthorizationRequestMatcher("/login/oauth2/code/")),
+                        new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository()),
+                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
