@@ -4,26 +4,23 @@ import nextstep.security.authentication.OAuth2Client;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 @ConfigurationProperties(prefix = "oauth2")
 public class OAuth2Property {
 
-    private OAuth2Client google;
-    private OAuth2Client github;
+    private Map<String, OAuth2Client> clients;
 
-    public OAuth2Client getGoogle() {
-        return google;
+    public Map<String, OAuth2Client> getClients() {
+        return clients;
     }
 
-    public void setGoogle(OAuth2Client google) {
-        this.google = google;
+    public void setClients(Map<String, OAuth2Client> clients) {
+        this.clients = clients;
     }
 
-    public OAuth2Client getGithub() {
-        return github;
-    }
-
-    public void setGithub(OAuth2Client github) {
-        this.github = github;
+    public OAuth2Client getClient(String key) {
+        return clients.get(key);
     }
 }

@@ -86,11 +86,11 @@ public class SecurityConfig {
     public OAuth2ClientFactory oAuth2ClientFactory() {
         return new OAuth2ClientFactory(
                 Map.of(
-                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/google"), oAuth2Property.getGoogle(),
-                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), oAuth2Property.getGithub()),
+                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/google"), oAuth2Property.getClient("google"),
+                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), oAuth2Property.getClient("github")),
                 Map.of(
-                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google"), oAuth2Property.getGoogle(),
-                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"), oAuth2Property.getGithub()
+                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google"), oAuth2Property.getClient("google"),
+                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"), oAuth2Property.getClient("github")
                 ));
     }
 
