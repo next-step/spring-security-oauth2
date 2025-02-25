@@ -3,7 +3,7 @@ package nextstep.security.authentication;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-public class OAuth2Client {
+public class ClientRegistration {
 
     private String clientId;
     private String clientSecret;

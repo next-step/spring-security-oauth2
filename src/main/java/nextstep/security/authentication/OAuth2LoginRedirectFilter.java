@@ -19,13 +19,13 @@ public class OAuth2LoginRedirectFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        OAuth2Client oAuth2Client = oAuth2ClientFactory.getOAuth2ClientForLogin(request);
-        if (oAuth2Client == null) {
+        ClientRegistration clientRegistration = oAuth2ClientFactory.getOAuth2ClientForLogin(request);
+        if (clientRegistration == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-        response.sendRedirect(oAuth2Client.getLoginRedirectUri());
+        response.sendRedirect(clientRegistration.getLoginRedirectUri());
     }
 }
