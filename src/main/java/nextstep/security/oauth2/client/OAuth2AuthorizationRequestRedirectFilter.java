@@ -14,14 +14,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
     public static final String DEFAULT_AUTHORIZATION_REQUEST_BASE_URI = "/oauth2/authorization/";
     private final OAuth2AuthorizationRequestResolver authorizationRequestResolver;
-    private final AuthorizationRequestRepository authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
+    private final AuthorizationRequestRepository authorizationRequestRepository;
 
-    public OAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository) {
-        this(clientRegistrationRepository, DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
+    public OAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository,
+                                                    AuthorizationRequestRepository authorizationRequestRepository) {
+        this(clientRegistrationRepository, authorizationRequestRepository, DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
     }
 
     public OAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository,
+                                                    AuthorizationRequestRepository authorizationRequestRepository,
                                                     String authorizationRequestBaseUri) {
+        this.authorizationRequestRepository = authorizationRequestRepository;
         this.authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository,
                 authorizationRequestBaseUri);
     }
