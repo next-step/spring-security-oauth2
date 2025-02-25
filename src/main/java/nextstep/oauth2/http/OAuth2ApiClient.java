@@ -1,6 +1,6 @@
 package nextstep.oauth2.http;
 
-import nextstep.oauth2.client.ClientRegistration;
+import nextstep.oauth2.registration.ClientRegistration;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;

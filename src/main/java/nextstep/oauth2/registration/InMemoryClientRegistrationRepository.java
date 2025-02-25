@@ -1,4 +1,4 @@
-package nextstep.oauth2.client;
+package nextstep.oauth2.registration;
 
 import java.util.Map;
 

@@ -4,9 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.oauth2.client.ClientRegistration;
-import nextstep.oauth2.client.ClientRegistrationRepository;
-import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
+import nextstep.oauth2.registration.ClientRegistration;
+import nextstep.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,34 +15,43 @@ import java.io.IOException;
 
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
     public static final String DEFAULT_AUTHORIZATION_REQUEST_BASE_URI = "/oauth2/authorization/";
-    private final ClientRegistrationRepository clientRegistrationRepository;
     private final RequestMatcher requiresAuthenticationRequestMatcher;
+    private final OAuth2AuthorizationRequestResolver authorizationRequestResolver;
 
     public OAuth2AuthorizationRequestRedirectFilter(final ClientRegistrationRepository clientRegistrationRepository) {
-        this.clientRegistrationRepository = clientRegistrationRepository;
         this.requiresAuthenticationRequestMatcher = new MvcRequestMatcher(DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
+        this.authorizationRequestResolver = new OAuth2AuthorizationRequestResolver(clientRegistrationRepository);
     }
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
-        if (!requiresAuthenticationRequestMatcher.matches(request)) {
-            doFilter(request, response, filterChain);
-            return;
-        }
-
-        final String registrationId = extractRegistrationId(request.getRequestURI(), DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
-        if (registrationId == null) {
-            doFilter(request, response, filterChain);
-            return;
-        }
-
-        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
-        if (clientRegistration == null) {
-            throw new OAuth2RegistrationNotFoundException(registrationId);
-        }
-
+//        if (!requiresAuthenticationRequestMatcher.matches(request)) {
+//            doFilter(request, response, filterChain);
+//            return;
+//        }
+//
+//        final String registrationId = extractRegistrationId(request.getRequestURI(), DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
+//        if (registrationId == null) {
+//            doFilter(request, response, filterChain);
+//            return;
+//        }
+//
+//        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
+//        if (clientRegistration == null) {
+//            throw new OAuth2RegistrationNotFoundException(registrationId);
+//        }
+//
         final String uriString = buildRedirectURI(clientRegistration);
         response.sendRedirect(uriString);
+
+        // ================================
+        OAuth2AuthorizationRequest authorizationRequest = this.authorizationRequestResolver.resolve(request);
+        if (authorizationRequest != null) {
+            sendRedirectForAuthorization(request, response, authorizationRequest);
+            return;
+        }
+
+        filterChain.doFilter(request, response);
     }
 
     public String extractRegistrationId(String requestUri, String baseUri) {
