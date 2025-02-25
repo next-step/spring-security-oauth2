@@ -47,12 +47,13 @@ public class OAuth2AuthorizationCodeAuthenticationToken implements Authenticatio
 
     @Override
     public Object getCredentials() {
-        return null;
+        return (this.accessToken != null) ? this.accessToken.tokenValue()
+                : this.authorizationExchange.authorizationResponse().code();
     }
 
     @Override
     public Object getPrincipal() {
-        return null;
+        return this.clientRegistration.clientId();
     }
 
     @Override
