@@ -56,8 +56,8 @@ public class SecurityConfig {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new OAuth2LoginRedirectFilter(oAuth2ClientFactory()),
-                        new OAuth2AuthenticationFilter(userDetailsService(), oAuth2ClientFactory()),
+                        new OAuth2LoginRedirectFilter(oAuth2ClientRepository()),
+                        new OAuth2AuthenticationFilter(userDetailsService(), oAuth2ClientRepository()),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
@@ -83,14 +83,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public OAuth2ClientFactory oAuth2ClientFactory() {
-        return new OAuth2ClientFactory(
+    public OAuth2ClientRepository oAuth2ClientRepository() {
+        return new OAuth2ClientRepository(
                 Map.of(
-                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/google"), oAuth2Property.getClient("google"),
-                        new MvcRequestMatcher(HttpMethod.GET, "/oauth2/authorization/github"), oAuth2Property.getClient("github")),
-                Map.of(
-                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/google"), oAuth2Property.getClient("google"),
-                        new MvcRequestMatcher(HttpMethod.GET, "/login/oauth2/code/github"), oAuth2Property.getClient("github")
+                        "google", oAuth2Property.getClient("google"),
+                        "github", oAuth2Property.getClient("github")
                 ));
     }
 
