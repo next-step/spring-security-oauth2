@@ -8,7 +8,6 @@ import java.io.IOException;
 import nextstep.security.oauth2.client.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.core.OAuth2AuthenticationException;
 import nextstep.security.oauth2.core.OAuth2AuthorizationRequest;
-import org.springframework.util.Assert;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {

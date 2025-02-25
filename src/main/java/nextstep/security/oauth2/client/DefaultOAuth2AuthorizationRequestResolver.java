@@ -1,7 +1,6 @@
 package nextstep.security.oauth2.client;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Base64;
 import nextstep.security.authentication.AuthenticationException;
 import nextstep.security.oauth2.client.registration.ClientRegistration;
 import nextstep.security.oauth2.client.registration.ClientRegistrationRepository;
