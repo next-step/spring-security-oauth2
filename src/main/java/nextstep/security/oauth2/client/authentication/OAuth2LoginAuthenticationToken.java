@@ -1,5 +1,6 @@
 package nextstep.security.oauth2.client.authentication;
 
+import java.util.Collections;
 import java.util.Set;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.oauth2.client.registration.ClientRegistration;
@@ -9,14 +10,10 @@ import nextstep.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.Assert;
 
 public class OAuth2LoginAuthenticationToken implements Authentication {
-
     private final ClientRegistration clientRegistration;
     private final OAuth2AuthorizationExchange authorizationExchange;
     private OAuth2User principal;
     private OAuth2AccessToken accessToken;
-
-    private Set<String> authorities;
-
     private boolean authenticated;
 
     public OAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
@@ -30,7 +27,7 @@ public class OAuth2LoginAuthenticationToken implements Authentication {
 
     public OAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
                                           OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
-                                          Set<String> authorities, OAuth2AccessToken accessToken) {
+                                          OAuth2AccessToken accessToken) {
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         Assert.notNull(authorizationExchange, "authorizationExchange cannot be null");
         Assert.notNull(principal, "principal cannot be null");
@@ -64,7 +61,7 @@ public class OAuth2LoginAuthenticationToken implements Authentication {
 
     @Override
     public Set<String> getAuthorities() {
-        return this.authorities;
+        return Collections.emptySet();
     }
 
     public ClientRegistration getClientRegistration() {

@@ -40,7 +40,7 @@ public class OAuth2LoginAuthenticationProvider implements AuthenticationProvider
 
         return new OAuth2LoginAuthenticationToken(
                 loginAuthenticationToken.getClientRegistration(), loginAuthenticationToken.getAuthorizationExchange(),
-                oauth2User, oauth2User.getAuthorities(), accessToken);
+                oauth2User, accessToken);
     }
 
     @Override
