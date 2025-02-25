@@ -26,16 +26,16 @@ public class OAuth2AuthorizationResponseUtils {
     }
 
     static boolean isAuthorizationResponseSuccess(MultiValueMap<String, String> request) {
-        return StringUtils.hasText(request.getFirst(OAuth2ParameterNames.CODE));
+        return StringUtils.hasText(request.getFirst(OAuth2ParameterNames.CODE.getValue()));
     }
 
     static boolean isAuthorizationResponseError(MultiValueMap<String, String> request) {
-        return StringUtils.hasText(request.getFirst(OAuth2ParameterNames.ERROR));
+        return StringUtils.hasText(request.getFirst(OAuth2ParameterNames.ERROR.getValue()));
     }
 
     public static OAuth2AuthorizationResponse convert(MultiValueMap<String, String> request, String redirectUri) {
-        String code = request.getFirst(OAuth2ParameterNames.CODE);
-        String errorCode = request.getFirst(OAuth2ParameterNames.ERROR);
+        String code = request.getFirst(OAuth2ParameterNames.CODE.getValue());
+        String errorCode = request.getFirst(OAuth2ParameterNames.ERROR.getValue());
         if (StringUtils.hasText(code)) {
             return OAuth2AuthorizationResponse.success(code, redirectUri);
         }

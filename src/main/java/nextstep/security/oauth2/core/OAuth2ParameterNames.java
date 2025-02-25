@@ -1,15 +1,30 @@
 package nextstep.security.oauth2.core;
 
-public class OAuth2ParameterNames {
-    public static final String CLIENT_ID = "client_id";
-    public static final String REDIRECT_URI = "redirect_uri";
-    public static final String RESPONSE_TYPE = "response_type";
-    public static final String SCOPE = "scope";
-    public static final String CODE = "code";
-    public static final String ERROR = "error";
-    public static final String ERROR_DESCRIPTION = "error_description";
-    public static final String ERROR_URI = "error_uri";
-    public static final String GRANT_TYPE = "grant_type";
-    public static final String AUTHORIZATION_CODE = "authorization_code";
-    public static final String ACCESS_TOKEN = "access_token";
+public enum OAuth2ParameterNames {
+    CLIENT_ID("client_id"),
+    REDIRECT_URI("redirect_uri"),
+    RESPONSE_TYPE("response_type"),
+    SCOPE("scope"),
+    CODE("code"),
+    ERROR("error"),
+    ERROR_DESCRIPTION("error_description"),
+    ERROR_URI("error_uri"),
+    GRANT_TYPE("grant_type"),
+    AUTHORIZATION_CODE("authorization_code"),
+    ACCESS_TOKEN("access_token");
+
+    private final String value;
+
+    OAuth2ParameterNames(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }
