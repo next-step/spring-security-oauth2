@@ -38,7 +38,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
                 return;
             }
         } catch (Exception e) {
-            throw new OAuth2AuthenticationException();
+            throw new OAuth2AuthenticationException("OAuth2 인증 요청을 처리하는데 실패 했습니다: " + e.getMessage());
         }
         filterChain.doFilter(request, response);
     }
