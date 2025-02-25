@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nextstep.oauth2.client.web.AuthorizationRequestRepository;
+import nextstep.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -12,6 +14,8 @@ import java.io.IOException;
 public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilter {
     public static final String DEFAULT_AUTHORIZATION_REQUEST_BASE_URI = "/oauth2/authorization/";
     private final OAuth2AuthorizationRequestResolver authorizationRequestResolver;
+    private final AuthorizationRequestRepository authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
+
 
     public OAuth2AuthorizationRequestRedirectFilter(final ClientRegistrationRepository clientRegistrationRepository) {
         this.authorizationRequestResolver = new OAuth2AuthorizationRequestResolver(clientRegistrationRepository, DEFAULT_AUTHORIZATION_REQUEST_BASE_URI);
@@ -28,7 +32,9 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
         filterChain.doFilter(request, response);
     }
 
-    private void sendRedirectForAuthorization(final HttpServletRequest request, final HttpServletResponse response, final OAuth2AuthorizationRequest authorizationRequest) {
-        throw new UnsupportedOperationException("Unsupported sendRedirectForAuthorization");
+    private void sendRedirectForAuthorization(HttpServletRequest request, HttpServletResponse response,
+                                              OAuth2AuthorizationRequest authorizationRequest) throws IOException {
+        this.authorizationRequestRepository.saveAuthorizationRequest(authorizationRequest, request, response);
+        response.sendRedirect(authorizationRequest.getAuthorizationRequestUri());
     }
 }
