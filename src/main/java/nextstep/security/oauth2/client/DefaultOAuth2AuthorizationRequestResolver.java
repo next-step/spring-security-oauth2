@@ -31,17 +31,14 @@ public class DefaultOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
             throw new AuthenticationException("Invalid Client Registration with Id: " + registrationId);
         }
 
-        String paramsQuery = UriComponentsBuilder.newInstance()
+        String authorizationRequestUri = UriComponentsBuilder
+                .fromHttpUrl(clientRegistration.providerDetails().authorizationUri())
                 .queryParam("client_id", clientRegistration.clientId())
                 .queryParam("response_type", "code")
-                .queryParam("scope", clientRegistration.scope())
+                .queryParam("scope", String.join(" ", clientRegistration.scope()))
                 .queryParam("redirect_uri", clientRegistration.redirectUri())
                 .build()
-                .toUri()
-                .getQuery();
-
-        String authorizationRequestUri =
-                clientRegistration.providerDetails().authorizationUri() + "?" + paramsQuery;
+                .toUriString();
 
         return new OAuth2AuthorizationRequest(
                 clientRegistration.providerDetails().authorizationUri(),
