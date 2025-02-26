@@ -25,6 +25,7 @@ public class OAuth2LoginAuthenticationProvider implements AuthenticationProvider
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         OAuth2LoginAuthenticationToken loginAuthenticationToken = (OAuth2LoginAuthenticationToken) authentication;
 
+        // 1. 코드 교환
         OAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken
                 = (OAuth2AuthorizationCodeAuthenticationToken) this.authorizationCodeAuthenticationProvider
                 .authenticate(
@@ -34,7 +35,10 @@ public class OAuth2LoginAuthenticationProvider implements AuthenticationProvider
                         )
                 );
 
+        // 2. Access Token 요청
         OAuth2AccessToken accessToken = authorizationCodeAuthenticationToken.getAccessToken();
+
+        // 3. User 정보 가져오기
         OAuth2User oauth2User = this.userService.loadUser(new OAuth2UserRequest(
                 loginAuthenticationToken.getClientRegistration(), accessToken));
 

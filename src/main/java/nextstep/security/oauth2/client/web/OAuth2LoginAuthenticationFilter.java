@@ -27,7 +27,6 @@ import nextstep.security.oauth2.core.OAuth2AuthorizationRequest;
 import nextstep.security.oauth2.core.OAuth2AuthorizationResponse;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.log.LogMessage;
-import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -88,51 +87,36 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
 
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
-        // request에서 parameter를 가져오기
+        // 1. 요청 파라미터에서 필요한 정보를 추출
         MultiValueMap<String, String> params = OAuth2AuthorizationResponseUtils.toMultiMap(request.getParameterMap());
         if (!OAuth2AuthorizationResponseUtils.isAuthorizationResponse(params)) {
-            throw new OAuth2AuthenticationException();
+            throw new OAuth2AuthenticationException("Invalid OAuth2 Authorization Response");
         }
 
-        // session에서 authorizationRequest를 가져오기
+        // 2. 세션에서 OAuth2AuthorizationRequest 로드
         OAuth2AuthorizationRequest authorizationRequest = this.authorizationRequestRepository.removeAuthorizationRequest(
                 request, response);
         if (authorizationRequest == null) {
-            throw new OAuth2AuthenticationException();
+            throw new OAuth2AuthenticationException("Authorization Request not found in session");
         }
 
-        // registrationId를 가져오고 clientRegistration을 가져오기
+        // 3. registrationId와 ClientRegistration 조회
         String registrationId = getRegistrationId(request);
         ClientRegistration clientRegistration = this.clientRegistrationRepository.findByRegistrationId(registrationId);
         if (clientRegistration == null) {
-            throw new OAuth2AuthenticationException();
+            throw new OAuth2AuthenticationException("Client Registration not found");
         }
 
-        // code를 포함한 authorization response를 객체로 가져오기
+        // 4. 인증에 필요한 OAuth2AuthorizationResponse 생성
         OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponseUtils.convert(params,
                 clientRegistration.redirectUri());
 
-        // access token을 가져오기 위한 request 객체 만들기
-        OAuth2LoginAuthenticationToken authenticationRequest = new OAuth2LoginAuthenticationToken(clientRegistration,
+        // 5. Authentication 생성 (실제 인증은 Provider가 수행)
+        Authentication authenticationRequest = new OAuth2LoginAuthenticationToken(clientRegistration,
                 new OAuth2AuthorizationExchange(authorizationRequest, authorizationResponse));
 
-        // OAuth2LoginAuthenticationToken 만들기
-        OAuth2LoginAuthenticationToken authenticationResult = (OAuth2LoginAuthenticationToken) getAuthenticationManager()
-                .authenticate(authenticationRequest);
-
-        // provider 인증 후 authenticated된 OAuth2AuthenticationToken 객체 가져오기
-        OAuth2AuthenticationToken oauth2Authentication = this.authenticationResultConverter.convert(
-                authenticationResult);
-        Assert.notNull(oauth2Authentication, "authentication result cannot be null");
-
-        // authorizedClientRepository 에 저장할 OAuth2AuthorizedClient을 만들고 저장
-        OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
-                authenticationResult.getClientRegistration(), oauth2Authentication.getName(),
-                authenticationResult.getAccessToken());
-
-        this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, oauth2Authentication, request, response);
-
-        return oauth2Authentication;
+        // 6. AuthenticationManager에 요청 전달
+        return getAuthenticationManager().authenticate(authenticationRequest);
     }
 
     private boolean requiresAuthentication(HttpServletRequest request) {
@@ -171,6 +155,20 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
         context.setAuthentication(authResult);
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, request, response);
+
+        if (authResult instanceof OAuth2LoginAuthenticationToken authentication) {
+            OAuth2AuthenticationToken oauth2Authentication = this.authenticationResultConverter.convert(
+                    authentication);
+
+            // authorizedClientRepository 에 저장할 OAuth2AuthorizedClient을 만들고 저장
+            OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
+                    authentication.getClientRegistration(),
+                    oauth2Authentication.getName(),
+                    authentication.getAccessToken());
+
+            this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, oauth2Authentication, request,
+                    response);
+        }
 
         successHandler.onAuthenticationSuccess(request, response, authResult);
     }
