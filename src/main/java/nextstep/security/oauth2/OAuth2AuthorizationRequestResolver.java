@@ -20,6 +20,10 @@ public class OAuth2AuthorizationRequestResolver {
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         String registrationId = matcher.getPathVariable(request, REGISTRATION);
 
+        if (registrationId == null) {
+            return null;
+        }
+
         final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
 
         if (clientRegistration == null) {
