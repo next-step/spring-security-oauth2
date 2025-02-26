@@ -1,8 +1,9 @@
-package nextstep.oauth2;
+package nextstep.oauth2.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import nextstep.oauth2.OAuth2AuthorizedClient;
 import nextstep.security.authentication.Authentication;
 import org.springframework.util.Assert;
 

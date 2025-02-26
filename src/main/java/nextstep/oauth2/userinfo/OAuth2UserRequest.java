@@ -1,4 +1,4 @@
-package nextstep.oauth2.client.userinfo;
+package nextstep.oauth2.userinfo;
 
 import nextstep.oauth2.authentication.OAuth2AccessToken;
 import nextstep.oauth2.registration.ClientRegistration;

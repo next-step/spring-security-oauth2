@@ -1,6 +1,5 @@
 package nextstep.oauth2;
 
-import nextstep.oauth2.client.OAuth2ParameterNames;
 import nextstep.oauth2.endpoint.OAuth2AuthorizationResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;

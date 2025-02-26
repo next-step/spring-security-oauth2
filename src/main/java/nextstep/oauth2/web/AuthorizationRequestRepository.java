@@ -1,4 +1,4 @@
-package nextstep.oauth2.client.web;
+package nextstep.oauth2.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,4 +1,4 @@
-package nextstep.oauth2.client.userinfo;
+package nextstep.oauth2.userinfo;
 
 @FunctionalInterface
 public interface OAuth2UserService {

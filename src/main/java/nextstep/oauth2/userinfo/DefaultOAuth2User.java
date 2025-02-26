@@ -1,4 +1,4 @@
-package nextstep.oauth2.client.userinfo;
+package nextstep.oauth2.userinfo;
 
 import java.util.Map;
 import java.util.Set;

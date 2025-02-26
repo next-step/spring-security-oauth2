@@ -1,4 +1,4 @@
-package nextstep.oauth2.client.userinfo;
+package nextstep.oauth2.userinfo;
 
 import nextstep.oauth2.exception.OAuth2UserInfoEndPointNotFoundException;
 import org.springframework.core.ParameterizedTypeReference;

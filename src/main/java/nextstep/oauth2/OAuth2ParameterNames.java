@@ -1,4 +1,4 @@
-package nextstep.oauth2.client;
+package nextstep.oauth2;
 
 public final class OAuth2ParameterNames {
     public static final String STATE = "state";
