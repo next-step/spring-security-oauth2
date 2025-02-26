@@ -41,7 +41,8 @@ public class OAuth2ClientProperties {
             String authorizationUri,
             String tokenUri,
             String userInfoUri,
-            String accessTokenUri
+            String accessTokenUri,
+            String userNameAttributeName
     ) {
     }
 }
