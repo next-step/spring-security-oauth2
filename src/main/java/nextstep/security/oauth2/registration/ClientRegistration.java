@@ -1,8 +1,5 @@
 package nextstep.security.oauth2.registration;
 
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
 public class ClientRegistration {
     private final String registrationId;
     private final String clientId;
@@ -50,14 +47,16 @@ public class ClientRegistration {
         return userInfoUri;
     }
 
-    public UriComponents getOauth2AuthorizationRedirectURl() {
-        return UriComponentsBuilder.fromHttpUrl(authorizationUri)
-                .queryParam("client_id", clientId)
-                .queryParam("response_type", responseType)
-                .queryParam("scope", scope)
-                .queryParam("redirect_uri", redirectUri)
-                .build();
+    public String getScope() {
+        return scope;
+    }
 
+    public String getAuthorizationUri() {
+        return authorizationUri;
+    }
+
+    public String getResponseType() {
+        return responseType;
     }
 
     public static Builder builder(String registrationId) {

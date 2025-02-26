@@ -15,13 +15,13 @@ public class OAuth2ProviderClient {
         this.clientBuilder = RestClient.builder().messageConverters((it) -> it.add(new FormHttpMessageConverter()));
     }
 
-    public OAuth2AccessToken accessTokenRequest(String code) {
+    public OAuth2AccessToken accessTokenRequest(OAuth2AccessTokenRequest oAuth2AccessTokenRequest) {
         return clientBuilder.build()
                 .post()
                 .uri(clientRegistration.getTokenUri())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(OAuth2AccessTokenRequest.of(clientRegistration, code))
+                .body(oAuth2AccessTokenRequest)
                 .retrieve()
                 .body(OAuth2AccessToken.class);
     }

@@ -1,6 +1,6 @@
 package nextstep.security.oauth2.registration;
 
-import nextstep.fixture.TestClientFixture;
+import nextstep.fixture.TestClientRegistrationFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +16,8 @@ class InMemoryClientRegistrationRepositoryTest {
     @DisplayName("findByRegistrationIds 는 RegistrationId에 맞는 ClientRegistration 를 찾는다")
     void findByRegistrationId() {
         // given
-        ClientRegistration mockRegistration = TestClientFixture.create("mock");
-        ClientRegistration twoRegistration = TestClientFixture.create("mock2");
+        ClientRegistration mockRegistration = TestClientRegistrationFixture.create("mock");
+        ClientRegistration twoRegistration = TestClientRegistrationFixture.create("mock2");
         InMemoryClientRegistrationRepository repository = new InMemoryClientRegistrationRepository(List.of(mockRegistration, twoRegistration));
 
         // when
@@ -33,7 +33,7 @@ class InMemoryClientRegistrationRepositoryTest {
     @Test
     @DisplayName("InMemoryClientRegistrationRepository 에서 ClientRegistration를 찾지 못하면 null을 반환한다")
     void findByRegistrationId_notFound() {
-        ClientRegistration registration = TestClientFixture.create("mock");
+        ClientRegistration registration = TestClientRegistrationFixture.create("mock");
         InMemoryClientRegistrationRepository repository = new InMemoryClientRegistrationRepository(List.of(registration));
 
         final ClientRegistration foundRegistration = repository.findByRegistrationId("nonexistent");

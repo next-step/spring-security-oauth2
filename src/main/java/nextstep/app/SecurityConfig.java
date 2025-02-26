@@ -2,24 +2,37 @@ package nextstep.app;
 
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
+import nextstep.security.access.PathPatternRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.BasicAuthenticationFilter;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
-import nextstep.security.authorization.*;
+import nextstep.security.authorization.AuthorityAuthorizationManager;
+import nextstep.security.authorization.AuthorizationFilter;
+import nextstep.security.authorization.AuthorizationManager;
+import nextstep.security.authorization.PermitAllAuthorizationManager;
+import nextstep.security.authorization.RequestAuthorizationManager;
+import nextstep.security.authorization.SecuredMethodInterceptor;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
 import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.oauth2.OAuth2AuthenticationFilter;
-import nextstep.security.oauth2.OAuth2ClientProviderProperties;
-import nextstep.security.oauth2.OAuth2ClientRegistrationProperties;
-import nextstep.security.oauth2.OAuth2LoginRedirectFilter;
+import nextstep.security.oauth2.AuthorizationRequestRepository;
+import nextstep.security.oauth2.HttpSessionOAuth2AuthorizedClientRepository;
+import nextstep.security.oauth2.OAuth2AuthorizedClientRepository;
+import nextstep.security.oauth2.OAuth2LoginAuthenticationFilter;
+import nextstep.security.oauth2.OAuth2AuthorizationRequestRedirectFilter;
+import nextstep.security.oauth2.OAuth2AuthorizationRequestResolver;
+import nextstep.security.oauth2.registration.OAuth2ClientProviderProperties;
+import nextstep.security.oauth2.registration.OAuth2ClientRegistrationProperties;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.registration.InMemoryClientRegistrationRepository;
+import nextstep.security.oauth2.user.OAuth2User;
+import nextstep.security.oauth2.user.OAuth2UserRequest;
+import nextstep.security.oauth2.user.OAuth2UserService;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,16 +45,21 @@ import java.util.List;
 @EnableAspectJAutoProxy
 @Configuration
 public class SecurityConfig {
+    private static final String OAUTH2_AUTHORIZATION_BASE_URL =  "/oauth2/authorization";
 
     private final UserDetailsService userDetailsService;
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
+    public SecurityConfig(UserDetailsService userDetailsService, OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService) {
         this.userDetailsService = userDetailsService;
+        this.oAuth2UserService = oAuth2UserService;
     }
 
     @Bean
-    public DelegatingFilterProxy delegatingFilterProxy(ClientRegistrationRepository clientRegistrationRepository) {
-        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(clientRegistrationRepository))));
+    public DelegatingFilterProxy delegatingFilterProxy(ClientRegistrationRepository clientRegistrationRepository,
+                                                       OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository,
+                                                       AuthorizationRequestRepository authorizationRequestRepository) {
+        return new DelegatingFilterProxy(filterChainProxy(List.of(securityFilterChain(clientRegistrationRepository, oAuth2AuthorizedClientRepository, authorizationRequestRepository))));
     }
 
 
@@ -55,14 +73,32 @@ public class SecurityConfig {
     }
 
 
-    public SecurityFilterChain securityFilterChain(ClientRegistrationRepository clientRegistrationRepository) {
+    @Bean
+    public OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository() {
+        return new HttpSessionOAuth2AuthorizedClientRepository();
+    }
+
+    @Bean
+    public AuthorizationRequestRepository authorizationRequestRepository() {
+        return new AuthorizationRequestRepository();
+    }
+
+    private SecurityFilterChain securityFilterChain(ClientRegistrationRepository clientRegistrationRepository,
+                                                   OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository,
+                                                   AuthorizationRequestRepository authorizationRequestRepository) {
+
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
-                        new OAuth2LoginRedirectFilter(clientRegistrationRepository),
-                        new OAuth2AuthenticationFilter(userDetailsService, clientRegistrationRepository),
+                        new OAuth2AuthorizationRequestRedirectFilter(
+                                new OAuth2AuthorizationRequestResolver(OAUTH2_AUTHORIZATION_BASE_URL, clientRegistrationRepository), authorizationRequestRepository),
+                        new OAuth2LoginAuthenticationFilter(oAuth2UserService
+                                , clientRegistrationRepository
+                                , oAuth2AuthorizedClientRepository
+                                , new PathPatternRequestMatcher(HttpMethod.GET, "/login/oauth2/code/*"))
+                        ,
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -90,9 +126,9 @@ public class SecurityConfig {
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository(OAuth2ClientProperties oAuth2ClientProperties) {
         return new InMemoryClientRegistrationRepository(oAuth2ClientProperties.getRegistrations()
-                        .stream()
-                        .map((it) -> clientRegistration(it, oAuth2ClientProperties.getOauth2Registration(it), oAuth2ClientProperties.getOauth2Provider(it)))
-                        .toList()
+                .stream()
+                .map((it) -> clientRegistration(it, oAuth2ClientProperties.getOauth2Registration(it), oAuth2ClientProperties.getOauth2Provider(it)))
+                .toList()
         );
     }
 
@@ -106,6 +142,6 @@ public class SecurityConfig {
                 .tokenUri(oauth2Provider.getTokenUri())
                 .userInfoUri(oauth2Provider.getUserInfoUri())
                 .authorizationUri(oauth2Provider.getAuthorizationUri())
-        .build();
+                .build();
     }
 }

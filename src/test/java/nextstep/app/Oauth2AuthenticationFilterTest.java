@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -19,7 +20,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -36,11 +41,17 @@ class Oauth2AuthenticationFilterTest {
         stubForUser();
     }
 
+
     @Test
     void redirectAndRequestGithubAccessToken() throws Exception {
-        String requestUri = "/login/oauth2/code/mock?code=mock_code";
+        final String registrationId = "mock";
+        final String requestUri = "/login/oauth2/code/" + registrationId + "?code=mock_code";
 
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        MockHttpSession authorizationSession = getAuthorizationSession(registrationId);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(requestUri)
+                        .session(authorizationSession)
+                )
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/"))
                 .andExpect(request -> {
@@ -52,6 +63,14 @@ class Oauth2AuthenticationFilterTest {
                     assertThat(context.getAuthentication().isAuthenticated()).isTrue();
                     assertThat(context.getAuthentication().getPrincipal()).isEqualTo("a@a.com");
                 });
+    }
+
+    private MockHttpSession getAuthorizationSession(String registrationId) throws Exception {
+        HttpSession httpSession = mockMvc.perform(MockMvcRequestBuilders.get("/oauth2/authorization/" + registrationId))
+                .andReturn()
+                .getRequest()
+                .getSession(false);
+        return (MockHttpSession) httpSession;
     }
 
     private static void stubForAccessToken() throws JsonProcessingException {

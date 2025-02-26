@@ -31,3 +31,40 @@ POST https://github.com/login/oauth/access_token
 - [X] Google, Github 계정을 사용한 인증 통합
 - [X] Google 계정을 사용한 인가 추가 
 - [X] Google, Github 계정을 사용한 인가 통합
+
+# 2-1단계 - 리다이렉트 필터
+OAuth2AuthorizationRequestRedirectFilter
+OAuth2 인증 요청을 리다이렉트하는 필터인 OAuth2AuthorizationRequestRedirectFilter를 구현한다. 
+이 필터는 사용자가 OAuth2 제공자(Google, Github)로 인증 요청을 보낼 때 사용된다
+- [X] ClientRegistrationRepository 구현 
+- [X] OAuth2AuthorizationRequestResolver 구현
+- [X] OAuth2AuthorizationRequestRedirectFilter 구현
+
+# 2-2단계 - Oauth 인증 필터
+OAuth2LoginAuthenticationFilter
+- [X] 아래 의 흐름에 맞추어 구현
+```java
+private Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+
+    // request에서 parameter를 가져오기
+
+    // session에서 authorizationRequest를 가져오기
+
+    // registrationId를 가져오고 clientRegistration을 가져오기
+
+    // code를 포함한 authorization response를 객체로 가져오기
+
+    // access token 을 가져오기 위한 request 객체 만들기
+
+    // OAuth2LoginAuthenticationToken 만들기
+
+    // provider 인증 후 authenticated된 OAuth2AuthenticationToken 객체 가져오기
+
+    // authorizedClientRepository 에 저장할 OAuth2AuthorizedClient을 만들고 저장
+
+    return oauth2Authentication;
+}
+
+```
+
+
