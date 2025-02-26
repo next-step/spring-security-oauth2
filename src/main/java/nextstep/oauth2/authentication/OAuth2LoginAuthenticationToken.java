@@ -23,24 +23,32 @@ public class OAuth2LoginAuthenticationToken implements Authentication {
 
     private boolean authenticated;
 
-    public OAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
-                                          OAuth2AuthorizationExchange authorizationExchange) {
-        this.authorities = Collections.emptySet();
+    public static OAuth2LoginAuthenticationToken unauthenticated(final ClientRegistration clientRegistration, final OAuth2AuthorizationExchange authorizationExchange) {
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         Assert.notNull(authorizationExchange, "authorizationExchange cannot be null");
+        return new OAuth2LoginAuthenticationToken(clientRegistration, authorizationExchange);
+    }
+
+    private OAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
+                                          OAuth2AuthorizationExchange authorizationExchange) {
+        this.authorities = Collections.emptySet();
         this.clientRegistration = clientRegistration;
         this.authorizationExchange = authorizationExchange;
         this.authenticated = false;
     }
 
-    public OAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
-                                          OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
-                                          Set<String> authorities, OAuth2AccessToken accessToken) {
-        this.authorities = authorities;
+    public static Authentication authenticated(final ClientRegistration clientRegistration, final OAuth2AuthorizationExchange authorizationExchange, final OAuth2User principal, final Set<String> authorities, final OAuth2AccessToken accessToken) {
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         Assert.notNull(authorizationExchange, "authorizationExchange cannot be null");
         Assert.notNull(principal, "principal cannot be null");
         Assert.notNull(accessToken, "accessToken cannot be null");
+        return new OAuth2LoginAuthenticationToken(clientRegistration, authorizationExchange, principal, authorities, accessToken);
+    }
+
+    private OAuth2LoginAuthenticationToken(ClientRegistration clientRegistration,
+                                          OAuth2AuthorizationExchange authorizationExchange, OAuth2User principal,
+                                          Set<String> authorities, OAuth2AccessToken accessToken) {
+        this.authorities = authorities;
         this.clientRegistration = clientRegistration;
         this.authorizationExchange = authorizationExchange;
         this.principal = principal;

@@ -4,12 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.oauth2.authentication.OAuth2AccessToken;
 import nextstep.oauth2.authentication.OAuth2AuthenticationToken;
-import nextstep.oauth2.client.userinfo.OAuth2User;
-import nextstep.oauth2.client.userinfo.OAuth2UserRequest;
-import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
-import nextstep.oauth2.endpoint.OAuth2AccessTokenResponseClient;
+import nextstep.oauth2.authentication.OAuth2LoginAuthenticationToken;
+import nextstep.oauth2.client.web.AuthorizationRequestRepository;
+import nextstep.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import nextstep.oauth2.endpoint.OAuth2AuthorizationExchange;
+import nextstep.oauth2.endpoint.OAuth2AuthorizationRequest;
+import nextstep.oauth2.endpoint.OAuth2AuthorizationResponse;
+import nextstep.oauth2.exception.OAuth2AuthenticationException;
 import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.access.MvcRequestMatcher;
@@ -21,15 +23,21 @@ import nextstep.security.authentication.AuthenticationManager;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 
 public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     private static final String DEFAULT_FILTER_PROCESSES_URI = "/login/oauth2/code/";
+    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuth2AuthorizedClientRepository authorizedClientRepository = new OAuth2AuthorizedClientRepository();
+    private final AuthorizationRequestRepository authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
+
     private final RequestMatcher requestMatcherrequiresAuthenticationRequestMatcher = new MvcRequestMatcher(DEFAULT_FILTER_PROCESSES_URI);
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final OAuth2AccessTokenResponseClient apiClient = new OAuth2AccessTokenResponseClient();
+    private Converter<OAuth2LoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter = this::createAuthenticationResult;
 
     public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository, AuthenticationManager authenticationManager) {
         super(authenticationManager);
@@ -43,38 +51,67 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
 
     @Override
     protected Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        final String registrationId = extractRegistrationId(request.getRequestURI(), DEFAULT_FILTER_PROCESSES_URI);
-//        if (registrationId == null) {
-//            doFilter(request, response, filterChain);
-//            return;
-//        }
 
-        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
-        if (clientRegistration == null) {
-            throw new OAuth2RegistrationNotFoundException(registrationId);
-        }
+        OAuth2AuthorizationRequest authorizationRequest = getAuthorizationRequest(request, response);
 
-        final String code = request.getParameter("code");
-        final String token = apiClient.sendTokenRequest(clientRegistration, code);
+        String registrationId = extractRegistrationId(request.getRequestURI());
+        ClientRegistration clientRegistration = getClientRegistration(registrationId);
 
-        final OAuth2AccessToken oAuth2AccessToken = new OAuth2AccessToken(token);
-        final OAuth2UserRequest oAuth2UserRequest = new OAuth2UserRequest(clientRegistration, oAuth2AccessToken);
-        final OAuth2User oAuth2User = oAuth2UserService.loadUser(oAuth2UserRequest);
+        OAuth2AuthorizationResponse authorizationResponse = getOAuth2AuthorizationResponse(request, clientRegistration);
 
-        final OAuth2AuthenticationToken authenticationToken = createSuccessAuthentication(oAuth2User);
+        OAuth2LoginAuthenticationToken authenticationRequest = OAuth2LoginAuthenticationToken.unauthenticated(clientRegistration,
+                new OAuth2AuthorizationExchange(authorizationRequest, authorizationResponse));
 
-        return authenticationToken;
+        OAuth2LoginAuthenticationToken authenticationResult = (OAuth2LoginAuthenticationToken) authenticationManager
+                .authenticate(authenticationRequest);
+
+        OAuth2AuthenticationToken oauth2Authentication = this.authenticationResultConverter.convert(authenticationResult);
+        Assert.notNull(oauth2Authentication, "authentication result cannot be null");
+
+        OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
+                authenticationResult.getClientRegistration(), oauth2Authentication.principalName(), authenticationResult.getAccessToken());
+
+        this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, oauth2Authentication, request, response);
+
+        return oauth2Authentication;
     }
 
-    public String extractRegistrationId(String requestUri, String baseUri) {
-        if (requestUri.length() <= baseUri.length()) {
+    private OAuth2AuthorizationResponse getOAuth2AuthorizationResponse(final HttpServletRequest request, final ClientRegistration clientRegistration) {
+        MultiValueMap<String, String> params = OAuth2AuthorizationResponseUtils.toMultiMap(request.getParameterMap());
+        if (!OAuth2AuthorizationResponseUtils.isAuthorizationResponse(params)) {
+            throw new OAuth2AuthenticationException();
+        }
+
+        OAuth2AuthorizationResponse authorizationResponse = OAuth2AuthorizationResponseUtils.convert(params,
+                clientRegistration.getRedirectUri());
+        return authorizationResponse;
+    }
+
+    private OAuth2AuthorizationRequest getAuthorizationRequest(final HttpServletRequest request, final HttpServletResponse response) {
+        OAuth2AuthorizationRequest authorizationRequest = this.authorizationRequestRepository.removeAuthorizationRequest(request, response);
+        if (authorizationRequest == null) {
+            throw new OAuth2AuthenticationException();
+        }
+        return authorizationRequest;
+    }
+
+    private ClientRegistration getClientRegistration(final String registrationId) {
+        ClientRegistration clientRegistration = this.clientRegistrationRepository.findByRegistrationId(registrationId);
+        if (clientRegistration == null) {
+            throw new OAuth2AuthenticationException();
+        }
+        return clientRegistration;
+    }
+
+    public String extractRegistrationId(String requestUri) {
+        if (requestUri.length() <= DEFAULT_FILTER_PROCESSES_URI.length()) {
             throw new IllegalArgumentException("Invalid request URI: " + requestUri);
         }
-        return requestUri.substring(baseUri.length());
+        return requestUri.substring(DEFAULT_FILTER_PROCESSES_URI.length());
     }
 
-    private OAuth2AuthenticationToken createSuccessAuthentication(final OAuth2User oAuth2User) {
-        return new OAuth2AuthenticationToken(oAuth2User, oAuth2User.authorities(), true);
+    private OAuth2AuthenticationToken createAuthenticationResult(OAuth2LoginAuthenticationToken authenticationResult) {
+        return OAuth2AuthenticationToken.success(authenticationResult.getPrincipal(), authenticationResult.getAuthorities());
     }
 
     @Override

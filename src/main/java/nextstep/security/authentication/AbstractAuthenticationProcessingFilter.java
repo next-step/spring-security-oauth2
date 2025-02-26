@@ -13,7 +13,6 @@ import org.springframework.web.filter.GenericFilterBean;
 import java.io.IOException;
 
 public abstract class AbstractAuthenticationProcessingFilter extends GenericFilterBean {
-
     protected final AuthenticationManager authenticationManager;
 
     public AbstractAuthenticationProcessingFilter(final AuthenticationManager authenticationManager) {

@@ -20,7 +20,7 @@ public class OAuth2LoginAuthenticationProvider implements AuthenticationProvider
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
         OAuth2LoginAuthenticationToken loginAuthenticationToken = (OAuth2LoginAuthenticationToken) authentication;
 
-        OAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken
+        OAuth2AuthorizationCodeAuthenticationToken issuedAuthorizationCodeAuthenticationToken
                 = (OAuth2AuthorizationCodeAuthenticationToken) this.authorizationCodeAuthenticationProvider
                 .authenticate(
                         OAuth2AuthorizationCodeAuthenticationToken.pending(
@@ -29,11 +29,11 @@ public class OAuth2LoginAuthenticationProvider implements AuthenticationProvider
                         )
                 );
 
-        OAuth2AccessToken accessToken = authorizationCodeAuthenticationToken.getAccessToken();
+        OAuth2AccessToken accessToken = issuedAuthorizationCodeAuthenticationToken.getAccessToken();
         OAuth2User oauth2User = this.userService.loadUser(new OAuth2UserRequest(
                 loginAuthenticationToken.getClientRegistration(), accessToken));
 
-        return new OAuth2LoginAuthenticationToken(
+        return OAuth2LoginAuthenticationToken.authenticated(
                 loginAuthenticationToken.getClientRegistration(), loginAuthenticationToken.getAuthorizationExchange(),
                 oauth2User, oauth2User.authorities(), accessToken);
     }
