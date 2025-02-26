@@ -2,6 +2,7 @@ package nextstep.oauth2;
 
 import nextstep.oauth2.client.userinfo.OAuth2User;
 import nextstep.security.authentication.Authentication;
+import nextstep.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.util.Set;
 

@@ -5,6 +5,7 @@ import nextstep.app.domain.MemberRepository;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
 import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
+import nextstep.oauth2.client.userinfo.OAuth2UserService;
 import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationFactory;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
@@ -47,10 +48,12 @@ import java.util.Set;
 public class SecurityConfig {
 
     private final MemberRepository memberRepository;
+    private final OAuth2UserService oAuth2UserService;
     private final OAuth2ClientProperties oAuth2ClientProperties;
 
-    public SecurityConfig(MemberRepository memberRepository, OAuth2ClientProperties oAuth2ClientProperties) {
+    public SecurityConfig(MemberRepository memberRepository, final OAuth2UserService oAuth2UserService, OAuth2ClientProperties oAuth2ClientProperties) {
         this.memberRepository = memberRepository;
+        this.oAuth2UserService = oAuth2UserService;
         this.oAuth2ClientProperties = oAuth2ClientProperties;
     }
 
@@ -77,7 +80,7 @@ public class SecurityConfig {
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository()),
-                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository()),
+                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository(), oAuth2UserService),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

@@ -4,35 +4,34 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.app.domain.Member;
-import nextstep.app.domain.MemberRepository;
-import nextstep.app.infrastructure.InmemoryMemberRepository;
-import nextstep.oauth2.registration.ClientRegistration;
-import nextstep.oauth2.registration.ClientRegistrationRepository;
+import nextstep.oauth2.client.userinfo.OAuth2User;
+import nextstep.oauth2.client.userinfo.OAuth2UserRequest;
+import nextstep.oauth2.client.userinfo.OAuth2UserService;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
 import nextstep.oauth2.http.OAuth2ApiClient;
-import nextstep.oauth2.http.OAuth2UserResponse;
+import nextstep.oauth2.registration.ClientRegistration;
+import nextstep.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcher;
-import nextstep.security.authentication.UsernamePasswordAuthenticationToken;
+import nextstep.security.authentication.Authentication;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Set;
 
 public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private static final String DEFAULT_FILTER_PROCESSES_URI = "/login/oauth2/code/";
-    private final MemberRepository memberRepository = new InmemoryMemberRepository();
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuth2ApiClient apiClient = new OAuth2ApiClient();
     private final RequestMatcher requestMatcherrequiresAuthenticationRequestMatcher;
+    private final OAuth2UserService oAuth2UserService;
 
-    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository, final OAuth2UserService oAuth2UserService) {
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.oAuth2UserService = oAuth2UserService;
         this.requestMatcherrequiresAuthenticationRequestMatcher = new MvcRequestMatcher(DEFAULT_FILTER_PROCESSES_URI);
     }
 
@@ -57,12 +56,13 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         final String code = request.getParameter("code");
         final String token = apiClient.sendTokenRequest(clientRegistration, code);
 
-        final OAuth2UserResponse oAuth2User = apiClient.sendUserInfoRequestWithToken(clientRegistration, token);
-        final Member member = retrieveMember(oAuth2User);
+        final OAuth2AccessToken oAuth2AccessToken = new OAuth2AccessToken(token);
+        final OAuth2UserRequest oAuth2UserRequest = new OAuth2UserRequest(clientRegistration, oAuth2AccessToken);
+        final OAuth2User oAuth2User = oAuth2UserService.loadUser(oAuth2UserRequest);
 
-        final UsernamePasswordAuthenticationToken authenticationToken = createSuccessAuthentication(member);
+        final OAuth2AuthenticationToken authenticationToken = createSuccessAuthentication(oAuth2User);
 
-        saveAuthentication(request, response, authenticationToken);
+        successHandler(request, response, authenticationToken);
 
         response.sendRedirect("/");
     }
@@ -74,23 +74,13 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         return requestUri.substring(baseUri.length());
     }
 
-    private Member retrieveMember(final OAuth2UserResponse oAuth2User) {
-        final String email = oAuth2User.getEmail();
-        final String name = oAuth2User.getName();
-        final String avatarUrl = oAuth2User.getPicture();
-
-        final Member member = memberRepository.findByEmail(email)
-                .orElseGet(() -> memberRepository.save(new Member(email, "", name, avatarUrl, Set.of())));
-        return member;
+    private OAuth2AuthenticationToken createSuccessAuthentication(final OAuth2User oAuth2User) {
+        return new OAuth2AuthenticationToken(oAuth2User, oAuth2User.authorities(), true);
     }
 
-    private UsernamePasswordAuthenticationToken createSuccessAuthentication(final Member member) {
-        return UsernamePasswordAuthenticationToken.authenticated(member.getEmail(), member.getPassword(), member.getRoles());
-    }
-
-    private void saveAuthentication(final HttpServletRequest request, final HttpServletResponse response, final UsernamePasswordAuthenticationToken authenticationToken) {
+    private void successHandler(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) {
         final SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authenticationToken);
+        context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
         this.securityContextRepository.saveContext(context, request, response);
     }

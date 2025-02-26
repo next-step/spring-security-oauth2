@@ -6,10 +6,12 @@ import nextstep.oauth2.client.userinfo.DefaultOAuth2UserService;
 import nextstep.oauth2.client.userinfo.OAuth2User;
 import nextstep.oauth2.client.userinfo.OAuth2UserRequest;
 import nextstep.oauth2.profile.OAuth2ProfileUser;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Set;
 
+@Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final MemberRepository memberRepository;
 
