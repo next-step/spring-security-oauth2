@@ -9,7 +9,7 @@ import nextstep.oauth2.authentication.OAuth2AuthenticationToken;
 import nextstep.oauth2.client.userinfo.OAuth2User;
 import nextstep.oauth2.client.userinfo.OAuth2UserRequest;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
-import nextstep.oauth2.http.OAuth2ApiClient;
+import nextstep.oauth2.endpoint.OAuth2AccessTokenResponseClient;
 import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.access.MvcRequestMatcher;
@@ -29,7 +29,7 @@ public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProce
     private final RequestMatcher requestMatcherrequiresAuthenticationRequestMatcher = new MvcRequestMatcher(DEFAULT_FILTER_PROCESSES_URI);
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ClientRegistrationRepository clientRegistrationRepository;
-    private final OAuth2ApiClient apiClient = new OAuth2ApiClient();
+    private final OAuth2AccessTokenResponseClient apiClient = new OAuth2AccessTokenResponseClient();
 
     public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository, AuthenticationManager authenticationManager) {
         super(authenticationManager);

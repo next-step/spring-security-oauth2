@@ -1,6 +1,7 @@
 package nextstep.oauth2;
 
 import jakarta.servlet.http.HttpServletRequest;
+import nextstep.oauth2.endpoint.OAuth2AuthorizationRequest;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
 import nextstep.oauth2.keygen.StateGenerator;
 import nextstep.oauth2.registration.ClientRegistration;

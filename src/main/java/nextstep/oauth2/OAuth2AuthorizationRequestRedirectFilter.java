@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.oauth2.client.web.AuthorizationRequestRepository;
 import nextstep.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import nextstep.oauth2.endpoint.OAuth2AuthorizationRequest;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
 import org.springframework.web.filter.OncePerRequestFilter;
 

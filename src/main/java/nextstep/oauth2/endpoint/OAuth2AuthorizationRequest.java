@@ -1,4 +1,4 @@
-package nextstep.oauth2;
+package nextstep.oauth2.endpoint;
 
 import java.util.Set;
 
