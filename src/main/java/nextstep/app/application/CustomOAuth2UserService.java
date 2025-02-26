@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 @Service
-public class CustomOauth2UserService implements OAuth2UserService {
+public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, Oauth2User> {
     private final MemberRepository memberRepository;
 
-    public CustomOauth2UserService(MemberRepository memberRepository) {
+    public CustomOAuth2UserService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
 
