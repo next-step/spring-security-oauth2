@@ -7,6 +7,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.PathPatternRequestMatcher;
+import nextstep.security.access.RequestMatcher;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.authentication.ProviderManager;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
@@ -25,7 +26,7 @@ import java.util.List;
 public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
     private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/*";
 
-    private final PathPatternRequestMatcher requestMatcher;
+    private final RequestMatcher requestMatcher;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ProviderManager providerManager;
     private final ClientRegistrationRepository clientRegistrationRepository;
