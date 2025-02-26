@@ -1,7 +1,7 @@
 oauth2:
   clients:
     google:
-      clientId: CLIENT_ID
+      clientId: 151962917139-q97c1m21vpctdnuh0errqn7p07lkid4b.apps.googleusercontent.com
       clientSecret: CLIENT_SECRET
       tokenUri: https://oauth2.googleapis.com/token
       userInfoUri: https://www.googleapis.com/oauth2/v2/userinfo
@@ -9,7 +9,7 @@ oauth2:
       redirectUri: http://localhost:8080/login/oauth2/code/google
       loginRedirectUri: https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/userinfo.profile+https://www.googleapis.com/auth/userinfo.email&response_type=code&redirect_uri=http://localhost:8080/login/oauth2/code/google&client_id=CLIENT_ID
     github:
-      clientId: CLIENT_ID
+      clientId: Ov23limHOsuGxvCvCFss
       clientSecret: CLIENT_SECRET
       tokenUri: https://github.com/login/oauth/access_token
       userInfoUri: https://api.github.com/user
