@@ -29,6 +29,8 @@ import nextstep.security.oauth2.registration.OAuth2ClientRegistrationProperties;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.registration.InMemoryClientRegistrationRepository;
+import nextstep.security.oauth2.user.OAuth2User;
+import nextstep.security.oauth2.user.OAuth2UserRequest;
 import nextstep.security.oauth2.user.OAuth2UserService;
 import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
@@ -44,9 +46,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
-    private final OAuth2UserService oAuth2UserService;
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService;
 
-    public SecurityConfig(UserDetailsService userDetailsService, OAuth2UserService oAuth2UserService) {
+    public SecurityConfig(UserDetailsService userDetailsService, OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService) {
         this.userDetailsService = userDetailsService;
         this.oAuth2UserService = oAuth2UserService;
     }

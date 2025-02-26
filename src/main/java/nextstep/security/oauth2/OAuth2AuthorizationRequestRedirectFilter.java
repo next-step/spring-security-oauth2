@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nextstep.security.access.PathPatternRequestMatcher;
+import nextstep.security.access.RequestMatcher;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -14,7 +15,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
     private static final String OAUTH_REQUEST_URI_PATTERN = "/oauth2/authorization/*";
 
     private final OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver;
-    private final PathPatternRequestMatcher pathPatternRequestMatcher;
+    private final RequestMatcher pathPatternRequestMatcher;
     private final AuthorizationRequestRepository authorizationRequestRepository;
 
     public OAuth2AuthorizationRequestRedirectFilter(OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver,
