@@ -8,47 +8,46 @@ import nextstep.oauth2.authentication.OAuth2AccessToken;
 import nextstep.oauth2.authentication.OAuth2AuthenticationToken;
 import nextstep.oauth2.client.userinfo.OAuth2User;
 import nextstep.oauth2.client.userinfo.OAuth2UserRequest;
-import nextstep.oauth2.client.userinfo.OAuth2UserService;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
 import nextstep.oauth2.http.OAuth2ApiClient;
 import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcher;
+import nextstep.security.authentication.AbstractAuthenticationProcessingFilter;
 import nextstep.security.authentication.Authentication;
+import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.AuthenticationManager;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
+public class OAuth2LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     private static final String DEFAULT_FILTER_PROCESSES_URI = "/login/oauth2/code/";
+    private final RequestMatcher requestMatcherrequiresAuthenticationRequestMatcher = new MvcRequestMatcher(DEFAULT_FILTER_PROCESSES_URI);
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuth2ApiClient apiClient = new OAuth2ApiClient();
-    private final RequestMatcher requestMatcherrequiresAuthenticationRequestMatcher;
-    private final OAuth2UserService oAuth2UserService;
 
-    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository, final OAuth2UserService oAuth2UserService) {
+    public OAuth2LoginAuthenticationFilter(final ClientRegistrationRepository clientRegistrationRepository, AuthenticationManager authenticationManager) {
+        super(authenticationManager);
         this.clientRegistrationRepository = clientRegistrationRepository;
-        this.oAuth2UserService = oAuth2UserService;
-        this.requestMatcherrequiresAuthenticationRequestMatcher = new MvcRequestMatcher(DEFAULT_FILTER_PROCESSES_URI);
     }
 
     @Override
-    protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain) throws ServletException, IOException {
-        if (!requestMatcherrequiresAuthenticationRequestMatcher.matches(request)) {
-            doFilter(request, response, filterChain);
-            return;
-        }
+    protected boolean requiresAuthentication(final HttpServletRequest request, final HttpServletResponse response) {
+        return requestMatcherrequiresAuthenticationRequestMatcher.matches(request);
+    }
 
+    @Override
+    protected Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         final String registrationId = extractRegistrationId(request.getRequestURI(), DEFAULT_FILTER_PROCESSES_URI);
-        if (registrationId == null) {
-            doFilter(request, response, filterChain);
-            return;
-        }
+//        if (registrationId == null) {
+//            doFilter(request, response, filterChain);
+//            return;
+//        }
 
         final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
         if (clientRegistration == null) {
@@ -64,9 +63,7 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
 
         final OAuth2AuthenticationToken authenticationToken = createSuccessAuthentication(oAuth2User);
 
-        successHandler(request, response, authenticationToken);
-
-        response.sendRedirect("/");
+        return authenticationToken;
     }
 
     public String extractRegistrationId(String requestUri, String baseUri) {
@@ -80,10 +77,13 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         return new OAuth2AuthenticationToken(oAuth2User, oAuth2User.authorities(), true);
     }
 
-    private void successHandler(final HttpServletRequest request, final HttpServletResponse response, final Authentication authentication) {
-        final SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
+    @Override
+    protected void successfulAuthentication(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain, final Authentication authenticationResult) throws AuthenticationException, IOException, ServletException {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authenticationResult);
         SecurityContextHolder.setContext(context);
         this.securityContextRepository.saveContext(context, request, response);
+
+        response.sendRedirect("/");
     }
 }

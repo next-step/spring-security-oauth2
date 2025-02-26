@@ -5,6 +5,7 @@ import nextstep.app.domain.MemberRepository;
 import nextstep.oauth2.OAuth2AuthorizationRequestRedirectFilter;
 import nextstep.oauth2.OAuth2ClientProperties;
 import nextstep.oauth2.OAuth2LoginAuthenticationFilter;
+import nextstep.oauth2.authentication.OAuth2LoginAuthenticationProvider;
 import nextstep.oauth2.client.userinfo.OAuth2UserService;
 import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationFactory;
@@ -16,7 +17,11 @@ import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
 import nextstep.security.authentication.AuthenticationException;
+import nextstep.security.authentication.AuthenticationManager;
+import nextstep.security.authentication.AuthenticationProvider;
 import nextstep.security.authentication.BasicAuthenticationFilter;
+import nextstep.security.authentication.DaoAuthenticationProvider;
+import nextstep.security.authentication.ProviderManager;
 import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
 import nextstep.security.authorization.AuthorityAuthorizationManager;
 import nextstep.security.authorization.AuthorizationFilter;
@@ -77,10 +82,10 @@ public class SecurityConfig {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new UsernamePasswordAuthenticationFilter(userDetailsService()),
-                        new BasicAuthenticationFilter(userDetailsService()),
+                        new UsernamePasswordAuthenticationFilter(authenticationManager()),
+                        new BasicAuthenticationFilter(authenticationManager()),
                         new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository()),
-                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository(), oAuth2UserService),
+                        new OAuth2LoginAuthenticationFilter(clientRegistrationRepository(), authenticationManager()),
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );
@@ -132,5 +137,13 @@ public class SecurityConfig {
     public ClientRegistrationRepository clientRegistrationRepository() {
         Map<String, ClientRegistration> registrations = ClientRegistrationFactory.createRegistrations(this.oAuth2ClientProperties);
         return new InMemoryClientRegistrationRepository(registrations);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        List<AuthenticationProvider> providers = List.of(
+                new DaoAuthenticationProvider(userDetailsService()),
+                new OAuth2LoginAuthenticationProvider(oAuth2UserService));
+        return new ProviderManager(providers);
     }
 }
