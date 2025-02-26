@@ -1,11 +1,11 @@
 package nextstep.oauth2.http;
 
-public class OAuth2User {
+public class OAuth2UserResponse {
     private final String email;
     private final String name;
     private final String picture;
 
-    public OAuth2User(final String email, final String name, final String picture) {
+    public OAuth2UserResponse(final String email, final String name, final String picture) {
         this.email = email;
         this.name = name;
         this.picture = picture;

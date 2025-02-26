@@ -30,12 +30,12 @@ public class OAuth2ApiClient {
         return response.get("access_token");
     }
 
-    public OAuth2User sendUserInfoRequestWithToken(ClientRegistration clientRegistration, String accessToken) {
+    public OAuth2UserResponse sendUserInfoRequestWithToken(ClientRegistration clientRegistration, String accessToken) {
         final Map<String, String> response = restClient.get()
-                .uri(clientRegistration.getUserInfoUri())
+                .uri(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUri())
                 .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
                 .body(Map.class);
-        return new OAuth2User(response.get("email"), response.get("name"), response.get("picture"));
+        return new OAuth2UserResponse(response.get("email"), response.get("name"), response.get("picture"));
     }
 }

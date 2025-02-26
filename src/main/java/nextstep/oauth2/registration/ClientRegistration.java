@@ -1,5 +1,6 @@
 package nextstep.oauth2.registration;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
@@ -10,7 +11,6 @@ public class ClientRegistration {
     private final String redirectUri;
     private final Set<String> scopes;
     private final ProviderDetails providerDetails;
-    private final String clientName;
 
     private ClientRegistration(Builder builder) {
         this.registrationId = builder.registrationId;
@@ -19,7 +19,6 @@ public class ClientRegistration {
         this.redirectUri = builder.redirectUri;
         this.scopes = builder.scopes;
         this.providerDetails = builder.providerDetails;
-        this.clientName = builder.clientName;
     }
 
     public static Builder builder() {
@@ -50,20 +49,12 @@ public class ClientRegistration {
         return providerDetails;
     }
 
-    public String getClientName() {
-        return clientName;
-    }
-
     public String getAuthorizationUri() {
         return providerDetails.getAuthorizationUri();
     }
 
     public String getTokenUri() {
         return providerDetails.getTokenUri();
-    }
-
-    public String getUserInfoUri() {
-        return providerDetails.getUserInfoUri();
     }
 
     public static class Builder {
@@ -73,7 +64,6 @@ public class ClientRegistration {
         private String redirectUri;
         private Set<String> scopes = Collections.emptySet();
         private ProviderDetails providerDetails = new ProviderDetails();
-        private String clientName;
 
         public Builder registrationId(String registrationId) {
             this.registrationId = registrationId;
@@ -105,11 +95,6 @@ public class ClientRegistration {
             return this;
         }
 
-        public Builder clientName(String clientName) {
-            this.clientName = clientName;
-            return this;
-        }
-
         public ClientRegistration build() {
             return new ClientRegistration(this);
         }
@@ -119,14 +104,15 @@ public class ClientRegistration {
         private String authorizationUri;
         private String tokenUri;
         private String userInfoUri;
+        private UserInfoEndpoint userInfoEndpoint;
 
         public ProviderDetails() {
         }
 
-        public ProviderDetails(String authorizationUri, String tokenUri, String userInfoUri) {
+        public ProviderDetails(String authorizationUri, String tokenUri, String uri, String userNameAttributeName) {
             this.authorizationUri = authorizationUri;
             this.tokenUri = tokenUri;
-            this.userInfoUri = userInfoUri;
+            this.userInfoEndpoint = new UserInfoEndpoint(uri, userNameAttributeName);
         }
 
         public String getAuthorizationUri() {
@@ -137,8 +123,28 @@ public class ClientRegistration {
             return tokenUri;
         }
 
-        public String getUserInfoUri() {
-            return userInfoUri;
+        public UserInfoEndpoint getUserInfoEndpoint() {
+            return userInfoEndpoint;
+        }
+
+        public class UserInfoEndpoint implements Serializable {
+
+            private String uri;
+
+            private String userNameAttributeName;
+
+            public UserInfoEndpoint(String uri, String userNameAttributeName) {
+                this.uri = uri;
+                this.userNameAttributeName = userNameAttributeName;
+            }
+
+            public String getUri() {
+                return uri;
+            }
+
+            public String getUserNameAttributeName() {
+                return userNameAttributeName;
+            }
         }
     }
 }

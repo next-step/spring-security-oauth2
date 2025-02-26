@@ -11,7 +11,7 @@ import nextstep.oauth2.registration.ClientRegistration;
 import nextstep.oauth2.registration.ClientRegistrationRepository;
 import nextstep.oauth2.exception.OAuth2RegistrationNotFoundException;
 import nextstep.oauth2.http.OAuth2ApiClient;
-import nextstep.oauth2.http.OAuth2User;
+import nextstep.oauth2.http.OAuth2UserResponse;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcher;
 import nextstep.security.authentication.UsernamePasswordAuthenticationToken;
@@ -57,7 +57,7 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         final String code = request.getParameter("code");
         final String token = apiClient.sendTokenRequest(clientRegistration, code);
 
-        final OAuth2User oAuth2User = apiClient.sendUserInfoRequestWithToken(clientRegistration, token);
+        final OAuth2UserResponse oAuth2User = apiClient.sendUserInfoRequestWithToken(clientRegistration, token);
         final Member member = retrieveMember(oAuth2User);
 
         final UsernamePasswordAuthenticationToken authenticationToken = createSuccessAuthentication(member);
@@ -74,7 +74,7 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         return requestUri.substring(baseUri.length());
     }
 
-    private Member retrieveMember(final OAuth2User oAuth2User) {
+    private Member retrieveMember(final OAuth2UserResponse oAuth2User) {
         final String email = oAuth2User.getEmail();
         final String name = oAuth2User.getName();
         final String avatarUrl = oAuth2User.getPicture();

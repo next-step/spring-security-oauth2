@@ -38,9 +38,9 @@ public class ClientRegistrationFactory {
                 .providerDetails(new ClientRegistration.ProviderDetails(
                         provider.getAuthorizationUri(),
                         provider.getTokenUri(),
-                        provider.getUserInfoUri()
+                        provider.getUserInfoUri(),
+                        provider.getUserNameAttributeName()
                 ))
-                .clientName(registrationId)
                 .build();
     }
 }
