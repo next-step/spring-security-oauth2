@@ -1,4 +1,4 @@
-package nextstep.oauth2;
+package nextstep.oauth2.authentication;
 
 public class OAuth2AccessToken {
     private final String value;

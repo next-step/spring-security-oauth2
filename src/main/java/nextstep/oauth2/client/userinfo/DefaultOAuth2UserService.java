@@ -33,7 +33,7 @@ public class DefaultOAuth2UserService implements OAuth2UserService {
             throw new OAuth2UserInfoEndPointNotFoundException();
         }
 
-        return userRequest.userNameAttributeName()
+        return userRequest.userNameAttributeName();
     }
 
     public Map<String, Object> fetchAttributes(OAuth2UserRequest userRequest) {

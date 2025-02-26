@@ -1,6 +1,6 @@
 package nextstep.oauth2.client.userinfo;
 
-import nextstep.oauth2.OAuth2AccessToken;
+import nextstep.oauth2.authentication.OAuth2AccessToken;
 import nextstep.oauth2.registration.ClientRegistration;
 import org.springframework.util.StringUtils;
 

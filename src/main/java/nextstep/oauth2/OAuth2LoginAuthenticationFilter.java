@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import nextstep.oauth2.authentication.OAuth2AccessToken;
+import nextstep.oauth2.authentication.OAuth2AuthenticationToken;
 import nextstep.oauth2.client.userinfo.OAuth2User;
 import nextstep.oauth2.client.userinfo.OAuth2UserRequest;
 import nextstep.oauth2.client.userinfo.OAuth2UserService;
