@@ -36,26 +36,4 @@ public class MemberService implements UserDetailsService {
             }
         };
     }
-
-    @Override
-    public UserDetails signUpUser(UserDetails userDetails) {
-        Member member = new Member(userDetails.getUsername(), userDetails.getPassword(), "", "", null);
-        Member newMember = memberRepository.save(member);
-        return new UserDetails() {
-            @Override
-            public String getUsername() {
-                return newMember.getEmail();
-            }
-
-            @Override
-            public String getPassword() {
-                return newMember.getPassword();
-            }
-
-            @Override
-            public Set<String> getAuthorities() {
-                return Set.of();
-            }
-        };
-    }
 }

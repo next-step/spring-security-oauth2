@@ -14,32 +14,8 @@ public class OAuth2AuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-
-        UserDetails userDetails;
-        try {
-            userDetails = userDetailsService.loadUserByUsername(authentication.getPrincipal().toString());
-            return UsernamePasswordAuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
-        } catch (AuthenticationException e) {
-            UserDetails newUserDetails = new UserDetails() {
-                @Override
-                public String getUsername() {
-                    return authentication.getPrincipal().toString();
-                }
-
-                @Override
-                public String getPassword() {
-                    return "";
-                }
-
-                @Override
-                public Set<String> getAuthorities() {
-                    return Set.of();
-                }
-            };
-
-            UserDetails newUser = userDetailsService.signUpUser(newUserDetails);
-            return UsernamePasswordAuthenticationToken.authenticated(newUser.getUsername(), newUser.getPassword(), newUser.getAuthorities());
-        }
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getPrincipal().toString());
+        return UsernamePasswordAuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
     }
 
     @Override

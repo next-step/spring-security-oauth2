@@ -1,6 +1,6 @@
 package nextstep.security.authentication;
 
-public class UserProfileDTO {
+public class UserProfile {
     private String email;
     private String name;
     private String avatar_url;
