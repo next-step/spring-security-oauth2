@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 public class AuthorizationRequestRepository {
-    private final static String DEFAULT_SESSION_KEY = "DEFAULT_SESSION_KEY";
+    private final static String DEFAULT_SESSION_KEY = AuthorizationRequestRepository.class.getName() + ".AUTHORIZATION_REQUEST";
 
     public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
         HttpSession session = request.getSession(false);

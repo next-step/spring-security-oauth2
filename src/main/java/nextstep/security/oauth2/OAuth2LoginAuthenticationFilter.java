@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
-    private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/{registration-id}";
+    private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/*";
 
     private final PathPatternRequestMatcher requestMatcher;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -67,9 +67,12 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
     private Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         // session에서 authorizationRequest를 가져오기
         OAuth2AuthorizationRequest oAuth2AuthorizationRequest = authorizationRequestRepository.removeAuthorizationRequest(request, response);
+        if (oAuth2AuthorizationRequest == null) {
+            throw new OAuth2AuthenticationException();
+        }
 
         // registrationId를 가져오고 clientRegistration을 가져오기
-        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(requestMatcher.getPathVariable(request, "registration-id"));
+        final ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(oAuth2AuthorizationRequest.getRegistrationId());
 
         if (clientRegistration == null) {
             throw new OAuth2AuthenticationException();
