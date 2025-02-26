@@ -4,9 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.app.domain.Member;
-import nextstep.app.domain.MemberRepository;
-import nextstep.app.infrastructure.InmemoryMemberRepository;
 import nextstep.security.access.RegexRequestMatcher;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
@@ -22,7 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
 
@@ -31,7 +27,6 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final AuthenticationManager authenticationManager;
     private final OAuth2ClientRepository oAuth2ClientRepository;
-    private final MemberRepository memberRepository = new InmemoryMemberRepository();
 
     public OAuth2AuthenticationFilter(UserDetailsService userDetailsService, OAuth2ClientRepository oAuth2ClientRepository) {
         this.authenticationManager = new ProviderManager(
@@ -56,9 +51,8 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
         String code = request.getParameter("code");
         String token = getAccessToken(clientRegistration, code);
         UserProfile userProfile = getUserProfile(token, clientRegistration);
-        Member member = getOAuth2Member(userProfile);
 
-        UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(member.getEmail(), null);
+        UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(userProfile.getEmail(), null);
         Authentication authenticated = authenticationManager.authenticate(unauthenticated);
         saveSecurityContext(request, response, authenticated);
 
@@ -84,12 +78,6 @@ public class OAuth2AuthenticationFilter extends OncePerRequestFilter {
         String userInfoUri = clientRegistration.getUserInfoUri();
         ResponseEntity<UserProfile> userProfileDTOResponseEntity = restTemplate.exchange(userInfoUri, HttpMethod.GET, httpEntity, UserProfile.class);
         return userProfileDTOResponseEntity.getBody();
-    }
-
-    private Member getOAuth2Member(UserProfile userProfile) {
-        return memberRepository.findByEmail(userProfile.getEmail())
-                .orElseGet(() -> memberRepository.save(
-                        new Member(userProfile.getEmail(), "", userProfile.getName(), userProfile.getAvatar_url(), Set.of())));
     }
 
     private void saveSecurityContext(HttpServletRequest request, HttpServletResponse response, Authentication authenticated) {
