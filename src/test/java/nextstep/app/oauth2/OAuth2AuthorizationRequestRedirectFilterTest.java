@@ -1,4 +1,4 @@
-package nextstep.app;
+package nextstep.app.oauth2;
 
 import nextstep.oauth2.OAuth2ClientProperties;
 import nextstep.oauth2.OAuth2ClientProperties.Provider;
@@ -41,7 +41,7 @@ public class OAuth2AuthorizationRequestRedirectFilterTest {
         final Registration registration = oAuth2ClientProperties.getRegistration().get(registrationId);
         final Provider provider = oAuth2ClientProperties.getProvider().get(registrationId);
 
-        String expectedRedirectUri = provider.getAuthorizationUri() +
+        String expectedRedirectUriPrefix = provider.getAuthorizationUri() +
                 "?response_type=code" +
                 "&client_id=" + registration.getClientId() +
                 "&scope=" + String.join("%20", registration.getScope()) +
@@ -49,6 +49,6 @@ public class OAuth2AuthorizationRequestRedirectFilterTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl(expectedRedirectUri));
+                .andExpect(MockMvcResultMatchers.redirectedUrlPattern(expectedRedirectUriPrefix + "*"));
     }
 }

@@ -1,4 +1,4 @@
-package nextstep.oauth2.client;
+package nextstep.oauth2.registration;
 
 import nextstep.oauth2.OAuth2ClientProperties;
 
@@ -38,9 +38,9 @@ public class ClientRegistrationFactory {
                 .providerDetails(new ClientRegistration.ProviderDetails(
                         provider.getAuthorizationUri(),
                         provider.getTokenUri(),
-                        provider.getUserInfoUri()
+                        provider.getUserInfoUri(),
+                        provider.getUserNameAttributeName()
                 ))
-                .clientName(registrationId)
                 .build();
     }
 }

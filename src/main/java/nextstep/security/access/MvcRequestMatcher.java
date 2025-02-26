@@ -13,6 +13,11 @@ public class MvcRequestMatcher implements RequestMatcher {
         this.pattern = pattern;
     }
 
+    public MvcRequestMatcher(String pattern) {
+        this.method = null;
+        this.pattern = pattern;
+    }
+
     public HttpMethod getMethod() {
         return method;
     }
@@ -27,6 +32,6 @@ public class MvcRequestMatcher implements RequestMatcher {
             return false;
         }
 
-        return request.getRequestURI().equals(pattern);
+        return request.getRequestURI().startsWith(pattern);
     }
 }
