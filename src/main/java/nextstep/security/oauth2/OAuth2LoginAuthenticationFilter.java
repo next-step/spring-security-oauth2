@@ -6,7 +6,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import nextstep.security.access.PathPatternRequestMatcher;
 import nextstep.security.access.RequestMatcher;
 import nextstep.security.authentication.Authentication;
 import nextstep.security.authentication.ProviderManager;
@@ -17,15 +16,12 @@ import nextstep.security.oauth2.registration.ClientRegistrationRepository;
 import nextstep.security.oauth2.user.OAuth2User;
 import nextstep.security.oauth2.user.OAuth2UserRequest;
 import nextstep.security.oauth2.user.OAuth2UserService;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 import java.util.List;
 
 public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
-    private static final String OAUTH_REQUEST_URI_PATTERN = "/login/oauth2/code/*";
-
     private final RequestMatcher requestMatcher;
     private final HttpSessionSecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     private final ProviderManager providerManager;
@@ -35,13 +31,16 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
 
     public OAuth2LoginAuthenticationFilter(OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService,
                                            ClientRegistrationRepository clientRegistrationRepository,
-                                           OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository) {
+                                           OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository,
+                                           RequestMatcher requestMatcher
+
+    ) {
         this.providerManager = new ProviderManager(
                 List.of(new OAuth2AuthenticationProvider(oAuth2UserService))
         );
 
         this.clientRegistrationRepository = clientRegistrationRepository;
-        this.requestMatcher = new PathPatternRequestMatcher(HttpMethod.GET, OAUTH_REQUEST_URI_PATTERN);
+        this.requestMatcher = requestMatcher;
         this.authorizationRequestRepository = new AuthorizationRequestRepository();
         this.oAuth2AuthorizedClientRepository = oAuth2AuthorizedClientRepository;
     }

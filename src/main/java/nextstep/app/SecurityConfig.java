@@ -2,6 +2,7 @@ package nextstep.app;
 
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
+import nextstep.security.access.PathPatternRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -44,6 +45,7 @@ import java.util.List;
 @EnableAspectJAutoProxy
 @Configuration
 public class SecurityConfig {
+    private static final String OAUTH2_AUTHORIZATION_BASE_URL =  "/oauth2/authorization";
 
     private final UserDetailsService userDetailsService;
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService;
@@ -90,8 +92,13 @@ public class SecurityConfig {
                         new SecurityContextHolderFilter(),
                         new UsernamePasswordAuthenticationFilter(userDetailsService),
                         new BasicAuthenticationFilter(userDetailsService),
-                        new OAuth2AuthorizationRequestRedirectFilter(new OAuth2AuthorizationRequestResolver(clientRegistrationRepository), authorizationRequestRepository),
-                        new OAuth2LoginAuthenticationFilter(oAuth2UserService, clientRegistrationRepository, oAuth2AuthorizedClientRepository),
+                        new OAuth2AuthorizationRequestRedirectFilter(
+                                new OAuth2AuthorizationRequestResolver(OAUTH2_AUTHORIZATION_BASE_URL, clientRegistrationRepository), authorizationRequestRepository),
+                        new OAuth2LoginAuthenticationFilter(oAuth2UserService
+                                , clientRegistrationRepository
+                                , oAuth2AuthorizedClientRepository
+                                , new PathPatternRequestMatcher(HttpMethod.GET, "/login/oauth2/code/*"))
+                        ,
                         new AuthorizationFilter(requestAuthorizationManager())
                 )
         );

@@ -8,13 +8,14 @@ import org.springframework.http.HttpMethod;
 
 public class OAuth2AuthorizationRequestResolver {
     private static final String REGISTRATION = "registration-id";
-    private static final String OAUTH_REQUEST_URI_PATTERN = "/oauth2/authorization/{" + REGISTRATION + "}";
-    private static final PathPatternRequestMatcher matcher = new PathPatternRequestMatcher(HttpMethod.GET, OAUTH_REQUEST_URI_PATTERN);
+    private static final String OAUTH_REQUEST_URI_PATTERN = "/{" + REGISTRATION + "}";
+    private final PathPatternRequestMatcher matcher;
 
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2AuthorizationRequestResolver(String baseUrl, ClientRegistrationRepository clientRegistrationRepository) {
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.matcher = new PathPatternRequestMatcher(HttpMethod.GET, baseUrl + OAUTH_REQUEST_URI_PATTERN);
     }
 
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
