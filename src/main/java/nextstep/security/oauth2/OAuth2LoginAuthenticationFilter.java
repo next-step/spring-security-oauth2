@@ -13,9 +13,9 @@ import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.oauth2.registration.ClientRegistration;
 import nextstep.security.oauth2.registration.ClientRegistrationRepository;
+import nextstep.security.oauth2.user.OAuth2User;
 import nextstep.security.oauth2.user.OAuth2UserRequest;
 import nextstep.security.oauth2.user.OAuth2UserService;
-import nextstep.security.oauth2.user.Oauth2User;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -32,7 +32,7 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
     private final AuthorizationRequestRepository authorizationRequestRepository;
     private final OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
 
-    public OAuth2LoginAuthenticationFilter(OAuth2UserService<OAuth2UserRequest, Oauth2User> oAuth2UserService,
+    public OAuth2LoginAuthenticationFilter(OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService,
                                            ClientRegistrationRepository clientRegistrationRepository,
                                            OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository) {
         this.providerManager = new ProviderManager(

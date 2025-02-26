@@ -2,7 +2,7 @@ package nextstep.security.oauth2;
 
 import nextstep.security.authentication.Authentication;
 import nextstep.security.oauth2.registration.ClientRegistration;
-import nextstep.security.oauth2.user.Oauth2User;
+import nextstep.security.oauth2.user.OAuth2User;
 
 import java.util.Set;
 
@@ -25,7 +25,7 @@ public class OAuth2LoginAuthenticationToken implements Authentication {
         return new OAuth2LoginAuthenticationToken(null, credentials, clientRegistration, false, Set.of());
     }
 
-    public static OAuth2LoginAuthenticationToken authenticated(Oauth2User principal, ClientRegistration clientRegistration, OAuth2AccessToken credentials, Set<String> authorities) {
+    public static OAuth2LoginAuthenticationToken authenticated(OAuth2User principal, ClientRegistration clientRegistration, OAuth2AccessToken credentials, Set<String> authorities) {
         return new OAuth2LoginAuthenticationToken(principal.getEmail(), credentials, clientRegistration, true, authorities);
     }
 
