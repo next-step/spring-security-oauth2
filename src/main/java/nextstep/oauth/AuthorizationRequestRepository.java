@@ -9,4 +9,8 @@ public class AuthorizationRequestRepository {
             , OAuth2AuthorizationRequest authorizationRequest) {
         request.getSession().setAttribute(OAUTH_REQUEST_SESSION_KEY, authorizationRequest);
     }
+
+    public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
+        return (OAuth2AuthorizationRequest) request.getSession().getAttribute(OAUTH_REQUEST_SESSION_KEY);
+    }
 }
