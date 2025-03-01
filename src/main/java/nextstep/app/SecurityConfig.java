@@ -63,7 +63,7 @@ public class SecurityConfig {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new UsernamePasswordAuthenticationFilter(userDetailsService()),
+                        new UsernamePasswordAuthenticationFilter(authenticationManager()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new OAuth2AuthorizationRequestRedirectFilter(getClientRegistrationRepository()),
                         new OAuth2LoginAuthenticationFilter(getClientRegistrationRepository(), authenticationManager()),
