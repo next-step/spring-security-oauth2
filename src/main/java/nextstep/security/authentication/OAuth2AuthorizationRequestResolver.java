@@ -4,5 +4,5 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface OAuth2AuthorizationRequestResolver {
 
-    ClientRegistration resolve(HttpServletRequest request);
+    OAuth2AuthorizationRequest resolve(HttpServletRequest request);
 }

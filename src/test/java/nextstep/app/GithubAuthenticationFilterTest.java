@@ -3,6 +3,7 @@ package nextstep.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
+import nextstep.security.authentication.OAuth2AuthorizationRequest;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -39,8 +41,12 @@ class GithubAuthenticationFilterTest {
     @Test
     void redirectAndRequestGithubAccessToken() throws Exception {
         String requestUri = "/login/oauth2/code/github?code=mock_code";
+        MockHttpSession mockHttpSession = new MockHttpSession();
+        OAuth2AuthorizationRequest authorizationRequest = new OAuth2AuthorizationRequest("github");
+        mockHttpSession.setAttribute("authorizationRequest", authorizationRequest);
 
-        mockMvc.perform(MockMvcRequestBuilders.get(requestUri))
+        mockMvc.perform(MockMvcRequestBuilders.get(requestUri)
+                        .session(mockHttpSession))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(MockMvcResultMatchers.redirectedUrl("/"))
                 .andExpect(request -> {

@@ -6,31 +6,31 @@ import nextstep.security.access.RequestMatcher;
 public class DefaultOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
     private final RequestMatcher requestMatcher;
-    private final OAuth2ClientRepository oAuth2ClientRepository;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public DefaultOAuth2AuthorizationRequestResolver(RequestMatcher requestMatcher, OAuth2ClientRepository oAuth2ClientRepository) {
+    public DefaultOAuth2AuthorizationRequestResolver(RequestMatcher requestMatcher, ClientRegistrationRepository clientRegistrationRepository) {
         this.requestMatcher = requestMatcher;
-        this.oAuth2ClientRepository = oAuth2ClientRepository;
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @Override
-    public ClientRegistration resolve(HttpServletRequest request) {
+    public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
 
-        String registrationId = "";
-        if (requestMatcher.matches(request)) {
-            registrationId = request.getRequestURI().substring("/oauth2/authorization/".length());
-        } else {
+        if (!requestMatcher.matches(request)) {
             return null;
         }
 
-        ClientRegistration clientRegistration = oAuth2ClientRepository.findByRegistrationId(registrationId);
+        String registrationId = extractRegistrationId(request);
+        ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(registrationId);
         if (clientRegistration == null) {
             throw new InvalidClientRegistrationIdException();
         }
 
-        return clientRegistration;
+        return OAuth2AuthorizationRequest.from(clientRegistration);
+    }
 
-
-
+    private String extractRegistrationId(HttpServletRequest request) {
+        return request.getRequestURI().substring("/oauth2/authorization/".length());
     }
 }
+
