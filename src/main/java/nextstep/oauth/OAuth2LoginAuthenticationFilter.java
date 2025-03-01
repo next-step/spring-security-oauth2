@@ -80,16 +80,19 @@ public class OAuth2LoginAuthenticationFilter extends GenericFilterBean {
                 , authorizationResponse);
 
         // OAuth2LoginAuthenticationToken 만들기
-        OAuth2AuthenticationToken authenticatedToken = (OAuth2AuthenticationToken) authenticationManager.authenticate(loginAuthenticationToken);
+        OAuth2LoginAuthenticationToken loginAuthenticatedToken = (OAuth2LoginAuthenticationToken) authenticationManager.authenticate(loginAuthenticationToken);
+
+        // provider 인증 후 authenticated된 OAuth2AuthenticationToken 객체 가져오기
+        OAuth2AuthenticationToken authenticationToken = new OAuth2AuthenticationToken(loginAuthenticatedToken.getPrincipal());
 
         // authorizedClientRepository 에 저장할 OAuth2AuthorizedClient을 만들고 저장
         OAuth2AuthorizedClient authorizedClient = new OAuth2AuthorizedClient(
                 loginAuthenticationToken.getClientRegistration()
-                , authenticatedToken.getPrincipal().toString()
-                , loginAuthenticationToken.getAccessToken());
+                , authenticationToken.getPrincipal().toString()
+                , loginAuthenticatedToken.getAccessToken());
 
-        this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, authenticatedToken, request, response);
+        this.authorizedClientRepository.saveAuthorizedClient(authorizedClient, authenticationToken, request, response);
 
-        return authenticatedToken;
+        return authenticationToken;
     }
 }

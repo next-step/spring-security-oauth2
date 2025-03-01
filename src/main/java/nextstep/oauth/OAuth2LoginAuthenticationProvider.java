@@ -28,12 +28,16 @@ public class OAuth2LoginAuthenticationProvider implements AuthenticationProvider
         OAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticatedToken
                 = (OAuth2AuthorizationCodeAuthenticationToken) authorizationCodeAuthenticationProvider.authenticate(authorizationCodeAuthenticationToken);
 
+        OAuth2AuthorizationResponse oAuth2AuthorizationResponse = loginAuthenticationToken.getoAuth2AuthorizationResponse();
         ClientRegistration clientRegistration = authorizationCodeAuthenticatedToken.getClientRegistration();
         String accessToken = authorizationCodeAuthenticatedToken.getAccessToken();
 
         OAuth2User oauth2User = this.userService.loadUser(new OAuth2UserRequest(clientRegistration, accessToken));
 
-        return new OAuth2AuthenticationToken(oauth2User);
+        return new OAuth2LoginAuthenticationToken(clientRegistration
+                , oAuth2AuthorizationResponse
+                , oauth2User
+                , accessToken);
     }
 
     @Override

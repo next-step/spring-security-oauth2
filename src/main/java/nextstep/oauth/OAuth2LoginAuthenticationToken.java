@@ -41,7 +41,7 @@ public class OAuth2LoginAuthenticationToken implements Authentication {
     }
 
     @Override
-    public Object getPrincipal() {
+    public OAuth2User getPrincipal() {
         return principal;
     }
 
