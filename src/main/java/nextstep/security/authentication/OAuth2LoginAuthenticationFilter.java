@@ -23,8 +23,8 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
     private final AuthenticationManager authenticationManager;
 
-    public OAuth2LoginAuthenticationFilter(UserDetailsService userDetailsService, ClientRegistrationRepository clientRegistrationRepository) {
-        this.authenticationManager = new ProviderManager(List.of(new OAuth2AuthenticationProvider()));
+    public OAuth2LoginAuthenticationFilter(OAuth2UserService userService, ClientRegistrationRepository clientRegistrationRepository) {
+        this.authenticationManager = new ProviderManager(List.of(new OAuth2AuthenticationProvider(userService)));
         this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
