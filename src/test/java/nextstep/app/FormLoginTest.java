@@ -46,7 +46,7 @@ class FormLoginTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
-        loginResponse.andExpect(status().isOk());
+        loginResponse.andExpect(status().is3xxRedirection());
     }
 
     @DisplayName("로그인 실패 - 사용자 없음")
@@ -85,7 +85,7 @@ class FormLoginTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
-        loginResponse.andExpect(status().isOk());
+        loginResponse.andExpect(status().is3xxRedirection());
 
         ResultActions membersResponse = mockMvc.perform(get("/members")
                 .session(session)
@@ -107,7 +107,7 @@ class FormLoginTest {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
         );
 
-        loginResponse.andExpect(status().isOk());
+        loginResponse.andExpect(status().is3xxRedirection());
 
         ResultActions membersResponse = mockMvc.perform(get("/members")
                 .session(session)
