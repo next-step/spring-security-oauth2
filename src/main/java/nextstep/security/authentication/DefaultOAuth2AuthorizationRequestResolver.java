@@ -1,15 +1,17 @@
 package nextstep.security.authentication;
 
 import jakarta.servlet.http.HttpServletRequest;
+import nextstep.security.access.RegexRequestMatcher;
 import nextstep.security.access.RequestMatcher;
+import org.springframework.http.HttpMethod;
 
 public class DefaultOAuth2AuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
-    private final RequestMatcher requestMatcher;
+    private final String OAUTH2_AUTHORIZATION_REQUEST_URI = "/oauth2/authorization/";
+    private final RequestMatcher requestMatcher = new RegexRequestMatcher(HttpMethod.GET, OAUTH2_AUTHORIZATION_REQUEST_URI + ".*");
     private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public DefaultOAuth2AuthorizationRequestResolver(RequestMatcher requestMatcher, ClientRegistrationRepository clientRegistrationRepository) {
-        this.requestMatcher = requestMatcher;
+    public DefaultOAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
         this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
@@ -30,7 +32,7 @@ public class DefaultOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
     }
 
     private String extractRegistrationId(HttpServletRequest request) {
-        return request.getRequestURI().substring("/oauth2/authorization/".length());
+        return request.getRequestURI().substring(OAUTH2_AUTHORIZATION_REQUEST_URI.length());
     }
 }
 

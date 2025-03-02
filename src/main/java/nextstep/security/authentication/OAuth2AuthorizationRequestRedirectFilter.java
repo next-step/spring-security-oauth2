@@ -16,8 +16,7 @@ public class OAuth2AuthorizationRequestRedirectFilter extends OncePerRequestFilt
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
 
     public OAuth2AuthorizationRequestRedirectFilter(ClientRegistrationRepository clientRegistrationRepository) {
-        this.authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(
-                new RegexRequestMatcher(HttpMethod.GET, "/oauth2/authorization/.*"), clientRegistrationRepository);
+        this.authorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository);
     }
 
     @Override

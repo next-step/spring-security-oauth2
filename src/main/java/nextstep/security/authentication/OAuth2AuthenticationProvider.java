@@ -1,7 +1,5 @@
 package nextstep.security.authentication;
 
-import nextstep.security.userdetails.UserDetails;
-import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
