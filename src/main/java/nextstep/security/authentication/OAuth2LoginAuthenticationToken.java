@@ -6,7 +6,7 @@ public class OAuth2LoginAuthenticationToken implements Authentication{
 
     private String principal;
     private ClientRegistration clientRegistration;
-    private String accessToken;
+    private OAuth2AccessToken accessToken;
     private String refreshToken;
     private boolean authenticated;
     private String code;
@@ -17,14 +17,14 @@ public class OAuth2LoginAuthenticationToken implements Authentication{
         this.authenticated = false;
     }
 
-    public OAuth2LoginAuthenticationToken(String principal, ClientRegistration clientRegistration, String accessToken, boolean authenticated) {
+    public OAuth2LoginAuthenticationToken(String principal, ClientRegistration clientRegistration, OAuth2AccessToken accessToken, boolean authenticated) {
         this.principal = principal;
         this.clientRegistration = clientRegistration;
         this.accessToken = accessToken;
         this.authenticated = true;
     }
 
-    public static OAuth2LoginAuthenticationToken authenticated(String principal, ClientRegistration clientRegistration, String accessToken) {
+    public static OAuth2LoginAuthenticationToken authenticated(String principal, ClientRegistration clientRegistration, OAuth2AccessToken accessToken) {
         return new OAuth2LoginAuthenticationToken(principal, clientRegistration, accessToken, true);
     }
 
@@ -55,5 +55,9 @@ public class OAuth2LoginAuthenticationToken implements Authentication{
 
     public String getCode() {
         return code;
+    }
+
+    public OAuth2AccessToken getAccessToken() {
+        return accessToken;
     }
 }

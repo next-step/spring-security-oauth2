@@ -20,7 +20,7 @@ public class OAuth2AuthenticationProvider implements AuthenticationProvider {
         OAuth2UserRequest userRequest = new OAuth2UserRequest(accessToken, oAuth2LoginAuthenticationToken.getClientRegistration());
         OAuth2User oAuth2User = userService.loadUser(userRequest);
 
-        return OAuth2LoginAuthenticationToken.authenticated(oAuth2User.getEmail(), oAuth2LoginAuthenticationToken.getClientRegistration(), accessToken.getAccess_token());
+        return OAuth2LoginAuthenticationToken.authenticated(oAuth2User.getEmail(), oAuth2LoginAuthenticationToken.getClientRegistration(), accessToken);
     }
 
     @Override

@@ -62,7 +62,7 @@ public class SecurityConfig {
                 List.of(
                         new SecurityContextHolderFilter(),
                         new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository()),
-                        new OAuth2LoginAuthenticationFilter(oAuth2UserService(), clientRegistrationRepository()),
+                        new OAuth2LoginAuthenticationFilter(oAuth2UserService(), clientRegistrationRepository(), oAuth2AuthorizedClientRepository()),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
@@ -119,5 +119,15 @@ public class SecurityConfig {
             UserProfile userProfile = userProfileResponseEntity.getBody();
             return DefaultOAuth2User.from(userProfile);
         };
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository() {
+        return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(oAuth2AuthorizedClientService());
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientService oAuth2AuthorizedClientService() {
+        return new InMemoryOAuth2AuthorizedClientService();
     }
 }

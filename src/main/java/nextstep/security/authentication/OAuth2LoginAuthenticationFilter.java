@@ -8,7 +8,6 @@ import nextstep.security.access.RegexRequestMatcher;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import nextstep.security.context.SecurityContextHolder;
-import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,12 +22,14 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
     private final AuthenticationManager authenticationManager;
+    private final OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository;
 
     private final Converter<OAuth2LoginAuthenticationToken, OAuth2AuthenticationToken> authenticationResultConverter = OAuth2LoginAuthenticationFilter.this::createAuthenticationResult;
 
-    public OAuth2LoginAuthenticationFilter(OAuth2UserService userService, ClientRegistrationRepository clientRegistrationRepository) {
+    public OAuth2LoginAuthenticationFilter(OAuth2UserService userService, ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository) {
         this.authenticationManager = new ProviderManager(List.of(new OAuth2AuthenticationProvider(userService)));
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.oAuth2AuthorizedClientRepository = oAuth2AuthorizedClientRepository;
     }
 
     @Override
@@ -65,11 +66,11 @@ public class OAuth2LoginAuthenticationFilter extends OncePerRequestFilter {
         OAuth2LoginAuthenticationToken authenticationRequest = new OAuth2LoginAuthenticationToken(clientRegistration, code);
         OAuth2LoginAuthenticationToken authenticationResult = (OAuth2LoginAuthenticationToken) authenticationManager.authenticate(authenticationRequest);
 
-        OAuth2AuthenticationToken oAuth2AuthenticationToken = authenticationResultConverter.convert(authenticationResult);
+        OAuth2AuthenticationToken oAuth2Authentication = authenticationResultConverter.convert(authenticationResult);
 
-
-
-        return oAuth2AuthenticationToken;
+        OAuth2AuthorizedClient oAuth2AuthorizedClient = new OAuth2AuthorizedClient(authenticationResult.getClientRegistration(), oAuth2Authentication.getPrincipal().toString(), authenticationResult.getAccessToken());
+        oAuth2AuthorizedClientRepository.saveAuthorizedClient(oAuth2AuthorizedClient, oAuth2Authentication);
+        return oAuth2Authentication;
     }
 
     private void saveSecurityContext(HttpServletRequest request, HttpServletResponse response, Authentication authenticated) {
