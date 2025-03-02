@@ -35,6 +35,7 @@ public class SecurityConfig {
 
     private final MemberRepository memberRepository;
     private final OAuth2Property oAuth2Property;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public SecurityConfig(MemberRepository memberRepository, OAuth2Property oAuth2Property) {
         this.memberRepository = memberRepository;
@@ -104,20 +105,11 @@ public class SecurityConfig {
     @Bean
     public OAuth2UserService oAuth2UserService() {
         return userRequest -> {
-            RestTemplate restTemplate = new RestTemplate();
-
             OAuth2AccessToken accessToken = userRequest.getAccessToken();
             ClientRegistration clientRegistration = userRequest.getClientRegistration();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", accessToken.getToken());
-
-            HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
-            String userInfoUri = clientRegistration.getUserInfoUri();
-
-            ResponseEntity<UserProfile> userProfileResponseEntity = restTemplate.exchange(userInfoUri, HttpMethod.GET, httpEntity, UserProfile.class);
-            UserProfile userProfile = userProfileResponseEntity.getBody();
-            return DefaultOAuth2User.from(userProfile);
+            ResponseEntity<UserProfile> userProfileResponseEntity = getResponse(clientRegistration, accessToken);
+            return DefaultOAuth2User.from(userProfileResponseEntity.getBody());
         };
     }
 
@@ -129,5 +121,18 @@ public class SecurityConfig {
     @Bean
     public OAuth2AuthorizedClientService oAuth2AuthorizedClientService() {
         return new InMemoryOAuth2AuthorizedClientService();
+    }
+
+    private static HttpHeaders getHttpHeaders(OAuth2AccessToken accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", accessToken.getToken());
+        return headers;
+    }
+
+    private ResponseEntity<UserProfile> getResponse(ClientRegistration clientRegistration, OAuth2AccessToken accessToken) {
+        return restTemplate.exchange(clientRegistration.getUserInfoUri(),
+                HttpMethod.GET,
+                new HttpEntity<>(getHttpHeaders(accessToken)),
+                UserProfile.class);
     }
 }
