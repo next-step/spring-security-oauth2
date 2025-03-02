@@ -6,10 +6,11 @@ import java.util.Set;
 
 public class OAuth2AuthenticationToken implements Authentication {
 
-    private ClientRegistration clientRegistration;
-    private UserDetails principal;
-    private String accessToken;
-    private String refreshToken;
+    private Object principal;
+
+    public OAuth2AuthenticationToken(Object principal) {
+        this.principal = principal;
+    }
 
     @Override
     public Set<String> getAuthorities() {
@@ -23,11 +24,11 @@ public class OAuth2AuthenticationToken implements Authentication {
 
     @Override
     public Object getPrincipal() {
-        return null;
+        return principal;
     }
 
     @Override
     public boolean isAuthenticated() {
-        return false;
+        return true;
     }
 }
