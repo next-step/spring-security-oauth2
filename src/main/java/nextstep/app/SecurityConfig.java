@@ -1,6 +1,5 @@
 package nextstep.app;
 
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import nextstep.app.domain.MemberRepository;
 import nextstep.app.domain.MemberService;
 import nextstep.security.access.AnyRequestMatcher;
@@ -19,11 +18,7 @@ import nextstep.security.userdetails.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +30,6 @@ public class SecurityConfig {
 
     private final MemberRepository memberRepository;
     private final OAuth2Property oAuth2Property;
-    private final RestTemplate restTemplate = new RestTemplate();
 
     public SecurityConfig(MemberRepository memberRepository, OAuth2Property oAuth2Property) {
         this.memberRepository = memberRepository;
@@ -104,13 +98,7 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2UserService oAuth2UserService() {
-        return userRequest -> {
-            OAuth2AccessToken accessToken = userRequest.getAccessToken();
-            ClientRegistration clientRegistration = userRequest.getClientRegistration();
-
-            ResponseEntity<UserProfile> userProfileResponseEntity = getResponse(clientRegistration, accessToken);
-            return DefaultOAuth2User.from(userProfileResponseEntity.getBody());
-        };
+        return new DefaultOAuth2UserService();
     }
 
     @Bean
@@ -121,18 +109,5 @@ public class SecurityConfig {
     @Bean
     public OAuth2AuthorizedClientService oAuth2AuthorizedClientService() {
         return new InMemoryOAuth2AuthorizedClientService();
-    }
-
-    private static HttpHeaders getHttpHeaders(OAuth2AccessToken accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", accessToken.getToken());
-        return headers;
-    }
-
-    private ResponseEntity<UserProfile> getResponse(ClientRegistration clientRegistration, OAuth2AccessToken accessToken) {
-        return restTemplate.exchange(clientRegistration.getUserInfoUri(),
-                HttpMethod.GET,
-                new HttpEntity<>(getHttpHeaders(accessToken)),
-                UserProfile.class);
     }
 }
