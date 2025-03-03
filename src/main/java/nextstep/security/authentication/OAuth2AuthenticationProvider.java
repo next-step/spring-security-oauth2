@@ -1,25 +1,38 @@
 package nextstep.security.authentication;
 
-import nextstep.security.userdetails.UserDetails;
-import nextstep.security.userdetails.UserDetailsService;
-
-import java.util.Set;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 public class OAuth2AuthenticationProvider implements AuthenticationProvider {
-    private final UserDetailsService userDetailsService;
 
-    public OAuth2AuthenticationProvider(UserDetailsService userDetailsService1) {
-        this.userDetailsService = userDetailsService1;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final OAuth2UserService userService;
+
+    public OAuth2AuthenticationProvider(OAuth2UserService userService) {
+        this.userService = userService;
     }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authentication.getPrincipal().toString());
-        return UsernamePasswordAuthenticationToken.authenticated(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+        OAuth2LoginAuthenticationToken oAuth2LoginAuthenticationToken = (OAuth2LoginAuthenticationToken) authentication;
+        OAuth2AccessToken accessToken = getAccessToken(oAuth2LoginAuthenticationToken);
+
+        OAuth2UserRequest userRequest = new OAuth2UserRequest(accessToken, oAuth2LoginAuthenticationToken.getClientRegistration());
+        OAuth2User oAuth2User = userService.loadUser(userRequest);
+
+        return OAuth2LoginAuthenticationToken.authenticated(oAuth2User.getEmail(), oAuth2LoginAuthenticationToken.getClientRegistration(), accessToken);
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+        return OAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
+    private OAuth2AccessToken getAccessToken(OAuth2LoginAuthenticationToken oAuth2LoginAuthenticationToken) {
+        ClientRegistration clientRegistration = oAuth2LoginAuthenticationToken.getClientRegistration();
+        String code = oAuth2LoginAuthenticationToken.getCode();
+        String tokenUri = clientRegistration.getTokenUri();
+        MultiValueMap<String, String> paramsForToken = clientRegistration.getParamsForToken(code);
+        return restTemplate.postForObject(tokenUri, paramsForToken, OAuth2AccessToken.class);
     }
 }

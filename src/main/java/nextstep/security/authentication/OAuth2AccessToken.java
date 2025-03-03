@@ -1,6 +1,6 @@
 package nextstep.security.authentication;
 
-public class AccessTokenResponseDTO {
+public class OAuth2AccessToken {
     private String access_token;
     private String scope;
     private String token_type;

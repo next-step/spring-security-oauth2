@@ -56,8 +56,8 @@ public class SecurityConfig {
         return new DefaultSecurityFilterChain(
                 List.of(
                         new SecurityContextHolderFilter(),
-                        new OAuth2LoginRedirectFilter(oAuth2ClientRepository()),
-                        new OAuth2AuthenticationFilter(userDetailsService(), oAuth2ClientRepository()),
+                        new OAuth2AuthorizationRequestRedirectFilter(clientRegistrationRepository()),
+                        new OAuth2LoginAuthenticationFilter(oAuth2UserService(), clientRegistrationRepository(), oAuth2AuthorizedClientRepository()),
                         new UsernamePasswordAuthenticationFilter(userDetailsService()),
                         new BasicAuthenticationFilter(userDetailsService()),
                         new AuthorizationFilter(requestAuthorizationManager())
@@ -83,8 +83,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public OAuth2ClientRepository oAuth2ClientRepository() {
-        return new OAuth2ClientRepository(
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        return new ClientRegistrationRepository(
                 Map.of(
                         "google", oAuth2Property.getClient("google"),
                         "github", oAuth2Property.getClient("github")
@@ -94,5 +94,20 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return new MemberService(memberRepository);
+    }
+
+    @Bean
+    public OAuth2UserService oAuth2UserService() {
+        return new DefaultOAuth2UserService();
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientRepository oAuth2AuthorizedClientRepository() {
+        return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(oAuth2AuthorizedClientService());
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientService oAuth2AuthorizedClientService() {
+        return new InMemoryOAuth2AuthorizedClientService();
     }
 }

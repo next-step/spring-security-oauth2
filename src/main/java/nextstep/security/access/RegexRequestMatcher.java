@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class RegexRequestMatcher implements RequestMatcher {
 
-    private HttpMethod method;
+    private final HttpMethod method;
     private final Pattern pattern;
 
     public RegexRequestMatcher(HttpMethod method, String pattern) {
