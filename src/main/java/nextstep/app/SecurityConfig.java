@@ -3,15 +3,14 @@ package nextstep.app;
 import nextstep.app.application.MemberService;
 import nextstep.app.domain.Member;
 import nextstep.app.domain.MemberRepository;
-import nextstep.app.oauth2.OAuth2AuthenticationSuccessHandlerImpl;
+import nextstep.app.oauth2.OAuth2AuthenticationSuccessHandler;
+import nextstep.security.access.AntRequestMatcher;
 import nextstep.security.access.AnyRequestMatcher;
 import nextstep.security.access.MvcRequestMatcher;
 import nextstep.security.access.RequestMatcherEntry;
 import nextstep.security.access.hierarchicalroles.RoleHierarchy;
 import nextstep.security.access.hierarchicalroles.RoleHierarchyImpl;
-import nextstep.security.authentication.AuthenticationException;
-import nextstep.security.authentication.BasicAuthenticationFilter;
-import nextstep.security.authentication.UsernamePasswordAuthenticationFilter;
+import nextstep.security.authentication.*;
 import nextstep.security.authorization.*;
 import nextstep.security.config.DefaultSecurityFilterChain;
 import nextstep.security.config.DelegatingFilterProxy;
@@ -19,9 +18,8 @@ import nextstep.security.config.FilterChainProxy;
 import nextstep.security.config.SecurityFilterChain;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContextHolderFilter;
-import nextstep.security.oauth2.OAuth2AuthenticationFilter;
-import nextstep.security.oauth2.OAuth2AuthenticationSuccessHandler;
-import nextstep.security.oauth2.OAuth2RedirectFilter;
+import nextstep.security.oauth2.*;
+import nextstep.security.oauth2.login.OAuth2LoginAuthenticationProvider;
 import nextstep.security.oauth2.userdetails.OAuth2UserDetailsService;
 import nextstep.security.properties.ClientRegistrationRepository;
 import nextstep.security.userdetails.UserDetails;
@@ -72,13 +70,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain() {
         return new DefaultSecurityFilterChain(List.of(new SecurityContextHolderFilter(httpSessionSecurityContextRepository()),
-                new UsernamePasswordAuthenticationFilter(userDetailsService()),
+                new UsernamePasswordAuthenticationFilter(userDetailsService(), new UsernamePasswordAuthenticationSuccessHandler()),
                 new BasicAuthenticationFilter(userDetailsService()),
-                new OAuth2RedirectFilter(clientRegistrationRepository),
-                new OAuth2AuthenticationFilter(
-                        clientRegistrationRepository,
+                new OAuth2AuthorizationRequestRedirectFilter(
+                        new AntRequestMatcher(HttpMethod.GET, "/oauth2/authorization/**"),
+                        oAuth2AuthorizationRequestResolver(clientRegistrationRepository),
+                        authorizationRequestRepository()),
+                new OAuth2LoginAuthenticationFilter(
                         oAuth2AuthenticationSuccessHandler(),
-                        oAuth2UserDetailsServices),
+                        authorizationRequestRepository(),
+                        oAuth2LoginAuthenticationProvider()),
                 new AuthorizationFilter(requestAuthorizationManager())));
     }
 
@@ -127,9 +128,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
-        return new OAuth2AuthenticationSuccessHandlerImpl(
+    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+        return new OAuth2AuthenticationSuccessHandler(
                 httpSessionSecurityContextRepository(),
                 memberService);
     }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+        return new OAuth2AuthorizationRequestResolver(clientRegistrationRepository);
+    }
+
+    @Bean
+    public AuthorizationRequestRepository authorizationRequestRepository() {
+        return new AuthorizationRequestRepository();
+    }
+
+    public AuthenticationManager oAuth2LoginAuthenticationProvider() {
+        return new ProviderManager(List.of(
+                new OAuth2LoginAuthenticationProvider(oAuth2UserDetailsServices)));
+    }
+
 }

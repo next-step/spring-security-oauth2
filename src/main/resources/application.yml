@@ -13,6 +13,8 @@ security:
         scope: read:user
         authorize-uri: https://github.com/login/oauth/authorize
         token-uri: https://github.com/login/oauth/access_token
+        user-uri: https://api.github.com/user
+        redirect-uri: http://localhost:8080/login/oauth2/code
       google:
         client-secret: client-secret
         client-id: client-id
@@ -20,11 +22,5 @@ security:
         scope: https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile
         authorize-uri: https://accounts.google.com/o/oauth2/v2/auth
         token-uri: https://oauth2.googleapis.com/token
-
-
-app:
-  oauth2:
-    github:
-      user-url: https://api.github.com/user
-    google:
-      user-url: https://www.googleapis.com/oauth2/v2/userinfo
+        user-uri: https://www.googleapis.com/oauth2/v2/userinfo
+        redirect-uri: http://localhost:8080/login/oauth2/code

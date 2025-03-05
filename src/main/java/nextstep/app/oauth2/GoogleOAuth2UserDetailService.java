@@ -2,7 +2,7 @@ package nextstep.app.oauth2;
 
 import nextstep.security.oauth2.userdetails.AbstractOAuth2UserDetailsService;
 import nextstep.security.oauth2.userdetails.OAuth2UserDetails;
-import org.springframework.beans.factory.annotation.Value;
+import nextstep.security.properties.ClientRegistrationRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -10,10 +10,9 @@ import java.util.Set;
 
 @Component
 public class GoogleOAuth2UserDetailService extends AbstractOAuth2UserDetailsService {
-    private final String userUrl;
 
-    public GoogleOAuth2UserDetailService(@Value("${app.oauth2.google.user-url}") final String userUrl) {
-        this.userUrl = userUrl;
+    public GoogleOAuth2UserDetailService(final ClientRegistrationRepository clientRegistrationRepository) {
+        super(clientRegistrationRepository);
     }
 
     @Override
@@ -26,13 +25,9 @@ public class GoogleOAuth2UserDetailService extends AbstractOAuth2UserDetailsServ
 
     }
 
-    @Override
-    protected String getUserUrl() {
-        return this.userUrl;
-    }
 
     @Override
-    public String getVendor() {
+    public String getRegistrationId() {
         return "google";
     }
 }

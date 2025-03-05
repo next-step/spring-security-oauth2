@@ -11,7 +11,7 @@ public class OAuth2UserDetailsServiceResolver {
 
     public OAuth2UserDetailsServiceResolver(final List<OAuth2UserDetailsService> userDetailsServices) {
         this.userDetailsServiceMap = userDetailsServices.stream()
-                .collect(Collectors.toMap(OAuth2UserDetailsService::getVendor, it -> it));
+                .collect(Collectors.toMap(OAuth2UserDetailsService::getRegistrationId, it -> it));
 
     }
 

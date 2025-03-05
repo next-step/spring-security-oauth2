@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-class OAuth2RedirectFilterTest {
+class OAuth2AuthorizationRequestRedirectFilterTest {
 
     @Autowired
     private MockMvc mockMvc;

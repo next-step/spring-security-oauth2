@@ -1,5 +1,6 @@
 package nextstep.security.oauth2.userdetails;
 
+import nextstep.security.properties.ClientRegistrationRepository;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -7,9 +8,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class AbstractOAuth2UserDetailsService implements OAuth2UserDetailsService {
     private final RestTemplate restTemplate = new RestTemplate();
+
+    private final ClientRegistrationRepository clientRegistrationRepository;
+
+    public AbstractOAuth2UserDetailsService(final ClientRegistrationRepository clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
+    }
 
     @Override
     public OAuth2UserDetails loadUserByAccessToken(String accessToken) {
@@ -27,6 +35,8 @@ public abstract class AbstractOAuth2UserDetailsService implements OAuth2UserDeta
 
     protected abstract OAuth2UserDetails createOauth2UserDetails(Map<String, Object> userResponse);
 
-    protected abstract String getUserUrl();
+    public String getUserUrl() {
+        return Objects.requireNonNull(clientRegistrationRepository.findRegistrationById(getRegistrationId())).getUserUri();
+    }
 
 }

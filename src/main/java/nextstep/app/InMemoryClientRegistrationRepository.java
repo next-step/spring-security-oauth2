@@ -1,24 +1,26 @@
 package nextstep.app;
 
 import jakarta.annotation.Nullable;
+import nextstep.security.oauth2.ClientRegistration;
 import nextstep.security.properties.ClientRegistrationRepository;
-import nextstep.security.properties.OAuth2Properties;
-import nextstep.security.properties.Registration;
+import nextstep.security.properties.OAuth2ClientProperties;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class InMemoryClientRegistrationRepository implements ClientRegistrationRepository {
 
-    private final OAuth2Properties oAuth2Properties;
+    private final Map<String, ClientRegistration> registrations;
 
-    public InMemoryClientRegistrationRepository(final OAuth2Properties oAuth2Properties) {
-        this.oAuth2Properties = oAuth2Properties;
+    public InMemoryClientRegistrationRepository(final OAuth2ClientProperties oAuth2ClientProperties) {
+        this.registrations = ClientRegistration.from(oAuth2ClientProperties);
     }
 
     @Override
     @Nullable
-    public Registration findRegistrationById(final String id) {
-        return oAuth2Properties.getRegistration(id);
+    public ClientRegistration findRegistrationById(final String id) {
+        return registrations.get(id);
     }
 
 }

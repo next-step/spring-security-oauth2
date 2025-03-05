@@ -8,15 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ConfigurationProperties(prefix = "security.oauth2")
-public class OAuth2Properties {
+public class OAuth2ClientProperties {
     private Map<String, Registration> registration = new HashMap<>();
-    private String domain;
+
+    public Map<String, Registration> getRegistrations() {
+        return registration;
+    }
 
     @PostConstruct
     public void init() {
         registration.forEach((key, value) -> {
-                    value.setVendor(key);
-                    value.setDomain(domain);
+                    value.setRegistrationId(key);
                 }
         );
     }
@@ -28,14 +30,6 @@ public class OAuth2Properties {
 
     public void setRegistration(final Map<String, Registration> registration) {
         this.registration = registration;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(final String domain) {
-        this.domain = domain;
     }
 
 }

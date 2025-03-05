@@ -1,6 +1,5 @@
 package nextstep.security.oauth2;
 
-import nextstep.security.properties.Registration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -13,13 +12,13 @@ import java.util.Map;
 public class OAuth2AccessTokenRequestProvider {
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public String getAccessToken(final Registration registration, final String code) {
+    public String getAccessToken(final ClientRegistration registration, final String code) {
         Map<String, String> map = new HashMap<>();
         map.put(OAuth2Parameter.CLIENT_ID.getPath(), registration.getClientId());
         map.put(OAuth2Parameter.CLIENT_SECRET.getPath(), registration.getClientSecret());
         map.put(OAuth2Parameter.CODE.getPath(), code);
         map.put(OAuth2Parameter.GRANT_TYPE.getPath(), registration.getGrantType());
-        map.put(OAuth2Parameter.REDIRECT_URL.getPath(), registration.getRedirectUrl());
+        map.put(OAuth2Parameter.REDIRECT_URL.getPath(), registration.getRedirectUri());
         var response = doPost(registration.getTokenUri(), map);
         return (String) response.get("access_token");
     }

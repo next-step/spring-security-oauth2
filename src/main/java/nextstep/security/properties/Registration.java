@@ -1,10 +1,6 @@
 package nextstep.security.properties;
 
-import jakarta.annotation.Nullable;
-
 public class Registration {
-    public static final String REDIRECT_URL_PREFIX = "/login/oauth2/code";
-
     private String clientId;
     private String clientSecret;
     private String responseType;
@@ -12,9 +8,9 @@ public class Registration {
     private String authorizeUri;
     private String tokenUri;
 
-    private String vendor;
-
-    private String domain;
+    private String userUri;
+    private String redirectUri;
+    private String registrationId;
 
 
     public String getClientId() {
@@ -65,30 +61,28 @@ public class Registration {
         this.authorizeUri = authorizeUri;
     }
 
-    public String getVendor() {
-        return vendor;
+    public String getRegistrationId() {
+        return registrationId;
     }
 
-    public void setVendor(final String vendor) {
-        this.vendor = vendor;
+    public void setRegistrationId(final String registrationId) {
+        this.registrationId = registrationId;
     }
 
-    @Nullable
-    public String getGrantType() {
-        if (responseType == null) {
-            return null;
-        }
-        if (this.responseType.equals("code")) {
-            return "authorization_code";
-        }
-        return null;
+    public String getRedirectUri() {
+        return this.redirectUri;
     }
 
-    public void setDomain(final String domain) {
-        this.domain = domain;
+    public void setRedirectUri(final String redirectUri) {
+        this.redirectUri = redirectUri;
     }
 
-    public String getRedirectUrl() {
-        return domain + REDIRECT_URL_PREFIX + "/" + vendor;
+    public String getUserUri() {
+        return userUri;
     }
+
+    public void setUserUri(final String userUri) {
+        this.userUri = userUri;
+    }
+
 }

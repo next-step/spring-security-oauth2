@@ -2,6 +2,8 @@ package nextstep.app;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nextstep.fixture.AuthorizationRequestFixture;
+import nextstep.security.oauth2.AuthorizationRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 8089)
-class OAuth2AuthenticationFilterTest {
+class OAuth2LoginAuthenticationFilterTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,6 +47,9 @@ class OAuth2AuthenticationFilterTest {
     void githubRedirectAndRequestGithubAccessToken() throws Exception {
         String requestUri = "/login/oauth2/code/github?code=mock_code";
         MockHttpSession session = new MockHttpSession();
+        session.setAttribute(AuthorizationRequestRepository.SESSION_NAME,
+                AuthorizationRequestFixture.GITHUB.getOAuth2AuthorizationRequest()
+                );
 
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri)
                         .session(session))
@@ -68,6 +73,9 @@ class OAuth2AuthenticationFilterTest {
     void googleAndRequestGithubAccessToken() throws Exception {
         String requestUri = "/login/oauth2/code/google?code=mock_code";
         MockHttpSession session = new MockHttpSession();
+        session.setAttribute(AuthorizationRequestRepository.SESSION_NAME,
+                AuthorizationRequestFixture.GOOGLE.getOAuth2AuthorizationRequest()
+        );
 
         mockMvc.perform(MockMvcRequestBuilders.get(requestUri)
                         .session(session))

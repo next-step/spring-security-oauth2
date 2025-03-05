@@ -4,6 +4,6 @@ public interface OAuth2UserDetailsService {
 
     OAuth2UserDetails loadUserByAccessToken(String accessToken);
 
-    String getVendor();
+    String getRegistrationId();
 
 }
