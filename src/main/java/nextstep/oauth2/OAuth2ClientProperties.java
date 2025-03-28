@@ -1,4 +1,4 @@
-package nextstep.security.oauth2.provider;
+package nextstep.oauth2;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -21,14 +21,6 @@ public class OAuth2ClientProperties {
 
     public Map<String, Registration> getRegistration() {
         return this.registration;
-    }
-
-    public Registration getRegistrationById(String registrationId) {
-        Registration registration = this.registration.get(registrationId);
-        if (registration == null) {
-            throw new IllegalArgumentException("Cannot find Registration for registrationId=%s".formatted(registrationId));
-        }
-        return registration;
     }
 
     public record Registration(

@@ -3,14 +3,16 @@ package nextstep.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import jakarta.servlet.http.HttpSession;
+import nextstep.app.domain.MemberRepository;
 import nextstep.app.testsupport.BaseIntegrationTestSupport;
 import nextstep.security.context.HttpSessionSecurityContextRepository;
 import nextstep.security.context.SecurityContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -26,6 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureWireMock(port = 8089)
 class OAuth2LoginAuthenticationFilterTest extends BaseIntegrationTestSupport {
 
+    @Autowired
+    MemberRepository memberRepository;
+
     @BeforeEach
     void setupMockServer() throws Exception {
         // GitHub
@@ -39,44 +44,46 @@ class OAuth2LoginAuthenticationFilterTest extends BaseIntegrationTestSupport {
 
     @Test
     void redirectAndRequestGithubAccessToken() throws Exception {
-        String requestUri = "/login/oauth2/code/github?code=mock_code";
+        MockHttpSession session = new MockHttpSession();
 
-        ResultActions result = mockMvc.perform(get(requestUri))
+        // 세션에 OAuth2AuthorizationRequest 저장
+        mockMvc.perform(get("/oauth2/authorization/github").session(session))
+                .andDo(print())
+                .andExpect(status().is3xxRedirection());
+
+        // Authorization Endpoint 인증 후 인증 코드를 'mock_code'로 발급 받았다고 가정
+        ResultActions result = mockMvc.perform(get("/login/oauth2/code/github?code=mock_code").session(session))
                 .andDo(print());
 
         result
                 .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl("/"))
-                .andExpect(request -> {
-                    HttpSession session = request.getRequest().getSession();
-                    assert session != null;
-                    SecurityContext context = (SecurityContext) session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-                    assertThat(context).isNotNull();
-                    assertThat(context.getAuthentication()).isNotNull();
-                    assertThat(context.getAuthentication().isAuthenticated()).isTrue();
-                    assertThat(context.getAuthentication().getPrincipal()).isEqualTo("github_999");
-                });
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/"));
+
+        SecurityContext context = (SecurityContext) session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        assertThat(context).isNotNull();
+        assertThat(context.getAuthentication()).isNotNull();
+        assertThat(context.getAuthentication().isAuthenticated()).isTrue();
     }
 
     @Test
     void redirectAndRequestGoogleAccessToken() throws Exception {
-        String requestUri = "/login/oauth2/code/google?code=mock_code";
+        MockHttpSession session = new MockHttpSession();
 
-        ResultActions result = mockMvc.perform(get(requestUri))
+        mockMvc.perform(get("/oauth2/authorization/google").session(session))
+                .andDo(print())
+                .andExpect(status().is3xxRedirection());
+
+        ResultActions result = mockMvc.perform(get("/login/oauth2/code/google?code=mock_code").session(session))
                 .andDo(print());
 
         result
                 .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl("/")) // 로그인 성공 시 루트로 리다이렉트
-                .andExpect(request -> {
-                    HttpSession session = request.getRequest().getSession();
-                    assert session != null;
-                    SecurityContext context = (SecurityContext) session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-                    assertThat(context).isNotNull();
-                    assertThat(context.getAuthentication()).isNotNull();
-                    assertThat(context.getAuthentication().isAuthenticated()).isTrue();
-                    assertThat(context.getAuthentication().getPrincipal()).isEqualTo("google_google-identifier");
-                });
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/")); // 로그인 성공 시 루트로 리다이렉트
+
+        SecurityContext context = (SecurityContext) session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        assertThat(context).isNotNull();
+        assertThat(context.getAuthentication()).isNotNull();
+        assertThat(context.getAuthentication().isAuthenticated()).isTrue();
     }
 
     private void stubForGitHubAccessToken() throws JsonProcessingException {

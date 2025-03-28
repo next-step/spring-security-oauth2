@@ -1,4 +1,4 @@
-package nextstep.security.oauth2.authentication;
+package nextstep.security.oauth2.core;
 
 import org.springframework.util.Assert;
 

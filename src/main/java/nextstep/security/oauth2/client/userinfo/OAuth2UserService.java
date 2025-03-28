@@ -1,4 +1,6 @@
-package nextstep.security.oauth2.authentication;
+package nextstep.security.oauth2.client.userinfo;
+
+import nextstep.security.oauth2.core.user.OAuth2User;
 
 @FunctionalInterface
 public interface OAuth2UserService {
